@@ -37,7 +37,7 @@ const VerifyOtp = () => {
 
   const validate = (value) => {
     if (!value) return "OTP is required";
-    if (!/^\d{6}$/.test(value)) return "Enter a valid 6-digit OTP";
+    if (!/^\d{4,8}$/.test(value)) return "Enter a valid numeric OTP";
     return "";
   };
 
@@ -55,7 +55,14 @@ const VerifyOtp = () => {
     if (index < inputsRef.current.length - 1) {
       inputsRef.current[index + 1]?.focus();
     }
-    if (touched) setError(validate(next.join("").trim()));
+    if (touched) {
+      const joined = next.join("").trim();
+      if (joined.length === next.length) {
+        setError(validate(joined));
+      } else {
+        setError("");
+      }
+    }
   };
 
   const handleKeyDown = (index, e) => {
@@ -94,12 +101,24 @@ const VerifyOtp = () => {
     const firstEmpty = next.findIndex((d) => d === "");
     const focusIndex = firstEmpty === -1 ? digits.length - 1 : firstEmpty;
     inputsRef.current[focusIndex]?.focus();
-    if (touched) setError(validate(next.join("").trim()));
+    if (touched) {
+      const joined = next.join("").trim();
+      if (joined.length === next.length) {
+        setError(validate(joined));
+      } else {
+        setError("");
+      }
+    }
   };
 
   const handleBlur = () => {
     setTouched(true);
-    setError(validate(digits.join("").trim()));
+    const joined = digits.join("").trim();
+    if (joined.length === digits.length) {
+      setError(validate(joined));
+    } else {
+      setError("");
+    }
   };
 
   return (
@@ -119,7 +138,7 @@ const VerifyOtp = () => {
                       inputMode="numeric"
                       pattern="[0-9]*"
                       maxLength={1}
-                      className={`form-control text-center fs-4 py-2 ${touched && error ? "is-invalid" : ""}`}
+                      className={`form-control text-center fs-4 py-2 ${touched && digits.every((x) => x !== "") && error ? "is-invalid" : ""}`}
                       style={{ width: "48px", height: "56px" }}
                       value={d}
                       ref={(el) => (inputsRef.current[i] = el)}

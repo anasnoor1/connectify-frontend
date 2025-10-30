@@ -1,7 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-// <<<<<<< HEAD
-import Signup from "./components/Singup";
-// >>>>>>> origin/auth-naeem
+import Signup from "./components/Signup";
 import Login from "./components/Login";
 import ForgotPassword from "./components/ForgotPassword";
 import VerifyOtp from "./pages/VerifyOtp";

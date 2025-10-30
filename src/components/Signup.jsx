@@ -5,6 +5,7 @@ import { useNavigate, Navigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { getToken} from "../utills/check token";
 
 const Signup = () => {
   const initialValues = {
@@ -19,10 +20,6 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
-  if (token) {
-    return <Navigate to="/" replace />;
-  }
 
   const SignupSchema = Yup.object({
     name: Yup.string()

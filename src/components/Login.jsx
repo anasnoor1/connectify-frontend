@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { Link, useNavigate, Navigate } from "react-router-dom";
+import { setToken , getToken} from "../utills/check token";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -9,11 +10,6 @@ const Login = () => {
   const [showPwd, setShowPwd] = useState(false);
   const navigate = useNavigate();
   const googleBtnRef = useRef(null);
-
-  const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
-  if (token) {
-    return <Navigate to="/" replace />;
-  }
 
   useEffect(() => {
     // Load Google Sign-In script
@@ -53,7 +49,8 @@ const Login = () => {
             const res = await axios.post("/api/auth/google", { 
               idToken: response.credential 
             });
-            localStorage.setItem("token", res.data.token);
+            // localStorage.setItem("token", res.data.token);
+            setToken(res.data.token); 
             toast.success("Logged in with Google");
             navigate("/");
           } catch (err) {
@@ -96,7 +93,10 @@ const Login = () => {
       setLoading(true);
       const res = await axios.post("/api/auth/login", formData);
       toast.success("Login successful");
-      localStorage.setItem("token", res.data.token);
+
+      // localStorage.setItem("token", res.data.token);
+
+      setToken(res.data.token);
       navigate("/");
     } catch (err) {
       if (err.response?.status === 403) {

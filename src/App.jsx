@@ -9,6 +9,9 @@ import { ToastContainer } from "react-toastify";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
 import RequireAuth from "./components/RequireAuth";
+import GuestRoute from "./utills/guestroute";
+
+
 
 export default function App() {
   return (
@@ -19,8 +22,16 @@ export default function App() {
           <Route element={<RequireAuth />}>
             <Route index element={<Home />} />
           </Route>
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={
+            <GuestRoute>
+              <Signup />
+            </GuestRoute>
+          } />
+          <Route path="/login" element={
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
+          } />
           <Route path="/forgot" element={<ForgotPassword />} />
           <Route path="/verify" element={<VerifyOtp />} />
           <Route path="*" element={<NotFound />} />

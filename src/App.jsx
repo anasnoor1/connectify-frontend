@@ -1,7 +1,14 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+<<<<<<< HEAD
 import Signup from "./components/Singup";
+=======
+import Signup from "./components/Signup";
+>>>>>>> origin/auth-naeem
 import Login from "./components/Login";
+import ForgotPassword from "./components/ForgotPassword";
 import VerifyOtp from "./pages/VerifyOtp";
+import NotFound from "./pages/NotFound";
+
 import { ToastContainer } from "react-toastify";
 import Layout from "./components/Layout";
 import Home from "./pages/Home";
@@ -18,9 +25,12 @@ export default function App() {
           </Route>
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot" element={<ForgotPassword />} />
           <Route path="/verify" element={<VerifyOtp />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
+
     </Router>
   );
 }

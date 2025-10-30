@@ -1,58 +1,309 @@
-#root {
-  max-width: 100%;
+/* Auth background with responsive sizing */
+.auth-bg {
+  background:
+    linear-gradient(0deg, rgba(255,255,255,0.65), rgba(255,255,255,0.55)),
+    url('assets/cardpng.jpg') center/cover no-repeat fixed;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+/* Responsive card layout */
+.auth-bg .card {
+  background: white;
+  color: #0f172a;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
   margin: 0 auto;
-  text-align: left;
+  max-width: 100%;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+@media (min-width: 768px) {
+  .auth-bg .card {
+    max-width: 520px;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+/* Responsive form controls */
+.auth-bg .card .form-control {
+  background: #f8fafc;
+  color: #0f172a;
+  border: 1px solid #e5e7eb;
+  height: 48px;
+  font-size: 16px; /* Prevent zoom on iOS */
+}
+
+@media (max-width: 576px) {
+  .auth-bg .card .form-control {
+    height: 44px;
+    font-size: 14px;
   }
 }
 
+.auth-bg .card .form-control::placeholder {
+  color: #9ca3af;
+}
+
+.auth-bg .card .form-control:focus {
+  border-color: #c7d2fe;
+  box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.18);
+}
+
+/* Responsive buttons */
+.auth-bg .card .btn {
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  height: 48px;
+  font-size: 16px;
+}
+
+@media (max-width: 576px) {
+  .auth-bg .card .btn {
+    height: 44px;
+    font-size: 14px;
+    padding: 0.5rem 1rem;
+  }
+}
+
+.auth-bg .card .btn-primary {
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  border: 0;
+}
+
+.auth-bg .card .btn-primary:hover {
+  filter: brightness(1.06);
+}
+
+.auth-bg .card .btn-primary:disabled {
+  opacity: 0.9;
+}
+
+/* Responsive input groups */
+.auth-bg .card .input-group {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.auth-bg .card .input-group .btn,
+.auth-bg .card .input-group-text {
+  background: #eef2ff;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+  height: 48px;
+}
+
+@media (max-width: 576px) {
+  .auth-bg .card .input-group .btn,
+  .auth-bg .card .input-group-text {
+    height: 44px;
+    padding: 0.5rem;
+  }
+}
+
+/* Responsive social buttons */
+.auth-bg .card .btn-outline-secondary {
+  border-color: #e5e7eb;
+  color: #0f172a;
+  background: #ffffff;
+  height: 48px;
+  border-radius: 12px;
+}
+
+@media (max-width: 576px) {
+  .auth-bg .card .btn-outline-secondary {
+    height: 44px;
+    font-size: 14px;
+  }
+}
+
+/* Responsive OTP inputs */
+.otp-container {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.otp-input {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
+  color: #0f172a;
+  caret-color: #0f172a;
+}
+
+@media (max-width: 576px) {
+  .otp-container {
+    gap: 0.25rem;
+  }
+  
+  .otp-input {
+    width: 40px;
+    height: 48px;
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .otp-input {
+    width: 35px;
+    height: 44px;
+    font-size: 1rem;
+  }
+}
+
+/* Responsive role selector */
+.role-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.role-selector .btn {
+  flex: 1;
+  min-width: 120px;
+  white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+  .role-selector {
+    flex-direction: column;
+  }
+  
+  .role-selector .btn {
+    min-width: auto;
+  }
+}
+
+/* Responsive layout adjustments */
+#root {
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Card responsive spacing */
 .card {
-  border: 1px solid var(--bs-border-color);
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
 
-.read-the-docs {
-  color: #888;
+.card-body {
+  padding: 1.5rem;
 }
 
-/* Custom button styles */
+@media (max-width: 768px) {
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+/* Button responsive */
 .btn-primary {
-  background-color: var(--bs-primary);
-  border-color: var(--bs-primary);
+  background-color: var(--primary);
+  border-color: var(--primary);
 }
 
 .btn-primary:hover {
-  background-color: #6d28d9;
-  border-color: #6d28d9;
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
 }
 
-/* Form control focus */
+/* Form control focus - responsive */
 .form-control:focus {
-  border-color: var(--bs-primary);
+  border-color: var(--primary);
   box-shadow: 0 0 0 0.2rem rgba(124, 58, 237, 0.25);
+}
+
+/* Responsive text alignment */
+.text-center-mobile {
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .text-center-mobile {
+    text-align: left;
+  }
+}
+
+/* Responsive spacing utilities */
+.mobile-p-1 { padding: 0.5rem; }
+.mobile-p-2 { padding: 1rem; }
+.mobile-p-3 { padding: 1.5rem; }
+
+@media (min-width: 768px) {
+  .mobile-p-1 { padding: 0.75rem; }
+  .mobile-p-2 { padding: 1.5rem; }
+  .mobile-p-3 { padding: 2rem; }
+}
+
+/* Hide/Show elements based on screen size */
+.mobile-only {
+  display: block;
+}
+
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none;
+  }
+  
+  .desktop-only {
+    display: block;
+  }
+}
+/* Compact form styles for auth pages */
+.auth-bg {
+  background: url('assets/cardpng.jpg') center/cover no-repeat fixed !important;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+/* Make form controls smaller */
+.auth-bg .form-control-sm {
+  height: 38px;
+  font-size: 0.875rem;
+}
+
+.auth-bg .input-group-sm {
+  height: 38px;
+}
+
+.auth-bg .input-group-sm .btn {
+  height: 38px;
+  padding: 0.25rem 0.5rem;
+}
+
+.auth-bg .card {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Remove extra padding on mobile */
+@media (max-width: 768px) {
+  .auth-bg .card-body {
+    padding: 1rem !important;
+  }
+  
+  .auth-bg .card-header {
+    padding: 1rem !important;
+  }
+}
+
+/* Ensure no vertical scroll on auth pages */
+.auth-bg .container.d-flex {
+  padding-top: 0;
+  padding-bottom: 0;
 }

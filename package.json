@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
     "axios": "^1.13.0",
     "bootstrap": "^5.3.8",
     "formik": "^2.4.6",
@@ -18,6 +19,18 @@
     "react-router-dom": "^7.9.4",
     "react-toastify": "^11.0.5",
     "yup": "^1.7.1"
+=======
+    "@tailwindcss/vite": "^4.1.16",
+    "lucide-react": "^0.548.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^7.9.5",
+    "react-tsparticles": "^2.12.2",
+    "tailwindcss": "^4.1.16",
+    "tsparticles-engine": "^2.12.0",
+    "tsparticles-slim": "^2.12.0"
+>>>>>>> auth-abid
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

@@ -1,13 +1,15 @@
 import React from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { getToken , logout } from "../utills/check token";
+
 
 export default function Layout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token = typeof window !== "undefined" ? getToken() : null;
   
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    logout();
     navigate("/login");
   };
 

@@ -206,20 +206,20 @@ const Signup = () => {
                         "Create Account"
                       )}
                     </button>
-
+{/* 
                     <div className="position-relative text-center mb-3">
                       <hr className="my-2" />
                       <span className="position-absolute top-50 start-50 translate-middle bg-white px-2 text-muted small">
                         or continue with
                       </span>
-                    </div>
+                    </div> */}
 
-                    <div className="mb-3">
+                    {/* <div className="mb-3">
                       <button type="button" className="btn btn-outline-secondary w-100 btn-sm d-flex align-items-center justify-content-center" disabled>
                         <i className="bi bi-google me-2"></i>
                         Continue with Google
                       </button>
-                    </div>
+                    </div> */}
 
                     <div className="text-center">
                       <span className="text-muted small">Already have an account? </span>

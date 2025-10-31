@@ -9,34 +9,11 @@ import VerifyOtp from "./pages/VerifyOtp";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import RequireAuth from "./components/RequireAuth";
-import GuestRoute from "./utills/guestroute";
-
-
+import Home from "./components/Home";
 
 export default function App() {
-  return (
-    <Router>
-      <ToastContainer position="top-right" autoClose={3000} theme="dark" progressStyle={{ background: "#7c3aed" }} />
-      <Routes>
-        <Route element={<Layout />}>
-          <Route element={<RequireAuth />}>
-            <Route index element={<Home />} />
-          </Route>
-          <Route path="/signup" element={
-            <GuestRoute>
-              <Signup />
-            </GuestRoute>
-          } />
-          <Route path="/login" element={
-            <GuestRoute>
-              <Login />
-            </GuestRoute>
-          } />
-          <Route path="/forgot" element={<ForgotPassword />} />
-          <Route path="/verify" element={<VerifyOtp />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
+  const location = useLocation();
+  const pathname = location.pathname;
 
   const isAuthPage =
     pathname === "/login" ||
@@ -69,5 +46,3 @@ export default function App() {
     </>
   );
 }
-
-

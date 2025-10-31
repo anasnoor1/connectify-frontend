@@ -1,4 +1,4 @@
-import React, { useState,useEffect} from "react";
+import React, { useState } from "react";
 import { FiUser, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
@@ -6,8 +6,7 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { Link, useNavigate, Navigate } from "react-router-dom";
-import { setToken , getToken} from "../utills/check token";
+import { useNavigate, Navigate, Link } from "react-router-dom";
 
 const particleOptions = {
   particles: {
@@ -47,22 +46,10 @@ const LoginSchema = Yup.object({
   password: Yup.string().required("Required"),
 });
 
- const Login = () => {
+const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
-  useEffect(() => {
-    // Load Google Sign-In script
-    const loadGoogleScript = () => {
-      if (document.getElementById('google-signin-script')) return;
-      
-      const script = document.createElement('script');
-      script.id = 'google-signin-script';
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-    };
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
   if (token) return <Navigate to="/" replace />;
@@ -73,10 +60,7 @@ const LoginSchema = Yup.object({
     try {
       const res = await axios.post("/api/auth/login", values);
       toast.success("Login successful");
-
-      // localStorage.setItem("token", res.data.token);
-
-      setToken(res.data.token);
+      localStorage.setItem("token", res.data.token);
       navigate("/");
     } catch (err) {
       if (err.response?.status === 403) {
@@ -218,6 +202,6 @@ const LoginSchema = Yup.object({
       </div>
     </div>
   );
-});
- }
+};
+
 export default Login;

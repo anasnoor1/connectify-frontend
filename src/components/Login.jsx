@@ -7,6 +7,7 @@ import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Navigate, Link } from "react-router-dom";
+import { setToken, getToken } from "../utills/checkToken"; 
 
 const particleOptions = {
   particles: {
@@ -50,9 +51,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  if (token) return <Navigate to="/" replace />;
+if (getToken()) return <Navigate to="/" replace />;
 
   const particlesInit = async (engine) => await loadSlim(engine);
 
@@ -60,7 +59,7 @@ const Login = () => {
     try {
       const res = await axios.post("/api/auth/login", values);
       toast.success("Login successful");
-      localStorage.setItem("token", res.data.token);
+       setToken(res.data.token); 
       navigate("/");
     } catch (err) {
       if (err.response?.status === 403) {

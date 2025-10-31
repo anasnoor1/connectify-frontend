@@ -41,7 +41,7 @@ const particleOptions = {
   background: { color: "#1f2937" },
 };
 
-// ✅ Yup validation (email check only)
+// ✅ Yup validation
 const LoginSchema = Yup.object({
   email: Yup.string().email("Invalid email").required("Required"),
   password: Yup.string().required("Required"),
@@ -80,7 +80,9 @@ const LoginSchema = Yup.object({
       navigate("/");
     } catch (err) {
       if (err.response?.status === 403) {
-        toast.error(err.response?.data?.message || "Please verify your email first.");
+        toast.error(
+          err.response?.data?.message || "Please verify your email first."
+        );
         navigate(`/verify?email=${encodeURIComponent(values.email)}`);
       } else if (err.response?.status === 400) {
         toast.error(err.response?.data?.message || "Invalid credentials");
@@ -171,7 +173,9 @@ const LoginSchema = Yup.object({
                     {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
                   </button>
                   {errors.password && touched.password && (
-                    <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.password}
+                    </p>
                   )}
                 </div>
 
@@ -189,10 +193,10 @@ const LoginSchema = Yup.object({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3 text-white font-semibold rounded-lg 
-             bg-gradient-to-r from-purple-500 to-indigo-600 
-             hover:from-purple-600 hover:to-indigo-700 
-             transition duration-150 ease-in-out cursor-pointer"
+                  className="w-full py-3 text-white font-semibold rounded-lg
+              bg-gradient-to-r from-purple-500 to-indigo-600
+              hover:from-purple-600 hover:to-indigo-700
+              transition duration-150 ease-in-out cursor-pointer"
                 >
                   {isSubmitting ? "Logging in..." : "LOGIN"}
                 </button>
@@ -217,4 +221,3 @@ const LoginSchema = Yup.object({
 });
  }
 export default Login;
-

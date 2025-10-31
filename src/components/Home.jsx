@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // import React from "react";
 
 // const Home = () => {
@@ -194,12 +193,6 @@ import React from "react";
 import hero from "../assets/hero-1.webp";
 import WhyChoose from './whyChoose'
 import Testimonials  from './Testimonials'
-=======
-import React from "react";
-import hero from "../assets/hero-1.webp";
-import WhyChoose from "./WhyChoose";
-import Testimonials from "./Testimonials";
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
 
 const Home = () => {
   const partners = [49, 52, 50, 51, 40, 47];
@@ -209,7 +202,6 @@ const Home = () => {
       <main>
         {/* Hero Section */}
         <section className="bg-indigo-50 py-20">
-<<<<<<< HEAD
           <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -224,22 +216,6 @@ const Home = () => {
                 <a
                   href="#"
                   className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700"
-=======
-          <div className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
-                Transforming Talent into{" "}
-                <span className="text-indigo-600">Influence</span>
-              </h1>
-              <p className="text-gray-600 mb-8">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Ornare nisl aliquam ut consectetur maecenas eros.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <a
-                  href="#"
-                  className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
                 >
                   Discover More
                 </a>
@@ -257,44 +233,26 @@ const Home = () => {
               <img
                 src={hero}
                 alt="Hero"
-<<<<<<< HEAD
                 className="rounded-xl shadow-lg"
-=======
-                className="rounded-xl shadow-xl max-w-md w-full"
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
               />
             </div>
           </div>
         </section>
 
-<<<<<<< HEAD
         {/* Partner Section */}
         <section className="py-16 bg-white">
           <div className="max-w-6xl mx-auto text-center px-6">
-=======
-        {/* Partners Section */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto text-center px-6">
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
             <h3 className="text-2xl font-semibold mb-10">
               Our Partners in Success — The Brands Behind{" "}
               <span className="text-indigo-600">the Stars</span>
             </h3>
-<<<<<<< HEAD
             <div className="flex flex-wrap justify-center items-center gap-8">
-=======
-            <div className="flex flex-wrap justify-center items-center gap-10">
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
               {partners.map((num, i) => (
                 <img
                   key={i}
                   src={`/images/logo-${num}.png`}
                   alt={`Partner ${i + 1}`}
-<<<<<<< HEAD
                   className="w-28 grayscale hover:grayscale-0 transition"
-=======
-                  className="w-28 grayscale hover:grayscale-0 transition duration-300"
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
                 />
               ))}
             </div>
@@ -303,7 +261,6 @@ const Home = () => {
 
         {/* About Section */}
         <section className="py-20 bg-gray-50">
-<<<<<<< HEAD
           <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
             <img
               src={hero}
@@ -322,26 +279,6 @@ const Home = () => {
               <blockquote className="italic text-gray-700 border-l-4 border-indigo-500 pl-4 mb-6">
                 “Senectus ullamcorper mollis posuere fringilla sit velit. 
                 Nisl velit etiam per mus cursus suscipit habitasse viverra.”
-=======
-          <div className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
-            <img
-              src={hero}
-              alt="About Us"
-              className="rounded-lg shadow-lg w-full"
-            />
-            <div>
-              <h4 className="text-indigo-600 font-semibold">// About Us</h4>
-              <h2 className="text-3xl font-bold mt-2 mb-6 leading-snug">
-                Pioneering the Future of Talent and Influence Together
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Varius
-                magna semper primis ut auctor justo lacus dictum morbi.
-              </p>
-              <blockquote className="italic text-gray-700 border-l-4 border-indigo-500 pl-4 mb-6">
-                “Senectus ullamcorper mollis posuere fringilla sit velit. Nisl
-                velit etiam per mus cursus suscipit habitasse viverra.”
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
               </blockquote>
               <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
                 <li>Montes class leo maecena</li>
@@ -349,7 +286,6 @@ const Home = () => {
                 <li>Volutpat porta neque primis</li>
                 <li>Etiam sit amet cursus arcu</li>
               </ul>
-<<<<<<< HEAD
               <div className="flex space-x-10">
                 <div>
                   <p className="text-4xl font-bold text-indigo-600">12+</p>
@@ -358,17 +294,6 @@ const Home = () => {
                 <div>
                   <p className="text-4xl font-bold text-indigo-600">270+</p>
                   <p>Creative Talents</p>
-=======
-
-              <div className="flex gap-12">
-                <div>
-                  <p className="text-4xl font-bold text-indigo-600">12+</p>
-                  <p className="text-gray-700">Years of Experience</p>
-                </div>
-                <div>
-                  <p className="text-4xl font-bold text-indigo-600">270+</p>
-                  <p className="text-gray-700">Creative Talents</p>
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
                 </div>
               </div>
             </div>
@@ -377,23 +302,14 @@ const Home = () => {
 
         {/* Services Section */}
         <section className="py-20 bg-indigo-50">
-<<<<<<< HEAD
           <div className="max-w-7xl mx-auto px-6">
-=======
-          <div className="container mx-auto px-6">
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
             <div className="text-center mb-12">
               <h4 className="text-indigo-600 font-semibold">// What We Do</h4>
               <h2 className="text-3xl font-bold mt-2 mb-4">
                 Tailored Solutions for Talent and Influence
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-<<<<<<< HEAD
                 Sed ac suscipit tellus, a volutpat erat. Proin sit amet fermentum massa.
-=======
-                Sed ac suscipit tellus, a volutpat erat. Proin sit amet
-                fermentum massa.
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
               </p>
             </div>
 
@@ -406,16 +322,11 @@ const Home = () => {
               ].map((service, i) => (
                 <div
                   key={i}
-<<<<<<< HEAD
                   className="bg-white rounded-lg shadow hover:shadow-lg transition p-6"
-=======
-                  className="bg-white rounded-xl shadow-md hover:shadow-lg transition p-6 flex flex-col"
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
                 >
                   <h3 className="text-xl font-semibold text-indigo-600 mb-3">
                     {service}
                   </h3>
-<<<<<<< HEAD
                   <p className="text-gray-600 mb-4">
                     Sed velit magna, dictum sit amet ante eu, tristique tempor ex. 
                     Phasellus neque enim nunc, ultrices eget bibendum id.
@@ -423,15 +334,6 @@ const Home = () => {
                   <a
                     href="/service_detail"
                     className="text-indigo-600 font-medium hover:underline flex items-center space-x-2"
-=======
-                  <p className="text-gray-600 flex-grow">
-                    Sed velit magna, dictum sit amet ante eu, tristique tempor
-                    ex. Phasellus neque enim nunc, ultrices eget bibendum id.
-                  </p>
-                  <a
-                    href="/service_detail"
-                    className="text-indigo-600 font-medium hover:underline mt-4 inline-flex items-center space-x-2"
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
                   >
                     <span>Learn More</span>
                     <i className="fa-solid fa-arrow-right"></i>
@@ -439,12 +341,7 @@ const Home = () => {
                 </div>
               ))}
 
-<<<<<<< HEAD
               <div className="bg-indigo-600 text-white p-6 rounded-lg flex flex-col justify-between">
-=======
-              {/* Call-to-action Card */}
-              <div className="bg-indigo-600 text-white p-6 rounded-xl flex flex-col justify-between">
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
                 <div>
                   <h3 className="text-2xl font-semibold mb-3">
                     Ready to elevate your brand?
@@ -465,10 +362,6 @@ const Home = () => {
           </div>
         </section>
       </main>
-<<<<<<< HEAD
-=======
-
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
       <WhyChoose />
       <Testimonials />
     </div>

@@ -1,6 +1,6 @@
 import React from "react";
 import hero from "../assets/hero-1.webp";
-import WhyChoose from "./WhyChoose";
+// import WhyChoose from "./WhyChoose";
 import Testimonials from "./Testimonials";
 
 const Home = () => {
@@ -175,7 +175,7 @@ const Home = () => {
         </section>
       </main>
 
-      <WhyChoose />
+      {/* <WhyChoose /> */}
       <Testimonials />
     </div>
   );

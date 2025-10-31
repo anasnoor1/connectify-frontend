@@ -1,184 +1,4 @@
 import React, { useState } from "react";
-<<<<<<< HEAD
-import { Link } from "react-router-dom";
-import logo from "../assets/Connectify Logo.png";
-
-const Navbar = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
-      <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-        {/* Logo */}
-        <Link to="#" className="flex items-center">
-          <img src={logo} alt="Logo" className="w-20" />
-        </Link>
-
-        {/* Mobile Toggle Button */}
-        <button
-          className="text-gray-700 text-2xl md:hidden"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          <i className="fa-solid fa-bars"></i>
-        </button>
-
-        {/* Nav Links */}
-        <ul
-          className={`flex flex-col md:flex-row md:items-center absolute md:static left-0 w-full md:w-auto bg-white md:bg-transparent transition-all duration-300 ease-in-out ${
-            menuOpen
-              ? "top-16 opacity-100"
-              : "top-[-400px] opacity-0 md:opacity-100"
-          }`}
-        >
-          <li>
-            <Link
-              to="#"
-              className="block px-6 py-2 hover:text-indigo-600"
-              onClick={() => setMenuOpen(false)}
-            >
-              Home
-            </Link>
-          </li>
-
-          <li>
-            <Link
-              to="#"
-              className="block px-6 py-2 hover:text-indigo-600"
-              onClick={() => setMenuOpen(false)}
-            >
-              About Us
-            </Link>
-          </li>
-
-          {/* Dropdown - Services */}
-          <li className="group relative">
-            <button className="flex items-center px-6 py-2 hover:text-indigo-600">
-              Our Services{" "}
-              <i className="fa-solid fa-chevron-down ml-2 text-sm"></i>
-            </button>
-            <ul className="absolute hidden group-hover:block bg-white shadow-md rounded-md mt-1">
-              <li>
-                <Link
-                  to="#"
-                  className="block px-4 py-2 hover:bg-indigo-50"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Our Services
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="block px-4 py-2 hover:bg-indigo-50"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Service Detail
-                </Link>
-              </li>
-            </ul>
-          </li>
-
-          {/* Dropdown - Blog */}
-          <li className="group relative">
-            <button className="flex items-center px-6 py-2 hover:text-indigo-600">
-              Blog <i className="fa-solid fa-chevron-down ml-2 text-sm"></i>
-            </button>
-            <ul className="absolute hidden group-hover:block bg-white shadow-md rounded-md mt-1">
-              <li>
-                <Link
-                  to="#"
-                  className="block px-4 py-2 hover:bg-indigo-50"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Blog Archive
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="block px-4 py-2 hover:bg-indigo-50"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Single Post
-                </Link>
-              </li>
-            </ul>
-          </li>
-
-          {/* Dropdown - Pages */}
-          <li className="group relative">
-            <button className="flex items-center px-6 py-2 hover:text-indigo-600">
-              Pages <i className="fa-solid fa-chevron-down ml-2 text-sm"></i>
-            </button>
-            <ul className="absolute hidden group-hover:block bg-white shadow-md rounded-md mt-1">
-              <li>
-                <Link
-                  to="#"
-                  className="block px-4 py-2 hover:bg-indigo-50"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="block px-4 py-2 hover:bg-indigo-50"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Our Talents
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="block px-4 py-2 hover:bg-indigo-50"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Talent Detail
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="block px-4 py-2 hover:bg-indigo-50"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  FAQs
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="#"
-                  className="block px-4 py-2 hover:bg-indigo-50"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  404 Page
-                </Link>
-              </li>
-            </ul>
-          </li>
-
-          <li>
-            <Link
-              to="#"
-              className="block px-6 py-2 hover:text-indigo-600"
-              onClick={() => setMenuOpen(false)}
-            >
-              Contact Us
-            </Link>
-          </li>
-        </ul>
-
-        {/* Get Started Button */}
-        <div className="hidden md:block">
-          <Link
-            to="#"
-            className="bg-indigo-600 text-white px-5 py-2 rounded-md hover:bg-indigo-700 transition"
-          >
-            Get Started
-          </Link>
-=======
 import { FiUser, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
@@ -220,7 +40,7 @@ const particleOptions = {
   background: { color: "#1f2937" },
 };
 
-// ✅ Yup validation (email check only)
+// ✅ Yup validation
 const LoginSchema = Yup.object({
   email: Yup.string().email("Invalid email").required("Required"),
   password: Yup.string().required("Required"),
@@ -244,7 +64,9 @@ const Login = () => {
       navigate("/");
     } catch (err) {
       if (err.response?.status === 403) {
-        toast.error(err.response?.data?.message || "Please verify your email first.");
+        toast.error(
+          err.response?.data?.message || "Please verify your email first."
+        );
         navigate(`/verify?email=${encodeURIComponent(values.email)}`);
       } else if (err.response?.status === 400) {
         toast.error(err.response?.data?.message || "Invalid credentials");
@@ -335,7 +157,9 @@ const Login = () => {
                     {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
                   </button>
                   {errors.password && touched.password && (
-                    <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.password}
+                    </p>
                   )}
                 </div>
 
@@ -353,10 +177,10 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3 text-white font-semibold rounded-lg 
-             bg-gradient-to-r from-purple-500 to-indigo-600 
-             hover:from-purple-600 hover:to-indigo-700 
-             transition duration-150 ease-in-out cursor-pointer"
+                  className="w-full py-3 text-white font-semibold rounded-lg
+              bg-gradient-to-r from-purple-500 to-indigo-600
+              hover:from-purple-600 hover:to-indigo-700
+              transition duration-150 ease-in-out cursor-pointer"
                 >
                   {isSubmitting ? "Logging in..." : "LOGIN"}
                 </button>
@@ -374,16 +198,10 @@ const Login = () => {
               </Form>
             )}
           </Formik>
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
         </div>
-      </nav>
-    </header>
+      </div>
+    </div>
   );
 };
 
-<<<<<<< HEAD
-export default Navbar;
-=======
 export default Login;
-
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e

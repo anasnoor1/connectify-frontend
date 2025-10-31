@@ -1,10 +1,45 @@
 import React, { useState } from "react";
+import { FiMail, FiLock, FiEye, FiEyeOff, FiKey } from "react-icons/fi";
+import Particles from "react-tsparticles";
+import { loadSlim } from "tsparticles-slim";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+
+const particleOptions = {
+  particles: {
+    number: { value: 80, density: { enable: true, value_area: 800 } },
+    color: { value: "#9e9e9e" },
+    shape: { type: "circle" },
+    opacity: { value: 0.5 },
+    size: { value: 3, random: true },
+    line_linked: {
+      enable: true,
+      distance: 150,
+      color: "#9e9e9e",
+      opacity: 0.4,
+      width: 1,
+    },
+    move: { enable: true, speed: 2 },
+  },
+  interactivity: {
+    detect_on: "canvas",
+    events: {
+      onhover: { enable: true, mode: "grab" },
+      onclick: { enable: true, mode: "push" },
+      resize: true,
+    },
+    modes: {
+      grab: { distance: 140, line_linked: { opacity: 1 } },
+      push: { particles_number: 4 },
+    },
+  },
+  retina_detect: true,
+  background: { color: "#1f2937" },
+};
 
 const ForgotPassword = () => {
-  const [step, setStep] = useState("email"); // email | otp | reset
+  const [step, setStep] = useState("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -14,6 +49,9 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const particlesInit = async (engine) => await loadSlim(engine);
+
+  // --- Step 1: Request OTP ---
   const requestOtp = async (e) => {
     e.preventDefault();
     const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
@@ -21,7 +59,7 @@ const ForgotPassword = () => {
     try {
       setLoading(true);
       await axios.post("/api/auth/password/forgot", { email });
-      toast.success("OTP sent to your email)");
+      toast.success("OTP sent to your email");
       setStep("otp");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to send OTP");
@@ -30,6 +68,7 @@ const ForgotPassword = () => {
     }
   };
 
+  // --- Step 2: Verify OTP ---
   const verifyOtp = async (e) => {
     e.preventDefault();
     if (!otp) return toast.error("Enter OTP");
@@ -45,14 +84,17 @@ const ForgotPassword = () => {
     }
   };
 
+  // --- Step 3: Update Password ---
   const updatePassword = async (e) => {
     e.preventDefault();
-    if (newPassword.length < 6) return toast.error("Password must be at least 6 characters");
-    if (newPassword !== confirmPassword) return toast.error("Passwords do not match");
+    if (newPassword.length < 6)
+      return toast.error("Password must be at least 6 characters");
+    if (newPassword !== confirmPassword)
+      return toast.error("Passwords do not match");
     try {
       setLoading(true);
       await axios.put("/api/auth/password/update", { email, otp, newPassword });
-      toast.success("Password updated. Please login.");
+      toast.success("Password updated successfully!");
       navigate("/login");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update password");
@@ -62,124 +104,167 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="container d-flex align-items-center justify-content-center min-vh-100 py-4">
-      <div className="row justify-content-center w-100">
-        <div className="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 col-xxl-4">
-          <div className="card shadow border-0">
-            <div className="card-header bg-transparent py-3">
-              <div className="text-center">
-                <h2 className="h5 fw-bold mb-1">Forgot Password</h2>
-                <p className="text-muted small mb-0">
-                  {step === "email" && "Enter your email to receive an OTP"}
-                  {step === "otp" && "Enter the OTP sent to your email"}
-                  {step === "reset" && "Set your new password"}
-                </p>
+    <div className="relative flex min-h-screen items-center justify-center p-4 bg-gray-900">
+      {/* Background Particles */}
+      <Particles
+        id="tsparticles"
+        init={particlesInit}
+        options={particleOptions}
+        className="absolute inset-0 z-0"
+      />
+
+      {/* Forgot Password Card */}
+      <div className="relative z-10 flex max-w-4xl w-full mx-auto shadow-2xl rounded-xl overflow-hidden">
+        {/* Left Side (Gradient Info) */}
+        <div className="flex-1 relative p-10 text-white bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 hidden lg:block">
+          <div className="relative z-10">
+            <h1 className="text-4xl font-bold mb-4">Reset Your Password</h1>
+            <p className="text-md font-light">
+              Secure your account by resetting your password. Enter your email,
+              verify with the OTP, and create a new password to regain access.
+            </p>
+          </div>
+          <div className="absolute top-1/4 left-1/4 h-3 w-40 bg-orange-400 opacity-70 transform -rotate-45 rounded-full z-0"></div>
+          <div className="absolute top-2/3 left-1/3 h-5 w-64 bg-pink-400 opacity-60 transform -skew-y-12 rounded-full z-0"></div>
+          <div className="absolute bottom-1/4 right-1/4 h-2 w-32 bg-orange-300 opacity-80 transform rotate-12 rounded-full z-0"></div>
+        </div>
+
+        {/* Right Side (Form Steps) */}
+        <div className="flex-1 bg-white p-10 flex flex-col justify-center min-w-[350px]">
+          <h2 className="text-xl font-semibold text-center mb-8 tracking-wider text-gray-700">
+            {step === "email" && "FORGOT PASSWORD"}
+            {step === "otp" && "VERIFY OTP"}
+            {step === "reset" && "RESET PASSWORD"}
+          </h2>
+
+          {/* Step 1: Email */}
+          {step === "email" && (
+            <form onSubmit={requestOtp} className="space-y-5">
+              <div className="relative">
+                <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                />
               </div>
-            </div>
-            <div className="card-body p-3 p-md-4">
-              {step === "email" && (
-                <form onSubmit={requestOtp}>
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold small">Email address</label>
-                    <div className="input-group input-group-sm">
-                      <span className="input-group-text">📧</span>
-                      <input
-                        type="email"
-                        className="form-control"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={loading}
-                        placeholder="you@example.com"
-                      />
-                    </div>
-                  </div>
-                  <button className="btn btn-primary w-100" type="submit" disabled={loading}>
-                    {loading ? "Sending..." : "Send OTP"}
-                  </button>
-                </form>
-              )}
 
-              {step === "otp" && (
-                <form onSubmit={verifyOtp}>
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold small">OTP</label>
-                    <input
-                      type="text"
-                      className="form-control form-control-sm"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      disabled={loading}
-                      placeholder="Enter 6-digit OTP"
-                    />
-                  </div>
-                  <button className="btn btn-primary w-100" type="submit" disabled={loading}>
-                    {loading ? "Verifying..." : "Verify OTP"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-link w-100 mt-2"
-                    disabled={loading}
-                    onClick={requestOtp}
-                  >
-                    Resend OTP
-                  </button>
-                </form>
-              )}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 text-white font-semibold rounded-lg 
+                bg-gradient-to-r from-purple-500 to-indigo-600 
+                hover:from-purple-600 hover:to-indigo-700 
+                transition duration-150 ease-in-out cursor-pointer"
+              >
+                {loading ? "Sending..." : "Send OTP"}
+              </button>
+            </form>
+          )}
 
-              {step === "reset" && (
-                <form onSubmit={updatePassword}>
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold small">New Password</label>
-                    <div className="input-group input-group-sm">
-                      <input
-                        type={showNew ? "text" : "password"}
-                        className="form-control"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        disabled={loading}
-                        placeholder="Enter new password"
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        onClick={() => setShowNew((v) => !v)}
-                        tabIndex={-1}
-                        aria-label="Toggle password visibility"
-                      >
-                        <i className={`bi bi-eye${showNew ? "-slash" : ""}`}></i>
-                      </button>
-                    </div>
-                  </div>
+          {/* Step 2: OTP */}
+          {step === "otp" && (
+            <form onSubmit={verifyOtp} className="space-y-5">
+              <div className="relative">
+                <FiKey className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Enter OTP"
+                  className="w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
 
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold small">Confirm Password</label>
-                    <div className="input-group input-group-sm">
-                      <input
-                        type={showConfirm ? "text" : "password"}
-                        className="form-control"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        disabled={loading}
-                        placeholder="Confirm new password"
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        onClick={() => setShowConfirm((v) => !v)}
-                        tabIndex={-1}
-                        aria-label="Toggle password visibility"
-                      >
-                        <i className={`bi bi-eye${showConfirm ? "-slash" : ""}`}></i>
-                      </button>
-                    </div>
-                  </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 text-white font-semibold rounded-lg 
+                bg-gradient-to-r from-purple-500 to-indigo-600 
+                hover:from-purple-600 hover:to-indigo-700 
+                transition duration-150 ease-in-out cursor-pointer"
+              >
+                {loading ? "Verifying..." : "Verify OTP"}
+              </button>
 
-                  <button className="btn btn-primary w-100" type="submit" disabled={loading}>
-                    {loading ? "Updating..." : "Confirm"}
-                  </button>
-                </form>
-              )}
-            </div>
+              <button
+                type="button"
+                onClick={requestOtp}
+                disabled={loading}
+                className="text-sm text-indigo-600 hover:text-indigo-800 mt-2"
+              >
+                Resend OTP
+              </button>
+            </form>
+          )}
+
+          {/* Step 3: Reset Password */}
+          {step === "reset" && (
+            <form onSubmit={updatePassword} className="space-y-5">
+              <div className="relative">
+                <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type={showNew ? "text" : "password"}
+                  placeholder="New Password"
+                  className="w-full p-3 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNew(!showNew)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showNew ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                </button>
+              </div>
+
+              <div className="relative">
+                <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  className="w-full p-3 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showConfirm ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                </button>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 text-white font-semibold rounded-lg 
+                bg-gradient-to-r from-purple-500 to-indigo-600 
+                hover:from-purple-600 hover:to-indigo-700 
+                transition duration-150 ease-in-out cursor-pointer"
+              >
+                {loading ? "Updating..." : "Confirm"}
+              </button>
+            </form>
+          )}
+
+          {/* Back to Login */}
+          <div className="text-center mt-6 text-sm text-gray-600">
+            Remembered your password?{" "}
+            <Link
+              to="/login"
+              className="text-purple-600 hover:text-purple-800 font-semibold"
+            >
+              Back to Login
+            </Link>
           </div>
         </div>
       </div>

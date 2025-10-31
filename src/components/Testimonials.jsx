@@ -1,10 +1,6 @@
 import React from "react";
 import { FaPlay, FaStar } from "react-icons/fa";
-<<<<<<< HEAD
-import hero from "../assets/hero-1.webp"; // replace with your testimonial video/image background
-=======
 import hero from "../assets/hero-1.webp"; 
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
 import olivia from "../assets/olivia.webp";
 import sophia from "../assets/sophie.webp";
 import ethan from "../assets/ethan.webp";
@@ -71,15 +67,10 @@ const Testimonials = () => {
           </div>
 
           {/* Rating Summary */}
-<<<<<<< HEAD
-          <div style={{ backgroundImage: `url(${galaxyBg})` }}
-          className="bg-cover bg-center text-white p-10 rounded-2xl flex flex-col justify-center shadow-lg">
-=======
           <div 
             className="bg-cover bg-center bg-no-repeat text-white p-10 rounded-2xl flex flex-col justify-center shadow-lg"
             style={{ backgroundImage: `url(${galaxyBg})` }}
           >
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e
             <div className="flex items-center space-x-2 mb-4">
               {[...Array(5)].map((_, i) => (
                 <FaStar key={i} className="text-indigo-400" />
@@ -134,8 +125,4 @@ const TestimonialCard = ({ image, name, title, text, rating }) => (
   </div>
 );
 
-<<<<<<< HEAD
 export default Testimonials;
-=======
-export default Testimonials;
->>>>>>> 3c97fcc33e0a1c3bf8be97104ca75da42a2cdd1e

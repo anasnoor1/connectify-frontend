@@ -7,25 +7,22 @@ const VerifyOtp = () => {
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [touched, setTouched] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(120); // seconds
+  const [timeLeft, setTimeLeft] = useState(120);
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email");
   const navigate = useNavigate();
   const inputsRef = useRef([]);
 
-  // Focus first input on mount
   useEffect(() => {
     inputsRef.current[0]?.focus();
   }, []);
 
-  // Timer countdown
   useEffect(() => {
     if (timeLeft <= 0) return;
     const id = setInterval(() => setTimeLeft((s) => s - 1), 1000);
     return () => clearInterval(id);
   }, [timeLeft]);
 
-  // Validate OTP
   const validate = (value) => {
     if (!value) return "OTP is required";
     if (!/^\d{4,8}$/.test(value)) return "Enter a valid numeric OTP";
@@ -38,35 +35,25 @@ const VerifyOtp = () => {
     return validate(value);
   };
 
-  // Handle OTP input change
   const handleChange = (index, char) => {
     const c = char.replace(/[^0-9]/g, "");
     const next = [...digits];
-
     if (!c) {
       next[index] = "";
       setDigits(next);
       return;
     }
-
     next[index] = c.charAt(0);
     setDigits(next);
-
     if (index < inputsRef.current.length - 1) {
       inputsRef.current[index + 1]?.focus();
     }
-
     if (touched) {
       const joined = next.join("").trim();
-      if (joined.length === next.length) {
-        setError(validate(joined));
-      } else {
-        setError("");
-      }
+      setError(joined.length === next.length ? validate(joined) : "");
     }
   };
 
-  // Handle key events
   const handleKeyDown = (index, e) => {
     if (e.key === "Backspace") {
       if (digits[index]) {
@@ -81,75 +68,58 @@ const VerifyOtp = () => {
       }
       e.preventDefault();
     }
-
     if (e.key === "ArrowLeft" && index > 0) {
       inputsRef.current[index - 1]?.focus();
       e.preventDefault();
     }
-
     if (e.key === "ArrowRight" && index < inputsRef.current.length - 1) {
       inputsRef.current[index + 1]?.focus();
       e.preventDefault();
     }
   };
 
-  // Handle paste event
   const handlePaste = (e) => {
     const text = (e.clipboardData.getData("text") || "")
       .replace(/\D/g, "")
       .slice(0, digits.length);
     if (!text) return;
     e.preventDefault();
-
     const next = [...digits];
     for (let i = 0; i < digits.length; i++) {
       next[i] = text[i] || "";
     }
     setDigits(next);
-
     const firstEmpty = next.findIndex((d) => d === "");
     const focusIndex = firstEmpty === -1 ? digits.length - 1 : firstEmpty;
     inputsRef.current[focusIndex]?.focus();
-
     if (touched) {
       const joined = next.join("").trim();
-      if (joined.length === next.length) {
-        setError(validate(joined));
-      } else {
-        setError("");
-      }
+      setError(joined.length === next.length ? validate(joined) : "");
     }
   };
 
-  // Handle input blur
   const handleBlur = () => {
     setTouched(true);
     const joined = digits.join("").trim();
-    if (joined.length === digits.length) {
-      setError(validate(joined));
-    } else {
-      setError(validateSoft(joined));
-    }
+    setError(
+      joined.length === digits.length ? validate(joined) : validateSoft(joined)
+    );
   };
 
-  // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (timeLeft <= 0) {
       toast.error("OTP expired. Please resend a new code.");
       return;
     }
-
     const value = digits.join("").trim();
     const msg = validate(value);
     setError(msg);
     setTouched(true);
-
     if (msg) {
       toast.error("Please fix the errors");
       return;
     }
-
     try {
       const res = await axios.post("/api/auth/verify-otp", { email, otp: value });
       toast.success(res.data.message);
@@ -159,7 +129,6 @@ const VerifyOtp = () => {
     }
   };
 
-  // Resend OTP
   const resendOtp = async () => {
     try {
       await axios.post("/api/auth/send-otp", { email });
@@ -174,106 +143,94 @@ const VerifyOtp = () => {
     }
   };
 
-  // JSX Layout
   return (
-    <div className="container">
-      <div className="row justify-content-center">
-        <div className="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 col-xxl-4">
-          <div className="card shadow border-0">
-            <div className="card-header bg-transparent py-4">
-              <div className="text-center">
-                <h2 className="h3 fw-bold mb-2">Verify your email</h2>
-                <p className="text-muted mb-0">
-                  Enter the OTP sent to your email
-                </p>
-              </div>
-            </div>
+    <div className="relative flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500">
+      <div className="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm"></div>
 
-            <div className="card-body p-4 p-md-5">
-              <form onSubmit={handleSubmit}>
-                <div className="mb-4">
-                  <label className="form-label fw-semibold text-center w-100">
-                    OTP sent to: <span className="text-primary">{email}</span>
-                  </label>
+      <div className="relative z-10 w-full max-w-md bg-white rounded-xl shadow-2xl p-8">
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-3">
+          Verify Your Email
+        </h2>
+        <p className="text-center text-gray-500 mb-6">
+          Enter the 6-digit code sent to{" "}
+          <span className="text-indigo-600 font-medium">{email}</span>
+        </p>
 
-                  <div
-                    className="d-flex justify-content-center gap-2 gap-sm-3 mb-3"
-                    onPaste={handlePaste}
-                  >
-                    {digits.map((d, i) => (
-                      <input
-                        key={i}
-                        type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        maxLength={1}
-                        className={`text-center otp-input ${
-                          touched && error ? "is-invalid" : ""
-                        }`}
-                        style={{
-                          width: "44px",
-                          height: "48px",
-                          fontSize: "22px",
-                          fontWeight: 600,
-                          color: "#111",
-                          backgroundColor: "#fff",
-                          lineHeight: "48px",
-                        }}
-                        autoComplete="one-time-code"
-                        value={d}
-                        ref={(el) => (inputsRef.current[i] = el)}
-                        onChange={(e) => handleChange(i, e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(i, e)}
-                        onFocus={(e) => e.target.select()}
-                        onBlur={handleBlur}
-                      />
-                    ))}
-                  </div>
-
-                  {touched && error && (
-                    <div className="invalid-feedback d-block text-center">
-                      {error}
-                    </div>
-                  )}
-
-                  <div className="text-center mt-2 small text-muted">
-                    {timeLeft > 0 ? (
-                      <span>
-                        Code expires in{" "}
-                        {String(Math.floor(timeLeft / 60)).padStart(1, "0")}:
-                        {String(timeLeft % 60).padStart(2, "0")}
-                      </span>
-                    ) : (
-                      <span>Code expired. You can resend a new OTP.</span>
-                    )}
-                  </div>
-                </div>
-
-                <button
-                  className="btn btn-primary w-100 py-2"
-                  type="submit"
-                  disabled={timeLeft <= 0}
-                >
-                  Verify OTP
-                </button>
-
-                <div className="text-center mt-3">
-                  <small className="text-muted">
-                    Didn’t receive the code?{" "}
-                    <button
-                      type="button"
-                      className="btn btn-link p-0 text-primary text-decoration-none"
-                      onClick={resendOtp}
-                      disabled={timeLeft > 0}
-                    >
-                      Resend OTP
-                    </button>
-                  </small>
-                </div>
-              </form>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div
+            className="flex justify-center gap-3"
+            onPaste={handlePaste}
+          >
+            {digits.map((d, i) => (
+              <input
+                key={i}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={d}
+                ref={(el) => (inputsRef.current[i] = el)}
+                onChange={(e) => handleChange(i, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(i, e)}
+                onFocus={(e) => e.target.select()}
+                onBlur={handleBlur}
+                className={`w-12 h-12 text-center text-xl font-semibold rounded-lg border ${
+                  touched && error
+                    ? "border-red-500"
+                    : "border-gray-300 focus:border-indigo-500"
+                } focus:ring-2 focus:ring-indigo-500 outline-none`}
+              />
+            ))}
           </div>
-        </div>
+
+          {touched && error && (
+            <p className="text-center text-red-500 text-sm">{error}</p>
+          )}
+
+          <div className="text-center text-sm text-gray-500">
+            {timeLeft > 0 ? (
+              <span>
+                Code expires in{" "}
+                <span className="font-semibold text-indigo-600">
+                  {String(Math.floor(timeLeft / 60)).padStart(1, "0")}:
+                  {String(timeLeft % 60).padStart(2, "0")}
+                </span>
+              </span>
+            ) : (
+              <span className="text-red-500 font-medium">
+                Code expired. You can resend a new OTP.
+              </span>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={timeLeft <= 0}
+            className={`w-full py-3 font-semibold text-white rounded-lg transition duration-150 ease-in-out cursor-pointer 
+            ${
+              timeLeft <= 0
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
+            }`}
+          >
+            Verify OTP
+          </button>
+
+          <div className="text-center text-sm text-gray-600">
+            Didn’t receive the code?{" "}
+            <button
+              type="button"
+              onClick={resendOtp}
+              disabled={timeLeft > 0}
+              className={`font-semibold transition ${
+                timeLeft > 0
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-indigo-600 hover:text-indigo-800 cursor-pointer"
+              }`}
+            >
+              Resend OTP
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

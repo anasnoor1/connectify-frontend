@@ -1,235 +1,273 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { FiUser, FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import Particles from "react-tsparticles";
+import { loadSlim } from "tsparticles-slim";
+import { Formik, Form, Field } from "formik";
+import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useNavigate, Navigate } from "react-router-dom";
-import { Link } from "react-router-dom";
-import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
+import { useNavigate, Navigate, Link } from "react-router-dom";
+
+const particleOptions = {
+  particles: {
+    number: { value: 80, density: { enable: true, value_area: 800 } },
+    color: { value: "#9e9e9e" },
+    shape: { type: "circle" },
+    opacity: { value: 0.5 },
+    size: { value: 3, random: true },
+    line_linked: {
+      enable: true,
+      distance: 150,
+      color: "#9e9e9e",
+      opacity: 0.4,
+      width: 1,
+    },
+    move: { enable: true, speed: 2 },
+  },
+  interactivity: {
+    detect_on: "canvas",
+    events: {
+      onhover: { enable: true, mode: "grab" },
+      onclick: { enable: true, mode: "push" },
+      resize: true,
+    },
+    modes: {
+      grab: { distance: 140, line_linked: { opacity: 1 } },
+      push: { particles_number: 4 },
+    },
+  },
+  retina_detect: true,
+  background: { color: "#1f2937" },
+};
+
+// ✅ Validation schema
+const SignupSchema = Yup.object({
+  name: Yup.string()
+    .trim()
+    .min(3, "Name must be at least 3 characters")
+    .matches(/^[A-Za-z ]+$/, "Only letters and spaces allowed")
+    .required("Name is required"),
+  email: Yup.string().email("Invalid email").required("Email is required"),
+  password: Yup.string()
+    .min(6, "Minimum 6 characters")
+    .matches(/[A-Z]/, "Must contain at least one uppercase letter")
+    .required("Password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password"), null], "Passwords do not match")
+    .required("Please confirm password"),
+  role: Yup.string()
+    .oneOf(["influencer", "brand"], "Role is required")
+    .required("Role is required"),
+});
 
 const Signup = () => {
-  const initialValues = {
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    role: "influencer",
-  };
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem("token") : null;
-  if (token) {
-    return <Navigate to="/" replace />;
-  }
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  if (token) return <Navigate to="/" replace />;
 
-  const SignupSchema = Yup.object({
-    name: Yup.string()
-      .trim()
-      .min(3, "Name must be at least 3 characters")
-      .matches(/^[A-Za-z ]+$/, "Name can only contain letters and spaces")
-      .required("Name is required"),
-    email: Yup.string().email("Enter a valid email").required("Email is required"),
-    password: Yup.string()
-      .min(6, "Password must be at least 6 characters")
-      .matches(/[A-Z]/, "Password must include at least one uppercase letter")
-      .required("Password is required"),
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password"), null], "Passwords do not match")
-      .required("Please confirm password"),
-    role: Yup.string().oneOf(["influencer", "brand"], "Role is required").required("Role is required"),
-  });
+  const particlesInit = async (engine) => await loadSlim(engine);
+
+  const handleSignup = async (values, { setSubmitting }) => {
+    try {
+      setLoading(true);
+      const res = await axios.post("/api/auth/register", values);
+      toast.success(res.data.message || "Signup successful");
+      navigate(`/verify?email=${encodeURIComponent(values.email)}`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Signup failed");
+    } finally {
+      setLoading(false);
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="container d-flex align-items-center justify-content-center min-vh-100 py-4">
-      <div className="row justify-content-center w-100">
-        <div className="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 col-xxl-4">
-          <div className="card shadow border-0">
-            <div className="card-header bg-transparent py-3">
-              <div className="text-center">
-                <h2 className="h4 fw-bold mb-1">Create your account</h2>
-                <p className="text-muted small mb-0">Join Connectify community</p>
-              </div>
-            </div>
-            
-            <div className="card-body p-3 p-md-4">
-              <Formik
-                initialValues={initialValues}
-                validationSchema={SignupSchema}
-                validateOnChange
-                validateOnBlur
-                onSubmit={async (values, { setSubmitting }) => {
-                  try {
-                    setLoading(true);
-                    const res = await axios.post("/api/auth/register", values);
-                    toast.success(res.data.message);
-                    navigate("/verify?email=" + values.email);
-                  } catch (err) {
-                    toast.error(err.response?.data?.message || "Signup failed");
-                  } finally {
-                    setLoading(false);
-                    setSubmitting(false);
-                  }
-                }}
-              >
-                {({ values, setFieldValue, isSubmitting, isValid }) => (
-                  <Form>
-                    <div className="row g-2 mb-3">
-                      <div className="col-6">
-                        <button
-                          type="button"
-                          className={`btn w-100 ${values.role === "influencer" ? "btn-primary" : "btn-outline-primary"}`}
-                          onClick={() => setFieldValue("role", "influencer")}
-                        >
-                          Influencer
-                        </button>
-                      </div>
-                      <div className="col-6">
-                        <button
-                          type="button"
-                          className={`btn w-100 ${values.role === "brand" ? "btn-primary" : "btn-outline-primary"}`}
-                          onClick={() => setFieldValue("role", "brand")}
-                        >
-                          Brand
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <ErrorMessage name="role" component="div" className="text-danger small text-center mb-2" />
-                    
-                    <div className="mb-3">
-                      <label className="form-label fw-semibold small">Full Name</label>
-                      <Field name="name">
-                        {({ field, meta, form }) => (
-                          <>
-                            <input
-                              {...field}
-                              type="text"
-                              className={`form-control form-control-sm ${meta.touched && meta.error ? 'is-invalid' : ''}`}
-                              disabled={loading}
-                              placeholder="Enter your full name"
-                              onChange={(e) => { field.onChange(e); form.setFieldTouched(field.name, true, false); }}
-                            />
-                            {meta.touched && meta.error ? (
-                              <div className="invalid-feedback d-block">{meta.error}</div>
-                            ) : null}
-                          </>
-                        )}
-                      </Field>
-                    </div>
+    <div className="relative flex min-h-screen items-center justify-center p-4 bg-gray-900">
+      {/* Background Particles */}
+      <Particles
+        id="tsparticles"
+        init={particlesInit}
+        options={particleOptions}
+        className="absolute inset-0 z-0"
+      />
 
-                    <div className="mb-3">
-                      <label className="form-label fw-semibold small">Email address</label>
-                      <Field name="email">
-                        {({ field, meta, form }) => (
-                          <>
-                            <input
-                              {...field}
-                              type="email"
-                              className={`form-control form-control-sm ${meta.touched && meta.error ? 'is-invalid' : ''}`}
-                              disabled={loading}
-                              placeholder="Enter your email"
-                              onChange={(e) => { field.onChange(e); form.setFieldTouched(field.name, true, false); }}
-                            />
-                            {meta.touched && meta.error ? (
-                              <div className="invalid-feedback d-block">{meta.error}</div>
-                            ) : null}
-                          </>
-                        )}
-                      </Field>
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label fw-semibold small">Password</label>
-                      <div className="input-group input-group-sm">
-                        <Field name="password">
-                          {({ field, meta, form }) => (
-                            <input
-                              {...field}
-                              type={showPassword ? 'text' : 'password'}
-                              className={`form-control ${meta.touched && meta.error ? 'is-invalid' : ''}`}
-                              disabled={loading}
-                              placeholder="Create a password"
-                              onChange={(e) => { field.onChange(e); form.setFieldTouched(field.name, true, false); }}
-                            />
-                          )}
-                        </Field>
-                        <button
-                          type="button"
-                          className="btn btn-outline-secondary"
-                          onClick={() => setShowPassword((v) => !v)}
-                        >
-                          <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
-                        </button>
-                      </div>
-                      <ErrorMessage name="password" component="div" className="invalid-feedback d-block" />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label fw-semibold small">Confirm Password</label>
-                      <div className="input-group input-group-sm">
-                        <Field name="confirmPassword">
-                          {({ field, meta, form }) => (
-                            <input
-                              {...field}
-                              type={showConfirm ? 'text' : 'password'}
-                              className={`form-control ${meta.touched && meta.error ? 'is-invalid' : ''}`}
-                              disabled={loading}
-                              placeholder="Confirm your password"
-                              onChange={(e) => { field.onChange(e); form.setFieldTouched(field.name, true, false); }}
-                            />
-                          )}
-                        </Field>
-                        <button
-                          type="button"
-                          className="btn btn-outline-secondary"
-                          onClick={() => setShowConfirm((v) => !v)}
-                        >
-                          <i className={`bi bi-eye${showConfirm ? '-slash' : ''}`}></i>
-                        </button>
-                      </div>
-                      <ErrorMessage name="confirmPassword" component="div" className="invalid-feedback d-block" />
-                    </div>
-
-                    <button 
-                      className="btn btn-primary w-100 py-2 mb-3 d-flex align-items-center justify-content-center" 
-                      type="submit" 
-                      disabled={loading || isSubmitting || !isValid}
-                    >
-                      {loading ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                          Creating account...
-                        </>
-                      ) : (
-                        "Create Account"
-                      )}
-                    </button>
-{/* 
-                    <div className="position-relative text-center mb-3">
-                      <hr className="my-2" />
-                      <span className="position-absolute top-50 start-50 translate-middle bg-white px-2 text-muted small">
-                        or continue with
-                      </span>
-                    </div> */}
-
-                    {/* <div className="mb-3">
-                      <button type="button" className="btn btn-outline-secondary w-100 btn-sm d-flex align-items-center justify-content-center" disabled>
-                        <i className="bi bi-google me-2"></i>
-                        Continue with Google
-                      </button>
-                    </div> */}
-
-                    <div className="text-center">
-                      <span className="text-muted small">Already have an account? </span>
-                      <Link to="/login" className="text-primary text-decoration-none fw-semibold small">Sign in</Link>
-                    </div>
-                  </Form>
-                )}
-              </Formik>
-            </div>
+      {/* Signup Card */}
+      <div className="relative z-10 flex max-w-4xl w-full mx-auto shadow-2xl rounded-xl overflow-hidden">
+        {/* Left Side */}
+        <div className="flex-1 relative p-10 text-white bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 hidden lg:block">
+          <div className="relative z-10">
+            <h1 className="text-4xl font-bold mb-4">Join Connectify</h1>
+            <p className="text-md font-light">
+              Create your account and be part of a community that connects
+              influencers and brands to grow together.
+            </p>
           </div>
+          <div className="absolute top-1/4 left-1/4 h-3 w-40 bg-orange-400 opacity-70 transform -rotate-45 rounded-full z-0"></div>
+          <div className="absolute top-2/3 left-1/3 h-5 w-64 bg-pink-400 opacity-60 transform -skew-y-12 rounded-full z-0"></div>
+          <div className="absolute bottom-1/4 right-1/4 h-2 w-32 bg-orange-300 opacity-80 transform rotate-12 rounded-full z-0"></div>
+        </div>
+
+        {/* Right Side */}
+        <div className="flex-1 bg-white p-10 flex flex-col justify-center min-w-[350px]">
+          <h2 className="text-xl font-semibold text-center mb-8 tracking-wider text-gray-700">
+            CREATE ACCOUNT
+          </h2>
+
+          {/* ✅ Formik Signup Form */}
+          <Formik
+            initialValues={{
+              name: "",
+              email: "",
+              password: "",
+              confirmPassword: "",
+              role: "influencer",
+            }}
+            validationSchema={SignupSchema}
+            onSubmit={handleSignup}
+          >
+            {({ isSubmitting, errors, touched, values, setFieldValue }) => (
+              <Form>
+                {/* Role Selector */}
+                <div className="flex gap-4 mb-6">
+                  {["influencer", "brand"].map((role) => (
+                    <button
+                      type="button"
+                      key={role}
+                      onClick={() => setFieldValue("role", role)}
+                      className={`w-1/2 py-2 rounded-md border font-semibold transition ${
+                        values.role === role
+                          ? "bg-indigo-600 text-white border-indigo-600"
+                          : "border-gray-300 text-gray-600 hover:bg-gray-100"
+                      }`}
+                    >
+                      {role.charAt(0).toUpperCase() + role.slice(1)}
+                    </button>
+                  ))}
+                </div>
+                {errors.role && (
+                  <p className="text-red-500 text-sm mb-2">{errors.role}</p>
+                )}
+
+                {/* Name */}
+                <div className="mb-4 relative">
+                  <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Field
+                    name="name"
+                    type="text"
+                    placeholder="Full Name"
+                    className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      errors.name && touched.name
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                  />
+                  {errors.name && touched.name && (
+                    <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div className="mb-4 relative">
+                  <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Field
+                    name="email"
+                    type="email"
+                    placeholder="Email Address"
+                    className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      errors.email && touched.email
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                  />
+                  {errors.email && touched.email && (
+                    <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div className="mb-4 relative">
+                  <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Field
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password"
+                    className={`w-full p-3 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      errors.password && touched.password
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </button>
+                  {errors.password && touched.password && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.password}
+                    </p>
+                  )}
+                </div>
+
+                {/* Confirm Password */}
+                <div className="mb-6 relative">
+                  <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Field
+                    name="confirmPassword"
+                    type={showConfirm ? "text" : "password"}
+                    placeholder="Confirm Password"
+                    className={`w-full p-3 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                      errors.confirmPassword && touched.confirmPassword
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showConfirm ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </button>
+                  {errors.confirmPassword && touched.confirmPassword && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting || loading}
+                  className="w-full py-3 text-white font-semibold rounded-lg 
+             bg-gradient-to-r from-purple-500 to-indigo-600 
+             hover:from-purple-600 hover:to-indigo-700 
+             transition duration-150 ease-in-out cursor-pointer"
+                >
+                  {loading ? "Creating account..." : "SIGN UP"}
+                </button>
+
+                {/* Login Link */}
+                <div className="text-center mt-6 text-sm text-gray-600">
+                  Already have an account?{" "}
+                  <Link
+                    to="/login"
+                    className="text-purple-600 hover:text-purple-800 font-semibold"
+                  >
+                    Sign in
+                  </Link>
+                </div>
+              </Form>
+            )}
+          </Formik>
         </div>
       </div>
     </div>
@@ -237,3 +275,5 @@ const Signup = () => {
 };
 
 export default Signup;
+
+

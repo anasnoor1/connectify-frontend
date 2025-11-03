@@ -100,7 +100,7 @@ const Signup = () => {
     try {
       google.accounts.id.initialize({
         client_id:
-          "720475734209-do0bg2s9kce36tp0hvc6dlfvh9qhtvnf.apps.googleusercontent.com",
+          "562845532761-fqrq9algmdsl0fcftlksndr5hdqlh9mb.apps.googleusercontent.com",
         callback: (response) => {
           const idToken = response?.credential;
           if (!idToken) {

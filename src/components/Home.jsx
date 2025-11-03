@@ -1,8 +1,8 @@
 
 import React from "react";
 import hero from "../assets/hero-1.webp";
-// import WhyChoose from "./WhyChoose";
-import Testimonials from "./Testimonials";
+// import WhyChoose from './whyChoose'
+import Testimonials  from './Testimonials'
 
 const Home = () => {
   const partners = [49, 52, 50, 51, 40, 47];
@@ -172,7 +172,6 @@ const Home = () => {
           </div>
         </section>
       </main>
-
       {/* <WhyChoose /> */}
       <Testimonials />
     </div>

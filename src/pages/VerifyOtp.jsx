@@ -148,6 +148,15 @@ const VerifyOtp = () => {
       <div className="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm"></div>
 
       <div className="relative z-10 w-full max-w-md bg-white rounded-xl shadow-2xl p-8">
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={() => navigate(-1)}
+          className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
+          title="Close"
+        >
+          ×
+        </button>
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-3">
           Verify Your Email
         </h2>

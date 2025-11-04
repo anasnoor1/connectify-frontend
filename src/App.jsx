@@ -30,6 +30,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot" element={<ForgotPassword />} />
         <Route path="/verify" element={<VerifyOtp />} />
+        <Route path="/brandpartnership" element={<BrandPartnership />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

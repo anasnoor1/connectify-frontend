@@ -77,7 +77,7 @@ const Signup = () => {
       setLoading(true);
       const res = await axios.post("/api/auth/register", values);
       toast.success(res.data.message || "Signup successful");
-      navigate(`/verify?email=${encodeURIComponent(values.email)}`);
+      navigate("/login");
     } catch (err) {
       toast.error(err.response?.data?.message || "Signup failed");
     } finally {
@@ -85,6 +85,8 @@ const Signup = () => {
       setSubmitting(false);
     }
   };
+
+  // Google Sign-In removed from Signup (moved to Login)
 
   return (
     <div className="relative flex min-h-screen items-center justify-center p-4 bg-gray-900">
@@ -98,6 +100,13 @@ const Signup = () => {
 
       {/* Signup Card */}
       <div className="relative z-10 flex max-w-4xl w-full mx-auto shadow-2xl rounded-xl overflow-hidden">
+        <Link
+          to="/"
+          aria-label="Close"
+          className="absolute top-3 right-3 z-20 text-white/90 hover:text-white bg-black/40 hover:bg-black/60 w-8 h-8 rounded-full grid place-items-center text-lg leading-none transition"
+        >
+          ×
+        </Link>
         {/* Left Side */}
         <div className="flex-1 relative p-10 text-white bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 hidden lg:block">
           <div className="relative z-10">
@@ -125,7 +134,7 @@ const Signup = () => {
               email: "",
               password: "",
               confirmPassword: "",
-              role: "influencer",
+              role: "",
             }}
             validationSchema={SignupSchema}
             onSubmit={handleSignup}
@@ -255,6 +264,8 @@ const Signup = () => {
                   {loading ? "Creating account..." : "SIGN UP"}
                 </button>
 
+                {/* Google Sign-In is now on the Login page */}
+
                 {/* Login Link */}
                 <div className="text-center mt-6 text-sm text-gray-600">
                   Already have an account?{" "}
@@ -270,6 +281,8 @@ const Signup = () => {
           </Formik>
         </div>
       </div>
+
+      {/* Role selection modal removed from Signup */}
     </div>
   );
 };

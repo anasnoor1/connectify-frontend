@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiMail, FiLock, FiEye, FiEyeOff, FiKey } from "react-icons/fi";
+import { FiMail, FiLock, FiEye, FiEyeOff, FiKey, FiX } from "react-icons/fi";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 import axios from "axios";
@@ -131,6 +131,16 @@ const ForgotPassword = () => {
 
         {/* Right Side (Form Steps) */}
         <div className="flex-1 bg-white p-10 flex flex-col justify-center min-w-[350px]">
+          {/* Close (Back) Button */}
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => navigate(-1)}
+            className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
+            title="Close"
+          >
+            <FiX size={20} />
+          </button>
           <h2 className="text-xl font-semibold text-center mb-8 tracking-wider text-gray-700">
             {step === "email" && "FORGOT PASSWORD"}
             {step === "otp" && "VERIFY OTP"}

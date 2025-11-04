@@ -1,5 +1,5 @@
 import React from "react";
-import teamBg from "../../../assets/hero-1.webp"; 
+import teamBg from "../../../assets/letconnect.webp"; 
 
 const ImpactSection = () => {
   return (

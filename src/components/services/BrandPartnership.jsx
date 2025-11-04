@@ -1,6 +1,6 @@
 import React from "react";
 import galaxyBg from "../../assets/Galaxy-Background.webp";
-import serviceImg from "../../assets/hero-1.webp";
+import serviceImg from "../../assets/service1.webp";
 import Icons from "./sidebar/icons";
 import LetConnect from "./sidebar/LetConnect";
 

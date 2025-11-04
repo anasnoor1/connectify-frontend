@@ -40,7 +40,7 @@ const particleOptions = {
   background: { color: "#1f2937" },
 };
 
-// ✅ Validation schema
+//  Validation schema
 const SignupSchema = Yup.object({
   name: Yup.string()
     .trim()
@@ -193,7 +193,7 @@ const Signup = () => {
             CREATE ACCOUNT
           </h2>
 
-          {/* ✅ Formik Signup Form */}
+          {/* Formik Signup Form */}
           <Formik
             initialValues={{
               name: "",

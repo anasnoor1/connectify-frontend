@@ -100,6 +100,13 @@ const Signup = () => {
 
       {/* Signup Card */}
       <div className="relative z-10 flex max-w-4xl w-full mx-auto shadow-2xl rounded-xl overflow-hidden">
+        <Link
+          to="/"
+          aria-label="Close"
+          className="absolute top-3 right-3 z-20 text-white/90 hover:text-white bg-black/40 hover:bg-black/60 w-8 h-8 rounded-full grid place-items-center text-lg leading-none transition"
+        >
+          ×
+        </Link>
         {/* Left Side */}
         <div className="flex-1 relative p-10 text-white bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 hidden lg:block">
           <div className="relative z-10">
@@ -127,7 +134,7 @@ const Signup = () => {
               email: "",
               password: "",
               confirmPassword: "",
-              role: "influencer",
+              role: "",
             }}
             validationSchema={SignupSchema}
             onSubmit={handleSignup}

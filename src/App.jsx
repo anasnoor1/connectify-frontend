@@ -22,11 +22,9 @@ export default function App() {
       />
 
       <Routes>
-        {/* Protected app layout with Navbar wrapping content */}
-        <Route element={<RequireAuth />}>
-          <Route element={<Navbar />}>
-            <Route index element={<Home />} />
-          </Route>
+        {/* Public home route with Navbar layout */}
+        <Route element={<Navbar />}>
+          <Route index element={<Home />} />
         </Route>
 
         {/* Auth routes without Navbar layout */}

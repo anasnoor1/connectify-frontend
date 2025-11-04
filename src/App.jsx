@@ -11,6 +11,9 @@ import RequireAuth from "./components/RequireAuth";
 import Home from "./components/Home";
 import PrivateRoute from "./utills/privateRoute";
 import GuestRoute from "./utills/guestRoute";
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+// In your main render function:
 
 export default function App() {
   return (

@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 import { Formik, Form, Field } from "formik";
@@ -7,7 +8,10 @@ import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Navigate, Link } from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
+import { setToken, getToken } from "../utills/checkToken";
 
+// ✅ Particles Config
 const particleOptions = {
   particles: {
     number: { value: 80, density: { enable: true, value_area: 800 } },
@@ -40,7 +44,7 @@ const particleOptions = {
   background: { color: "#1f2937" },
 };
 
-// ✅ Validation schema
+// ✅ Validation Schema
 const SignupSchema = Yup.object({
   name: Yup.string()
     .trim()
@@ -65,18 +69,15 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const googleBtnRef = useRef(null);
-  const [roleModalOpen, setRoleModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("influencer");
-  const [pendingIdToken, setPendingIdToken] = useState("");
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
+  const [selectedRole, setSelectedRole] = useState("influencer");
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  if (token) return <Navigate to="/" replace />;
+  if (getToken()) return <Navigate to="/" replace />;
 
+  // ✅ Particles Init
   const particlesInit = async (engine) => await loadSlim(engine);
 
+  // ✅ Handle Regular Signup
   const handleSignup = async (values, { setSubmitting }) => {
     try {
       setLoading(true);
@@ -91,100 +92,75 @@ const Signup = () => {
     }
   };
 
-  // Google Sign-In
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const google = window.google;
-    if (!google || !google.accounts || !google.accounts.id) return;
+  // ✅ Handle Google Signup
+  const handleGoogleSuccess = async (tokenResponse) => {
+    const idToken = tokenResponse?.access_token || tokenResponse?.credential;
+    if (!idToken) return toast.error("Failed to get token from Google.");
 
     try {
-      google.accounts.id.initialize({
-        client_id:
-          "562845532761-fqrq9algmdsl0fcftlksndr5hdqlh9mb.apps.googleusercontent.com",
-        callback: (response) => {
-          const idToken = response?.credential;
-          if (!idToken) {
-            toast.error("Google sign-in failed");
-            return;
-          }
-          setPendingIdToken(idToken);
-          setRoleModalOpen(true);
-        },
-      });
+      setGoogleSubmitting(true);
 
-      if (googleBtnRef.current) {
-        google.accounts.id.renderButton(googleBtnRef.current, {
-          theme: "outline",
-          size: "large",
-          text: "continue_with",
-          shape: "rectangular",
-          width: 320,
-        });
-      }
-      // Optionally show One Tap
-      // google.accounts.id.prompt();
-    } catch (_) {
-      // no-op
-    }
-  }, [navigate]);
+      const response = await axios.post(
+        "/api/auth/google",
+        { idToken, role: selectedRole },
+        { headers: { "Content-Type": "application/json" }, timeout: 10000 }
+      );
 
-  const handleConfirmGoogleRole = async () => {
-    if (!pendingIdToken) return;
-    setGoogleSubmitting(true);
-    try {
-      const res = await axios.post("/api/auth/google", {
-        idToken: pendingIdToken,
-        role: selectedRole,
-      });
-      const { token: jwtToken, user } = res.data || {};
-      if (jwtToken) {
-        localStorage.setItem("token", jwtToken);
-        if (user) localStorage.setItem("user", JSON.stringify(user));
-        toast.success("Signed in with Google");
-        setRoleModalOpen(false);
-        setPendingIdToken("");
-        navigate("/");
+      if (!response?.data?.token) throw new Error("No authentication token received");
+
+      setToken(response.data.token);
+      if (response.data.user)
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      toast.success(`Welcome ${response.data.user?.name || "User"}!`);
+      navigate("/");
+    } catch (error) {
+      console.error("Google authentication error:", error);
+      const status = error.response?.status;
+      if (status === 409) {
+        toast.info("Account already exists. Please log in.");
+        navigate("/login", { state: { email: error.response.data?.email } });
+      } else if (status === 500) {
+        toast.error("Server error. Try again later.");
       } else {
-        toast.error("Login failed");
-      }
-    } catch (e) {
-      if (e?.response?.status === 409) {
-        toast.error(e?.response?.data?.message || "Account already exists. Please login.");
-        setRoleModalOpen(false);
-        setPendingIdToken("");
-        // navigate("/login"); // uncomment if you want auto-redirect
-      } else {
-        toast.error(e?.response?.data?.message || "Google auth failed");
+        toast.error(error.response?.data?.message || "Authentication failed.");
       }
     } finally {
       setGoogleSubmitting(false);
     }
   };
 
+  const handleGoogleError = (error) => {
+    console.error("Google authentication error:", error);
+    if (error.error === "popup_closed_by_user") toast.info("Sign in was cancelled");
+    else toast.error("Failed to sign in with Google. Please try again.");
+  };
+
+  const googleSignup = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: handleGoogleError,
+    flow: "implicit",
+    prompt: "select_account",
+    scope: "profile email",
+  });
+
+  // ✅ Google Sign Up Trigger
+  const handleGoogleSignupWithRole = () => {
+    googleSignup();
+  };
+
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4 bg-gray-900">
-      {/* Background Particles */}
-      <Particles
-        id="tsparticles"
-        init={particlesInit}
-        options={particleOptions}
-        className="absolute inset-0 z-0"
-      />
+    <div className="relative min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <Particles id="tsparticles" init={particlesInit} options={particleOptions} className="absolute inset-0 z-0" />
 
       {/* Signup Card */}
       <div className="relative z-10 flex max-w-4xl w-full mx-auto shadow-2xl rounded-xl overflow-hidden">
         {/* Left Side */}
         <div className="flex-1 relative p-10 text-white bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 hidden lg:block">
-          <div className="relative z-10">
-            <h1 className="text-4xl font-bold mb-4">Join Connectify</h1>
-            <p className="text-md font-light">
-              Create your account and be part of a community that connects
-              influencers and brands to grow together.
-            </p>
-          </div>
-          <div className="absolute top-1/4 left-1/4 h-3 w-40 bg-orange-400 opacity-70 transform -rotate-45 rounded-full z-0"></div>
-          <div className="absolute top-2/3 left-1/3 h-5 w-64 bg-pink-400 opacity-60 transform -skew-y-12 rounded-full z-0"></div>
-          <div className="absolute bottom-1/4 right-1/4 h-2 w-32 bg-orange-300 opacity-80 transform rotate-12 rounded-full z-0"></div>
+          <h1 className="text-4xl font-bold mb-4">Join Connectify</h1>
+          <p className="text-md font-light">
+            Create your account and be part of a community that connects influencers and brands to grow together.
+          </p>
         </div>
 
         {/* Right Side */}
@@ -193,14 +169,13 @@ const Signup = () => {
             CREATE ACCOUNT
           </h2>
 
-          {/* ✅ Formik Signup Form */}
           <Formik
             initialValues={{
               name: "",
               email: "",
               password: "",
               confirmPassword: "",
-              role: "influencer",
+              role: selectedRole,
             }}
             validationSchema={SignupSchema}
             onSubmit={handleSignup}
@@ -213,7 +188,10 @@ const Signup = () => {
                     <button
                       type="button"
                       key={role}
-                      onClick={() => setFieldValue("role", role)}
+                      onClick={() => {
+                        setFieldValue("role", role);
+                        setSelectedRole(role);
+                      }}
                       className={`w-1/2 py-2 rounded-md border font-semibold transition ${
                         values.role === role
                           ? "bg-indigo-600 text-white border-indigo-600"
@@ -224,9 +202,6 @@ const Signup = () => {
                     </button>
                   ))}
                 </div>
-                {errors.role && (
-                  <p className="text-red-500 text-sm mb-2">{errors.role}</p>
-                )}
 
                 {/* Name */}
                 <div className="mb-4 relative">
@@ -235,10 +210,8 @@ const Signup = () => {
                     name="name"
                     type="text"
                     placeholder="Full Name"
-                    className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                      errors.name && touched.name
-                        ? "border-red-500"
-                        : "border-gray-300"
+                    className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 ${
+                      errors.name && touched.name ? "border-red-500" : "border-gray-300"
                     }`}
                   />
                   {errors.name && touched.name && (
@@ -253,10 +226,8 @@ const Signup = () => {
                     name="email"
                     type="email"
                     placeholder="Email Address"
-                    className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                      errors.email && touched.email
-                        ? "border-red-500"
-                        : "border-gray-300"
+                    className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 ${
+                      errors.email && touched.email ? "border-red-500" : "border-gray-300"
                     }`}
                   />
                   {errors.email && touched.email && (
@@ -271,7 +242,7 @@ const Signup = () => {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
-                    className={`w-full p-3 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    className={`w-full p-3 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 ${
                       errors.password && touched.password
                         ? "border-red-500"
                         : "border-gray-300"
@@ -280,15 +251,10 @@ const Signup = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                   >
                     {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
                   </button>
-                  {errors.password && touched.password && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.password}
-                    </p>
-                  )}
                 </div>
 
                 {/* Confirm Password */}
@@ -298,7 +264,7 @@ const Signup = () => {
                     name="confirmPassword"
                     type={showConfirm ? "text" : "password"}
                     placeholder="Confirm Password"
-                    className={`w-full p-3 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                    className={`w-full p-3 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 ${
                       errors.confirmPassword && touched.confirmPassword
                         ? "border-red-500"
                         : "border-gray-300"
@@ -307,48 +273,43 @@ const Signup = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
                   >
                     {showConfirm ? <FiEyeOff size={18} /> : <FiEye size={18} />}
                   </button>
-                  {errors.confirmPassword && touched.confirmPassword && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.confirmPassword}
-                    </p>
-                  )}
                 </div>
 
                 {/* Submit */}
                 <button
                   type="submit"
-                  disabled={isSubmitting || loading}
-                  className="w-full py-3 text-white font-semibold rounded-lg 
-             bg-gradient-to-r from-purple-500 to-indigo-600 
-             hover:from-purple-600 hover:to-indigo-700 
-             transition duration-150 ease-in-out cursor-pointer"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:from-purple-600 hover:to-indigo-700 mb-4"
                 >
-                  {loading ? "Creating account..." : "SIGN UP"}
+                  {isSubmitting ? "Creating account..." : "Create Account"}
                 </button>
 
-                {/* Or Separator */}
+                {/* Divider */}
                 <div className="flex items-center my-4">
-                  <div className="flex-1 h-px bg-gray-200" />
-                  <span className="px-3 text-sm text-gray-500">or</span>
-                  <div className="flex-1 h-px bg-gray-200" />
+                  <div className="flex-1 h-px bg-gray-300"></div>
+                  <span className="px-4 text-gray-500 text-sm">OR</span>
+                  <div className="flex-1 h-px bg-gray-300"></div>
                 </div>
 
-                {/* Continue with Google */}
-                <div className="w-full flex justify-center">
-                  <div ref={googleBtnRef} />
-                </div>
+                {/* Google Sign Up */}
+                <button
+                  type="button"
+                  onClick={handleGoogleSignupWithRole}
+                  disabled={googleSubmitting}
+                  className="w-full flex items-center justify-center gap-2 bg-white text-gray-800 py-3 rounded-lg border hover:bg-gray-50"
+                >
+                  <FcGoogle className="text-xl" />
+                  <span>{googleSubmitting ? "Signing in..." : "Continue with Google"}</span>
+                </button>
 
                 {/* Login Link */}
                 <div className="text-center mt-6 text-sm text-gray-600">
                   Already have an account?{" "}
-                  <Link
-                    to="/login"
-                    className="text-purple-600 hover:text-purple-800 font-semibold"
-                  >
+                  <Link to="/login" className="text-purple-600 font-semibold hover:text-purple-800">
                     Sign in
                   </Link>
                 </div>
@@ -357,58 +318,8 @@ const Signup = () => {
           </Formik>
         </div>
       </div>
-
-      {/* Role selection modal */}
-      {roleModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Choose your role</h3>
-            <div className="flex gap-3 mb-6">
-              {[
-                { key: "influencer", label: "Influencer" },
-                { key: "brand", label: "Brand" },
-              ].map((r) => (
-                <button
-                  key={r.key}
-                  type="button"
-                  onClick={() => setSelectedRole(r.key)}
-                  className={`flex-1 py-2 rounded-md border font-semibold transition ${
-                    selectedRole === r.key
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "border-gray-300 text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setRoleModalOpen(false);
-                  setPendingIdToken("");
-                }}
-                className="px-4 py-2 rounded-md border border-gray-300 text-gray-700"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmGoogleRole}
-                disabled={googleSubmitting}
-                className="px-4 py-2 rounded-md bg-indigo-600 text-white disabled:opacity-60"
-              >
-                {googleSubmitting ? "Continuing..." : "Continue"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
 export default Signup;
-
-

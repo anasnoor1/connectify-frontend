@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FiUser, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import { FcGoogle } from "react-icons/fc";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 import { Formik, Form, Field } from "formik";
@@ -7,7 +8,8 @@ import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Navigate, Link } from "react-router-dom";
-import { setToken, getToken } from "../utills/checkToken"; 
+import { setToken, getToken } from "../utills/checkToken";
+import { useGoogleLogin } from '@react-oauth/google'; 
 
 const particleOptions = {
   particles: {
@@ -50,27 +52,127 @@ const LoginSchema = Yup.object({
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+  
+  // Redirect if already logged in
+  if (getToken()) return <Navigate to="/" replace />;
 
-if (getToken()) return <Navigate to="/" replace />;
+  // Handle Google OAuth
+  const handleGoogleSuccess = async (tokenResponse) => {
+    if (!tokenResponse) {
+      toast.error('No response from Google. Please try again.');
+      return;
+    }
+
+    const idToken = tokenResponse.access_token || tokenResponse.credential;
+    if (!idToken) {
+      toast.error('Failed to get token from Google. Please try again.');
+      return;
+    }
+
+    try {
+      setIsGoogleSubmitting(true);
+      const response = await axios.post(
+        "/api/auth/google", 
+        { idToken },
+        {
+          timeout: 10000,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      
+      if (!response?.data?.token) {
+        throw new Error('No authentication token received');
+      }
+
+      setToken(response.data.token);
+      
+      // Store additional user data if available
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+
+      toast.success(`Welcome back!`);
+      navigate("/");
+      
+    } catch (error) {
+      console.error('Google auth failed:', error);
+      
+      if (error.code === 'ERR_NETWORK') {
+        toast.error('Network error. Please check your connection.');
+      } else if (error.response?.status === 401) {
+        toast.error('Invalid credentials. Please try again.');
+      } else if (error.response?.status === 404) {
+        toast.info('No account found. Please sign up first.');
+        navigate('/signup');
+      } else {
+        toast.error(error.response?.data?.message || 'Google authentication failed');
+      }
+    } finally {
+      setIsGoogleSubmitting(false);
+    }
+  };
+
+  const handleGoogleError = (error) => {
+    console.error('Google sign in error:', error);
+    
+    // Don't show error if user closed the popup
+    if (error.error !== 'popup_closed_by_user') {
+      toast.error("Failed to sign in with Google. Please try again.");
+    }
+  };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: handleGoogleError,
+    flow: 'implicit',
+    prompt: 'select_account', // Always show account selection
+    scope: 'profile email',   // Request basic profile info and email
+  });
 
   const particlesInit = async (engine) => await loadSlim(engine);
 
+
   const handleLogin = async (values, { setSubmitting }) => {
     try {
-      const res = await axios.post("/api/auth/login", values);
-      toast.success("Login successful");
-       setToken(res.data.token); 
-      navigate("/");
-    } catch (err) {
-      if (err.response?.status === 403) {
-        toast.error(
-          err.response?.data?.message || "Please verify your email first."
-        );
-        navigate(`/verify?email=${encodeURIComponent(values.email)}`);
-      } else if (err.response?.status === 400) {
-        toast.error(err.response?.data?.message || "Invalid credentials");
+      setSubmitting(true);
+      const response = await axios.post(
+        "/api/auth/login", 
+        values,
+        {
+          timeout: 10000,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      
+      if (response.data.token) {
+        setToken(response.data.token);
+        
+        // Store additional user data if available
+        if (response.data.user) {
+          localStorage.setItem('user', JSON.stringify(response.data.user));
+        }
+        
+        toast.success("Login successful");
+        navigate("/");
       } else {
-        toast.error("Login failed");
+        throw new Error('No token received');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      
+      if (err.code === 'ERR_NETWORK') {
+        toast.error('Network error. Please check your connection.');
+      } else if (err.response?.status === 403) {
+        const message = err.response?.data?.message || "Please verify your email first.";
+        toast.error(message);
+        navigate(`/verify?email=${encodeURIComponent(values.email)}`);
+      } else if (err.response?.status === 400 || err.response?.status === 401) {
+        toast.error(err.response?.data?.message || "Invalid email or password");
+      } else if (err.response?.status === 500) {
+        toast.error('Server error. Please try again later.');
+      } else {
+        toast.error(err.response?.data?.message || "Login failed. Please try again.");
       }
     } finally {
       setSubmitting(false);
@@ -176,12 +278,51 @@ if (getToken()) return <Navigate to="/" replace />;
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3 text-white font-semibold rounded-lg
-              bg-gradient-to-r from-purple-500 to-indigo-600
-              hover:from-purple-600 hover:to-indigo-700
-              transition duration-150 ease-in-out cursor-pointer"
+                  className={`w-full py-3 text-white font-semibold rounded-lg
+                  bg-gradient-to-r from-purple-500 to-indigo-600
+                  hover:from-purple-600 hover:to-indigo-700
+                  transition duration-150 ease-in-out mb-4
+                  ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
-                  {isSubmitting ? "Logging in..." : "LOGIN"}
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Logging in...
+                    </span>
+                  ) : 'LOGIN'}
+                </button>
+
+                {/* Divider */}
+                <div className="flex items-center my-4">
+                  <div className="flex-1 h-px bg-gray-200"></div>
+                  <span className="px-4 text-gray-500 text-sm">OR</span>
+                  <div className="flex-1 h-px bg-gray-200"></div>
+                </div>
+
+                {/* Google Sign In Button */}
+                <button
+                  type="button"
+                  onClick={googleLogin}
+                  disabled={isGoogleSubmitting}
+                  className="w-full flex items-center justify-center gap-2 bg-white text-gray-800 py-3 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors mb-6 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isGoogleSubmitting ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <span>Signing in with Google...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FcGoogle className="text-xl" />
+                      <span>Continue with Google</span>
+                    </>
+                  )}
                 </button>
 
                 {/* Signup Link */}

@@ -193,6 +193,8 @@ import React from "react";
 import hero from "../assets/hero-1.webp";
 import WhyChoose from './whyChoose'
 import Testimonials  from './Testimonials'
+import HeroSection  from './HeroSection'
+import FAQSection  from './FAQSection'
 
 const Home = () => {
   const partners = [49, 52, 50, 51, 40, 47];
@@ -364,6 +366,8 @@ const Home = () => {
       </main>
       <WhyChoose />
       <Testimonials />
+      <HeroSection/>
+      <FAQSection/>
     </div>
   );
 };

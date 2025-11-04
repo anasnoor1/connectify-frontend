@@ -2,7 +2,9 @@ import React from 'react'
 import Home from './components/Home'
 import Footer from './components/Footer'
 import Navbar from './components/Navbar'
-import Login from './components/Login'
+// import Login from './components/Login'
+import Service from './components/services/BrandPartnership'
+
 
 function App() {
   
@@ -11,8 +13,9 @@ function App() {
     <>
       {/* <Login /> */}
       <Navbar />
-      <Home />
-      <Footer />
+       <Home />
+      {/* <Service /> */}
+      <Footer /> 
     </>
   )
 }

@@ -62,10 +62,10 @@ const Navbar = () => {
                   className="block px-4 py-2 hover:bg-indigo-50"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Our Services
+                  Brand Partnership
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   to="#"
                   className="block px-4 py-2 hover:bg-indigo-50"
@@ -73,12 +73,12 @@ const Navbar = () => {
                 >
                   Service Detail
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </li>
 
           {/* Dropdown - Blog */}
-          <li className="group relative">
+          {/* <li className="group relative">
             <button className="flex items-center px-6 py-2 hover:text-indigo-600">
               Blog <i className="fa-solid fa-chevron-down ml-2 text-sm"></i>
             </button>
@@ -102,10 +102,10 @@ const Navbar = () => {
                 </Link>
               </li>
             </ul>
-          </li>
+          </li> */}
 
           {/* Dropdown - Pages */}
-          <li className="group relative">
+          {/* <li className="group relative">
             <button className="flex items-center px-6 py-2 hover:text-indigo-600">
               Pages <i className="fa-solid fa-chevron-down ml-2 text-sm"></i>
             </button>
@@ -156,7 +156,7 @@ const Navbar = () => {
                 </Link>
               </li>
             </ul>
-          </li>
+          </li> */}
 
           <li>
             <Link

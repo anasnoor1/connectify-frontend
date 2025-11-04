@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import RequireAuth from "./components/RequireAuth";
 import Home from "./components/Home";
+import BrandPartnership from "./components/services/BrandPartnership";
 
 export default function App() {
   return (
@@ -25,6 +26,8 @@ export default function App() {
         {/* Public home route with Navbar layout */}
         <Route element={<Navbar />}>
           <Route index element={<Home />} />
+          <Route path="/brandpartnership" element={<BrandPartnership />} />
+          
         </Route>
 
         {/* Auth routes without Navbar layout */}
@@ -32,6 +35,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/forgot" element={<ForgotPassword />} />
         <Route path="/verify" element={<VerifyOtp />} />
+        <Route path="/brandpartnership" element={<BrandPartnership />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

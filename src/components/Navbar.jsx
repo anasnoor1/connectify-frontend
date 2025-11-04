@@ -56,6 +56,16 @@ export default function Navbar() {
                   Home
                 </Link>
               </li>
+               <li>
+                <Link
+                  to="/brandpartnership"
+                  className="block px-6 py-2 hover:text-indigo-600"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Brand Partnership
+                </Link>
+              </li>
+
 
               <li>
                 <Link

@@ -40,11 +40,7 @@ const particleOptions = {
   background: { color: "#1f2937" },
 };
 
-<<<<<<< HEAD
 // ✅ Yup validation
-=======
-// ✅ Yup validation (improved)
->>>>>>> auth-naeem
 const LoginSchema = Yup.object({
   email: Yup.string()
     .email("Enter a valid email")

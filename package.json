@@ -10,13 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
-=======
-    "@fortawesome/fontawesome-svg-core": "^7.1.0",
-    "@fortawesome/free-brands-svg-icons": "^7.1.0",
-    "@fortawesome/free-solid-svg-icons": "^7.1.0",
-    "@fortawesome/react-fontawesome": "^3.1.0",
->>>>>>> auth-naeem
     "@tailwindcss/vite": "^4.1.16",
     "axios": "^1.13.1",
     "formik": "^2.4.6",

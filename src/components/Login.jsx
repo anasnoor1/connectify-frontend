@@ -59,7 +59,7 @@ if (getToken()) return <Navigate to="/" replace />;
     try {
       const res = await axios.post("/api/auth/login", values);
       toast.success("Login successful");
-       setToken(res.data.token); 
+      setToken(res.data.token); 
       navigate("/");
     } catch (err) {
       if (err.response?.status === 403) {

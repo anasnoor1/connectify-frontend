@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { Outlet, useLocation, useNavigate, Link } from "react-router-dom";
 import logo from "../assets/connectifylogo.png";
+import { getToken, logout as logoutUser } from "../utills/checkToken";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token = getToken();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+    const handleLogout = () => {
+    logoutUser();
+    navigate("/");
   };
 
   const isAuthPage =

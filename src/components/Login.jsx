@@ -7,6 +7,8 @@ import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Navigate, Link } from "react-router-dom";
+import { setToken, getToken } from "../utills/checkToken";
+
 
 const particleOptions = {
   particles: {
@@ -40,16 +42,20 @@ const particleOptions = {
   background: { color: "#1f2937" },
 };
 
-// ✅ Yup validation
 const LoginSchema = Yup.object({
   email: Yup.string()
-    .email("Enter a valid email")
+    .matches(
+      /^(?![.])(?!.*[.]{2})[A-Za-z0-9._%+-]+(?<![.])@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+      "Enter a valid email (like a@b.com, must have @ and dot, no spaces, 2 letters after dot)"
+    )
     .required("Email is required"),
+
   password: Yup.string()
-    .min(8, "Minimum 8 characters")
+    .min(8, "Password must be at least 8 characters")
     .matches(/[a-z]/, "At least one lowercase letter")
     .matches(/[A-Z]/, "At least one uppercase letter")
     .matches(/[0-9]/, "At least one number")
+    .matches(/[!@#$%^&*(),.?":{}|<>]/, "At least one special character")
     .required("Password is required"),
 });
 
@@ -62,9 +68,7 @@ const Login = () => {
   const [pendingIdToken, setPendingIdToken] = useState("");
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  if (token) return <Navigate to="/" replace />;
+  if (getToken()) return <Navigate to="/" replace />;
 
   const particlesInit = async (engine) => await loadSlim(engine);
 
@@ -110,7 +114,7 @@ const Login = () => {
       toast.error("No Google token received");
       return;
     }
-    
+
     setGoogleSubmitting(true);
     try {
       console.log('Sending Google auth request with:', {
@@ -122,12 +126,13 @@ const Login = () => {
         idToken: pendingIdToken,
         role: selectedRole,
       });
-      
+
       console.log('Google auth response:', res.data);
-      
+
       const { token: jwtToken, user } = res.data || {};
       if (jwtToken) {
-        localStorage.setItem("token", jwtToken);
+        // localStorage.setItem("token", jwtToken);
+        setToken(jwtToken);
         if (user) localStorage.setItem("user", JSON.stringify(user));
         toast.success("Logged in with Google");
         setRoleModalOpen(false);
@@ -139,7 +144,7 @@ const Login = () => {
       }
     } catch (e) {
       console.error('Google auth error:', e);
-      
+
       if (e?.response?.status === 403) {
         toast.error(e?.response?.data?.message || "Account is blocked");
       } else if (e?.response?.status === 409) {
@@ -164,7 +169,7 @@ const Login = () => {
     try {
       const res = await axios.post("/api/auth/login", values);
       toast.success("Login successful");
-      localStorage.setItem("token", res.data.token);
+      setToken(res.data.token);
       navigate("/");
     } catch (err) {
       if (err.response?.status === 403) {
@@ -237,12 +242,11 @@ const Login = () => {
                   <Field
                     type="email"
                     name="email"
-                    placeholder="Username or Email"
-                    className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                      errors.email && touched.email
+                    placeholder="Enter Your Email"
+                    className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.email && touched.email
                         ? "border-red-500"
                         : "border-gray-300"
-                    }`}
+                      }`}
                   />
                   {errors.email && touched.email && (
                     <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -256,11 +260,10 @@ const Login = () => {
                     type={showPassword ? "text" : "password"}
                     name="password"
                     placeholder="Password"
-                    className={`w-full p-3 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                      errors.password && touched.password
+                    className={`w-full p-3 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${errors.password && touched.password
                         ? "border-red-500"
                         : "border-gray-300"
-                    }`}
+                      }`}
                   />
                   <button
                     type="button"
@@ -279,7 +282,7 @@ const Login = () => {
                 {/* Forgot Password */}
                 <div className="flex justify-end mb-6 text-sm">
                   <Link
-                    to="/forgot"
+                    to="/forgot-password"
                     className="text-purple-600 hover:text-purple-800 transition duration-150"
                   >
                     Forgot password?
@@ -328,24 +331,23 @@ const Login = () => {
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-xl font-semibold mb-4 text-gray-800">Select Your Role</h3>
             <p className="text-gray-600 mb-6">Please choose how you want to use Connectify:</p>
-            
+
             <div className="flex gap-4 mb-6">
               {["influencer", "brand"].map((role) => (
                 <button
                   key={role}
                   type="button"
                   onClick={() => setSelectedRole(role)}
-                  className={`flex-1 py-3 rounded-lg border-2 font-semibold transition ${
-                    selectedRole === role
+                  className={`flex-1 py-3 rounded-lg border-2 font-semibold transition ${selectedRole === role
                       ? "bg-indigo-600 text-white border-indigo-600"
                       : "border-gray-300 text-gray-600 hover:border-indigo-400 hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   {role.charAt(0).toUpperCase() + role.slice(1)}
                 </button>
               ))}
             </div>
-            
+
             <div className="flex gap-3">
               <button
                 type="button"

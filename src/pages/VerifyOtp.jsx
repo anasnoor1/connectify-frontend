@@ -1,17 +1,69 @@
 import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
+import { FiKey, FiArrowLeft, FiX } from "react-icons/fi";
 
 const VerifyOtp = () => {
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [touched, setTouched] = useState(false);
   const [timeLeft, setTimeLeft] = useState(120);
+  const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
-  const email = searchParams.get("email");
+  const location = useLocation();
   const navigate = useNavigate();
   const inputsRef = useRef([]);
+
+  // Log the current location and search params for debugging
+  console.log('Current location:', location);
+  console.log('Search params:', Object.fromEntries(searchParams.entries()));
+  
+  // Get email from URL params or location state
+  const emailFromUrl = searchParams.get("email");
+  const locationState = location.state || {};
+  const emailFromState = locationState.email;
+  const from = locationState.from || 'signup'; // Default to 'signup' if not specified
+  
+  const email = emailFromState || emailFromUrl;
+  const isPasswordReset = from === 'forgot-password';
+  
+  console.log('Email from state/URL:', { email, from, isPasswordReset });
+  
+  // Redirect if no email is found
+  useEffect(() => {
+    console.log('VerifyOtp component mounted with:', { 
+      email, 
+      from, 
+      isPasswordReset,
+      locationState,
+      searchParams: Object.fromEntries(searchParams.entries())
+    });
+    
+    if (!email) {
+      console.log('No email found, redirecting...');
+      toast.error("Email not found. Please try again.");
+      const redirectTo = isPasswordReset ? '/forgot-password' : '/signup';
+      console.log('Redirecting to:', redirectTo);
+      navigate(redirectTo, { replace: true });
+    } else {
+      console.log('Email found, rendering OTP form');
+    }
+  }, [email, isPasswordReset, navigate]);
+
+  // API endpoints based on flow
+  const verifyEndpoint = isPasswordReset 
+    ? "/api/auth/password/verify-reset" 
+    : "/api/auth/verify-otp";
+  const resendEndpoint = isPasswordReset
+    ? "/api/auth/password/forgot"
+    : "/api/auth/resend-otp";
+  const successMessage = isPasswordReset 
+    ? "OTP verified. Please set your new password." 
+    : "Email verified successfully!";
+  const successRedirect = isPasswordReset 
+    ? "/reset-password" 
+    : "/login";
 
   useEffect(() => {
     inputsRef.current[0]?.focus();
@@ -108,38 +160,84 @@ const VerifyOtp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (timeLeft <= 0) {
-      toast.error("OTP expired. Please resend a new code.");
-      return;
-    }
-    const value = digits.join("").trim();
-    const msg = validate(value);
-    setError(msg);
+    const otp = digits.join("");
+    const validationError = validate(otp);
+    setError(validationError);
     setTouched(true);
-    if (msg) {
-      toast.error("Please fix the errors");
+    
+    if (validationError) return;
+    if (!email) {
+      toast.error("Email not found. Please try again.");
       return;
     }
+
     try {
-      const res = await axios.post("/api/auth/verify-otp", { email, otp: value });
-      toast.success(res.data.message);
-      navigate("/login");
+      setLoading(true);
+      console.log("Verifying OTP for:", { email, otp, verifyEndpoint });
+      
+      // Verify the OTP
+      const response = await axios.post(verifyEndpoint, { email, otp });
+      console.log("OTP verification response:", response.data);
+      
+      toast.success(successMessage);
+      
+      if (isPasswordReset) {
+        // For password reset flow
+        console.log("Navigating to reset-password with state:", { email, otp });
+        navigate("/reset-password", { 
+          state: { 
+            email, 
+            otp,
+            from: 'verify-otp' 
+          },
+          replace: true
+        });
+      } else {
+        // For signup flow
+        navigate("/login", { 
+          state: { email },
+          replace: true 
+        });
+      }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Verification failed");
+      setError(err.response?.data?.message || "Failed to verify OTP");
+      toast.error(err.response?.data?.message || "Failed to verify OTP");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const resendOtp = async () => {
+  const handleResendOtp = async () => {
+    if (!email) {
+      toast.error("Email not found. Please try again.");
+      return;
+    }
+    
     try {
-      await axios.post("/api/auth/send-otp", { email });
-      toast.success("OTP sent again to your email");
+      setLoading(true);
+      console.log("Resending OTP to:", email);
+      
+      await axios.post(resendEndpoint, { email });
+      
+      // Reset the form
       setDigits(["", "", "", "", "", ""]);
       inputsRef.current[0]?.focus();
       setTouched(false);
       setError("");
       setTimeLeft(120);
+      
+      toast.success("OTP has been resent to your email");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to resend OTP");
+      console.error("Error resending OTP:", err);
+      const errorMessage = err.response?.data?.message || "Failed to resend OTP";
+      toast.error(errorMessage);
+      
+      // If email is invalid or not found
+      if (err.response?.status === 400 || err.response?.status === 404) {
+        navigate(isPasswordReset ? '/forgot-password' : '/signup');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -5,12 +5,16 @@ import "react-toastify/dist/ReactToastify.css";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
 import ForgotPassword from "./components/ForgotPassword";
-import VerifyOtp from "./pages/VerifyOtp";
+import VerifyOtpSignup from "./pages/VerifyOtpSignup";
+import VerifyOtpLogin from "./pages/VerifyOtpLogin";
+import ResetPassword from "./components/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import RequireAuth from "./components/RequireAuth";
 import Home from "./components/Home";
 import BrandPartnership from "./components/services/BrandPartnership";
+import GuestRoute from "./utills/guestRoute";
+import PrivateRoute from "./utills/privateRoute"
 
 export default function App() {
   return (
@@ -26,25 +30,51 @@ export default function App() {
         {/* Public home route with Navbar layout */}
         <Route element={<Navbar />}>
           <Route index element={<Home />} />
-          <Route path="/brandpartnership" element={<BrandPartnership />} />
+          <Route path="/brandpartnership" element={<PrivateRoute><BrandPartnership /></PrivateRoute>} />
           
         </Route>
 
         {/* Auth routes without Navbar layout */}
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgot" element={<ForgotPassword />} />
-        <Route path="/verify" element={<VerifyOtp />} />
-        <Route path="/brandpartnership" element={<BrandPartnership />} />
+        <Route path="/signup" element={<GuestRoute><Signup /></GuestRoute>} />
+        <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+        <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
+        
+        {/* Signup OTP Verification */}
+        <Route 
+          path="/verify-otp-signup" 
+          element={
+            <GuestRoute>
+              <VerifyOtpSignup />
+            </GuestRoute>
+          } 
+        />
+        
+        {/* Login/Password Reset OTP Verification */}
+        <Route 
+          path="/verify-otp-login" 
+          element={
+            <GuestRoute>
+              <VerifyOtpLogin />
+            </GuestRoute>
+          } 
+        />
+        
+        <Route 
+          path="/reset-password" 
+          element={
+            <GuestRoute>
+              <ResetPassword />
+            </GuestRoute>
+          } 
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
 }
 
-
-
-// import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+/////////////////////////
+// import { Routes, Route } from "react-router-dom";
 // import { ToastContainer } from "react-toastify";
 // import "react-toastify/dist/ReactToastify.css";
 
@@ -56,17 +86,9 @@ export default function App() {
 // import Navbar from "./components/Navbar";
 // import RequireAuth from "./components/RequireAuth";
 // import Home from "./components/Home";
+// import BrandPartnership from "./components/services/BrandPartnership";
 
 // export default function App() {
-//   const location = useLocation();
-//   const pathname = location.pathname;
-
-//   const isAuthPage =
-//     pathname === "/login" ||
-//     pathname === "/signup" ||
-//     pathname === "/forgot" ||
-//     pathname.startsWith("/verify");
-
 //   return (
 //     <>
 //       <ToastContainer
@@ -76,19 +98,23 @@ export default function App() {
 //         progressStyle={{ background: "#7c3aed" }}
 //       />
 
-//       {/* ✅ Only show Navbar when not on auth pages */}
-//       {!isAuthPage && <Navbar />}
-
 //       <Routes>
-//         <Route element={<RequireAuth />}>
+//         {/* Public home route with Navbar layout */}
+//         <Route element={<Navbar />}>
 //           <Route index element={<Home />} />
+//           <Route path="/brandpartnership" element={<BrandPartnership />} />
+          
 //         </Route>
+
+//         {/* Auth routes without Navbar layout */}
 //         <Route path="/signup" element={<Signup />} />
 //         <Route path="/login" element={<Login />} />
 //         <Route path="/forgot" element={<ForgotPassword />} />
 //         <Route path="/verify" element={<VerifyOtp />} />
+//         <Route path="/brandpartnership" element={<BrandPartnership />} />
 //         <Route path="*" element={<NotFound />} />
 //       </Routes>
 //     </>
 //   );
 // }
+

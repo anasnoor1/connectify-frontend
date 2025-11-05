@@ -13,6 +13,9 @@ import Home from "./components/Home";
 import BrandPartnership from "./components/services/BrandPartnership";
 import GuestRoute from "./utills/guestRoute";
 import PrivateRoute from "./utills/privateRoute"
+import VerifyRoute from "./utills/verifyRoute";
+
+
 
 export default function App() {
   return (
@@ -36,7 +39,13 @@ export default function App() {
         <Route path="/signup" element={<GuestRoute><Signup /></GuestRoute>} />
         <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
         <Route path="/forgot" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
-        <Route path="/verify" element={<GuestRoute><VerifyOtp /></GuestRoute>} />
+        <Route path="/verify" element={    
+          <VerifyRoute>
+              <GuestRoute>
+                <VerifyOtp />
+             </GuestRoute>
+          </VerifyRoute>} />
+        {/* <Route path="/verify" element={<GuestRoute><VerifyOtp /></GuestRoute>} /> */}
         {/* <Route path="/brandpartnership" element={<BrandPartnership />} /> */}
         <Route path="*" element={<NotFound />} />
       </Routes>

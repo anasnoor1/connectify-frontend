@@ -123,6 +123,7 @@ const VerifyOtp = () => {
     try {
       const res = await axios.post("/api/auth/verify-otp", { email, otp: value });
       toast.success(res.data.message);
+      sessionStorage.removeItem("allowVerifyOtp");
       navigate("/login");
     } catch (err) {
       toast.error(err.response?.data?.message || "Verification failed");
@@ -151,7 +152,9 @@ const VerifyOtp = () => {
         <button
           type="button"
           aria-label="Close"
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            sessionStorage.removeItem("allowVerifyOtp");
+            navigate(-1)}}
           className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
           title="Close"
         >

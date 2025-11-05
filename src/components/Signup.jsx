@@ -77,6 +77,7 @@ if (isLoggedIn()) return <Navigate to="/" replace />;
       setLoading(true);
       const res = await axios.post("/api/auth/register", values);
       toast.success(res.data.message || "Signup successful");
+      sessionStorage.setItem("allowVerifyOtp", "true");
       navigate(`/verify?email=${encodeURIComponent(values.email)}`);
     } catch (err) {
       toast.error(err.response?.data?.message || "Signup failed");

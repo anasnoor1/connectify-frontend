@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
@@ -7,6 +7,8 @@ import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Navigate, Link } from "react-router-dom";
+import { getToken , isLoggedIn} from "../utills/checkToken";
+
 
 const particleOptions = {
   particles: {
@@ -65,15 +67,8 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
-  const googleBtnRef = useRef(null);
-  const [roleModalOpen, setRoleModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("influencer");
-  const [pendingIdToken, setPendingIdToken] = useState("");
-  const [googleSubmitting, setGoogleSubmitting] = useState(false);
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  if (token) return <Navigate to="/" replace />;
+if (isLoggedIn()) return <Navigate to="/" replace />;
 
   const particlesInit = async (engine) => await loadSlim(engine);
 
@@ -91,75 +86,7 @@ const Signup = () => {
     }
   };
 
-  // Google Sign-In
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const google = window.google;
-    if (!google || !google.accounts || !google.accounts.id) return;
-
-    try {
-      google.accounts.id.initialize({
-        client_id:
-          "562845532761-fqrq9algmdsl0fcftlksndr5hdqlh9mb.apps.googleusercontent.com",
-        callback: (response) => {
-          const idToken = response?.credential;
-          if (!idToken) {
-            toast.error("Google sign-in failed");
-            return;
-          }
-          setPendingIdToken(idToken);
-          setRoleModalOpen(true);
-        },
-      });
-
-      if (googleBtnRef.current) {
-        google.accounts.id.renderButton(googleBtnRef.current, {
-          theme: "outline",
-          size: "large",
-          text: "continue_with",
-          shape: "rectangular",
-          width: 320,
-        });
-      }
-      // Optionally show One Tap
-      // google.accounts.id.prompt();
-    } catch (_) {
-      // no-op
-    }
-  }, [navigate]);
-
-  const handleConfirmGoogleRole = async () => {
-    if (!pendingIdToken) return;
-    setGoogleSubmitting(true);
-    try {
-      const res = await axios.post("/api/auth/google", {
-        idToken: pendingIdToken,
-        role: selectedRole,
-      });
-      const { token: jwtToken, user } = res.data || {};
-      if (jwtToken) {
-        localStorage.setItem("token", jwtToken);
-        if (user) localStorage.setItem("user", JSON.stringify(user));
-        toast.success("Signed in with Google");
-        setRoleModalOpen(false);
-        setPendingIdToken("");
-        navigate("/");
-      } else {
-        toast.error("Login failed");
-      }
-    } catch (e) {
-      if (e?.response?.status === 409) {
-        toast.error(e?.response?.data?.message || "Account already exists. Please login.");
-        setRoleModalOpen(false);
-        setPendingIdToken("");
-        // navigate("/login"); // uncomment if you want auto-redirect
-      } else {
-        toast.error(e?.response?.data?.message || "Google auth failed");
-      }
-    } finally {
-      setGoogleSubmitting(false);
-    }
-  };
+  // Google Sign-In removed from Signup (moved to Login)
 
   return (
     <div className="relative flex min-h-screen items-center justify-center p-4 bg-gray-900">
@@ -173,6 +100,13 @@ const Signup = () => {
 
       {/* Signup Card */}
       <div className="relative z-10 flex max-w-4xl w-full mx-auto shadow-2xl rounded-xl overflow-hidden">
+        <Link
+          to="/"
+          aria-label="Close"
+          className="absolute top-3 right-3 z-20 text-white/90 hover:text-white bg-black/40 hover:bg-black/60 w-8 h-8 rounded-full grid place-items-center text-lg leading-none transition"
+        >
+          ×
+        </Link>
         {/* Left Side */}
         <div className="flex-1 relative p-10 text-white bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 hidden lg:block">
           <div className="relative z-10">
@@ -200,7 +134,7 @@ const Signup = () => {
               email: "",
               password: "",
               confirmPassword: "",
-              role: "influencer",
+              role: "",
             }}
             validationSchema={SignupSchema}
             onSubmit={handleSignup}
@@ -330,17 +264,7 @@ const Signup = () => {
                   {loading ? "Creating account..." : "SIGN UP"}
                 </button>
 
-                {/* Or Separator */}
-                <div className="flex items-center my-4">
-                  <div className="flex-1 h-px bg-gray-200" />
-                  <span className="px-3 text-sm text-gray-500">or</span>
-                  <div className="flex-1 h-px bg-gray-200" />
-                </div>
-
-                {/* Continue with Google */}
-                <div className="w-full flex justify-center">
-                  <div ref={googleBtnRef} />
-                </div>
+                {/* Google Sign-In is now on the Login page */}
 
                 {/* Login Link */}
                 <div className="text-center mt-6 text-sm text-gray-600">
@@ -358,53 +282,7 @@ const Signup = () => {
         </div>
       </div>
 
-      {/* Role selection modal */}
-      {roleModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Choose your role</h3>
-            <div className="flex gap-3 mb-6">
-              {[
-                { key: "influencer", label: "Influencer" },
-                { key: "brand", label: "Brand" },
-              ].map((r) => (
-                <button
-                  key={r.key}
-                  type="button"
-                  onClick={() => setSelectedRole(r.key)}
-                  className={`flex-1 py-2 rounded-md border font-semibold transition ${
-                    selectedRole === r.key
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "border-gray-300 text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setRoleModalOpen(false);
-                  setPendingIdToken("");
-                }}
-                className="px-4 py-2 rounded-md border border-gray-300 text-gray-700"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmGoogleRole}
-                disabled={googleSubmitting}
-                className="px-4 py-2 rounded-md bg-indigo-600 text-white disabled:opacity-60"
-              >
-                {googleSubmitting ? "Continuing..." : "Continue"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Role selection modal removed from Signup */}
     </div>
   );
 };

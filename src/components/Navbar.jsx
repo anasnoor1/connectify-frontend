@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Outlet, useLocation, useNavigate, Link } from "react-router-dom";
 import logo from "../assets/connectifylogo.png";
 import { getToken, logout as logoutUser } from "../utills/checkToken";
+import Footer from './Footer'
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -127,9 +128,7 @@ export default function Navbar() {
 
       {/* Footer */}
       {!isAuthPage && (
-        <footer className="border-t border-gray-200 py-4 bg-white text-center text-gray-500 text-sm">
-          © {new Date().getFullYear()} Connectify. All rights reserved.
-        </footer>
+        <Footer/>
       )}
     </div>
   );

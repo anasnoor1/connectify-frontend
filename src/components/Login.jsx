@@ -50,13 +50,22 @@ const LoginSchema = Yup.object({
     )
     .required("Email is required"),
 
+  // password: Yup.string()
+  //   .min(8, "Password must be at least 8 characters")
+  //   .matches(/[a-z]/, "At least one lowercase letter")
+  //   .matches(/[A-Z]/, "At least one uppercase letter")
+  //   .matches(/[0-9]/, "At least one number")
+  //   .matches(/[!@#$%^&*(),.?":{}|<>]/, "At least one special character")
+  //   .required("Password is required"),
   password: Yup.string()
-    .min(8, "Password must be at least 8 characters")
-    .matches(/[a-z]/, "At least one lowercase letter")
-    .matches(/[A-Z]/, "At least one uppercase letter")
-    .matches(/[0-9]/, "At least one number")
-    .matches(/[!@#$%^&*(),.?":{}|<>]/, "At least one special character")
-    .required("Password is required"),
+  .min(8, "Password must be at least 8 characters")
+  .matches(/[a-z]/, "At least one lowercase letter")
+  .matches(/[A-Z]/, "At least one uppercase letter")
+  .matches(/[0-9]/, "At least one number")
+  .matches(/[!@#$%^&*(),.?":{}|<>]/, "At least one special character")
+  .matches(/^\S*$/, "Password cannot contain spaces") // <- disallow spaces
+  .required("Password is required"),
+
 });
 
 const Login = () => {

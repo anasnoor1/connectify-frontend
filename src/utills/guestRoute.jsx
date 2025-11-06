@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-import { Navigate } from "react-router-dom";
-import { getToken} from "./checkToken";
-
-const GuestRoute = ({ children }) => {
-  const token = getToken();
-
-=======
 import { Navigate, useLocation } from "react-router-dom";
 import { getToken } from "./checkToken";
 
@@ -14,13 +6,10 @@ const GuestRoute = ({ children }) => {
   const location = useLocation();
   
   // If user is logged in, redirect to home
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
   if (token) {
     return <Navigate to="/" replace />;
   }
 
-<<<<<<< HEAD
-=======
   // If trying to access OTP or reset password pages directly without proper state
   const protectedPaths = ['/verify-otp-signup', '/verify-otp-login', '/reset-password'];
   const isProtectedPath = protectedPaths.some(path => location.pathname.startsWith(path));
@@ -37,7 +26,6 @@ const GuestRoute = ({ children }) => {
     }
   }
 
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
   return children;
 };
 

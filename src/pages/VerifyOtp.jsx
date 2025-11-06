@@ -172,12 +172,6 @@ const VerifyOtp = () => {
     }
 
     try {
-<<<<<<< HEAD
-      const res = await axios.post("/api/auth/verify-otp", { email, otp: value });
-      toast.success(res.data.message);
-      sessionStorage.removeItem("allowVerifyOtp");
-      navigate("/login");
-=======
       setLoading(true);
       console.log("Verifying OTP for:", { email, otp, verifyEndpoint });
       
@@ -205,7 +199,6 @@ const VerifyOtp = () => {
           replace: true 
         });
       }
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
     } catch (err) {
       setError(err.response?.data?.message || "Failed to verify OTP");
       toast.error(err.response?.data?.message || "Failed to verify OTP");

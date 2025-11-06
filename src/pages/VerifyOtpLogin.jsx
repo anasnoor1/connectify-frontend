@@ -19,17 +19,17 @@ const VerifyOtpLogin = () => {
   const emailFromUrl = searchParams.get("email");
   const emailFromState = location.state?.email;
   const email = emailFromState || emailFromUrl;
-  
+
   // Redirect if no email is found or if user is already logged in
   useEffect(() => {
     const token = localStorage.getItem('token');
-    
+
     // If user is already logged in, redirect to home
     if (token) {
       navigate('/', { replace: true });
       return;
     }
-    
+
     // If no email in state or params, redirect to forgot password
     if (!email) {
       toast.error("Invalid access. Please request a password reset first.");
@@ -48,6 +48,20 @@ const VerifyOtpLogin = () => {
     const id = setInterval(() => setTimeLeft((s) => s - 1), 1000);
     return () => clearInterval(id);
   }, [timeLeft]);
+
+  useEffect(() => {
+    // Check if an OTP expiry timestamp is already stored
+    const expiryTime = localStorage.getItem("otpExpiryTime");
+
+    if (expiryTime) {
+      const remaining = Math.floor((Number(expiryTime) - Date.now()) / 1000);
+      setTimeLeft(remaining > 0 ? remaining : 0);
+    } else {
+      // No existing timer, set a new expiry time
+      const newExpiry = Date.now() + 120 * 1000; // 2 minutes from now
+      localStorage.setItem("otpExpiryTime", newExpiry);
+    }
+  }, []);
 
   const validate = (value) => {
     if (!value) return "OTP is required";
@@ -112,7 +126,7 @@ const VerifyOtpLogin = () => {
     const validationError = validate(otp);
     setError(validationError);
     setTouched(true);
-    
+
     if (validationError) return;
     if (!email) {
       toast.error("Email not found. Please try again.");
@@ -122,11 +136,12 @@ const VerifyOtpLogin = () => {
     try {
       setLoading(true);
       await axios.post("/api/auth/password/verify-reset", { email, otp });
-      
+      localStorage.removeItem("otpExpiryTime");
+
       toast.success("OTP verified. Please set your new password.");
-      navigate("/reset-password", { 
+      navigate("/reset-password", {
         state: { email, otp },
-        replace: true 
+        replace: true
       });
     } catch (err) {
       const errorMessage = err.response?.data?.message || "Failed to verify OTP";
@@ -142,10 +157,14 @@ const VerifyOtpLogin = () => {
       toast.error("Email not found. Please try again.");
       return;
     }
-    
+
     try {
       setLoading(true);
       await axios.post("/api/auth/password/forgot", { email });
+
+      const newExpiry = Date.now() + 120 * 1000;
+      localStorage.setItem("otpExpiryTime", newExpiry);
+
       setTimeLeft(120);
       setDigits(["", "", "", "", "", ""]);
       inputsRef.current[0]?.focus();
@@ -173,7 +192,7 @@ const VerifyOtpLogin = () => {
         >
           <FiArrowLeft size={24} />
         </button>
-        
+
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-3">
             Verify Your Identity
@@ -199,11 +218,10 @@ const VerifyOtpLogin = () => {
                 onFocus={(e) => e.target.select()}
                 onBlur={handleBlur}
                 disabled={loading}
-                className={`w-12 h-12 text-center text-xl font-semibold rounded-lg border ${
-                  touched && error
+                className={`w-12 h-12 text-center text-xl font-semibold rounded-lg border ${touched && error
                     ? "border-red-500"
                     : "border-gray-300 focus:border-indigo-500"
-                } focus:ring-2 focus:ring-indigo-500 outline-none`}
+                  } focus:ring-2 focus:ring-indigo-500 outline-none`}
               />
             ))}
           </div>
@@ -231,11 +249,10 @@ const VerifyOtpLogin = () => {
           <button
             type="submit"
             disabled={loading || timeLeft <= 0}
-            className={`w-full py-3 font-semibold text-white rounded-lg transition duration-150 ease-in-out ${
-              loading || timeLeft <= 0
+            className={`w-full py-3 font-semibold text-white rounded-lg transition duration-150 ease-in-out ${loading || timeLeft <= 0
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-indigo-600 hover:bg-indigo-700"
-            }`}
+              }`}
           >
             {loading ? "Verifying..." : "Continue to Reset Password"}
           </button>
@@ -246,11 +263,10 @@ const VerifyOtpLogin = () => {
               type="button"
               onClick={resendOtp}
               disabled={timeLeft > 0 || loading}
-              className={`font-semibold transition ${
-                timeLeft > 0 || loading
+              className={`font-semibold transition ${timeLeft > 0 || loading
                   ? "text-gray-400 cursor-not-allowed"
                   : "text-indigo-600 hover:text-indigo-800"
-              }`}
+                }`}
             >
               Resend Code
             </button>

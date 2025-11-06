@@ -7,11 +7,7 @@ import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Navigate, Link } from "react-router-dom";
-<<<<<<< HEAD
-import { setToken, getToken } from "../utills/checkToken"; 
-=======
 import { setToken, getToken } from "../utills/checkToken";
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
 
 
 const particleOptions = {
@@ -46,10 +42,6 @@ const particleOptions = {
   background: { color: "#1f2937" },
 };
 
-<<<<<<< HEAD
-// ✅ Yup validation (improved)
-=======
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
 const LoginSchema = Yup.object({
   email: Yup.string()
     .matches(
@@ -76,11 +68,7 @@ const Login = () => {
   const [pendingIdToken, setPendingIdToken] = useState("");
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
 
-<<<<<<< HEAD
-if (getToken()) return <Navigate to="/" replace />;
-=======
   if (getToken()) return <Navigate to="/" replace />;
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
 
   const particlesInit = async (engine) => await loadSlim(engine);
 
@@ -181,11 +169,7 @@ if (getToken()) return <Navigate to="/" replace />;
     try {
       const res = await axios.post("/api/auth/login", values);
       toast.success("Login successful");
-<<<<<<< HEAD
-      setToken(res.data.token); 
-=======
       setToken(res.data.token);
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
       navigate("/");
     } catch (err) {
       if (err.response?.status === 403) {
@@ -308,19 +292,11 @@ if (getToken()) return <Navigate to="/" replace />;
                 {/* Submit Button */}
                 <button
                   type="submit"
-<<<<<<< HEAD
-                  disabled={isSubmitting || !isValid || !dirty}
-                  className="w-full py-3 text-white font-semibold rounded-lg 
-             bg-gradient-to-r from-purple-500 to-indigo-600 
-             hover:from-purple-600 hover:to-indigo-700 
-             transition duration-150 ease-in-out cursor-pointer"
-=======
                   disabled={isSubmitting}
                   className="w-full py-3 text-white font-semibold rounded-lg
               bg-gradient-to-r from-purple-500 to-indigo-600
               hover:from-purple-600 hover:to-indigo-700
               transition duration-150 ease-in-out cursor-pointer"
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
                 >
                   {isSubmitting ? "Logging in..." : "LOGIN"}
                 </button>
@@ -400,8 +376,4 @@ if (getToken()) return <Navigate to="/" replace />;
   );
 };
 
-<<<<<<< HEAD
 export default Login;
-=======
-export default Login;
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8

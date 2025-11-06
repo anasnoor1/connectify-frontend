@@ -7,12 +7,7 @@ import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Navigate, Link } from "react-router-dom";
-<<<<<<< HEAD
-import { getToken , isLoggedIn} from "../utills/checkToken";
-
-=======
 import { isLoggedIn } from "../utills/checkToken";
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
 
 const particleOptions = {
   particles: {
@@ -46,11 +41,7 @@ const particleOptions = {
   background: { color: "#1f2937" },
 };
 
-<<<<<<< HEAD
-//  Validation schema
-=======
 // ✅ Updated Validation Schema
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
 const SignupSchema = Yup.object({
   name: Yup.string()
     .matches(
@@ -93,11 +84,7 @@ const Signup = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
 
-<<<<<<< HEAD
-if (isLoggedIn()) return <Navigate to="/" replace />;
-=======
   if (isLoggedIn()) return <Navigate to="/" replace />;
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
 
   const particlesInit = async (engine) => await loadSlim(engine);
 
@@ -105,11 +92,6 @@ if (isLoggedIn()) return <Navigate to="/" replace />;
     try {
       setLoading(true);
       const res = await axios.post("/api/auth/register", values);
-<<<<<<< HEAD
-      toast.success(res.data.message || "Signup successful");
-      sessionStorage.setItem("allowVerifyOtp", "true");
-      navigate(`/verify?email=${encodeURIComponent(values.email)}`);
-=======
       toast.success(res.data.message || "Verification code sent to your email");
       
       // Navigate to the new signup OTP verification page
@@ -120,7 +102,6 @@ if (isLoggedIn()) return <Navigate to="/" replace />;
         },
         replace: true 
       });
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
     } catch (err) {
       toast.error(err.response?.data?.message || "Signup failed");
     } finally {
@@ -167,10 +148,6 @@ if (isLoggedIn()) return <Navigate to="/" replace />;
             CREATE ACCOUNT
           </h2>
 
-<<<<<<< HEAD
-          {/* Formik Signup Form */}
-=======
->>>>>>> e0803a3cc7a10b6e2031283a7ba1674871df2bd8
           <Formik
             initialValues={{
               name: "",

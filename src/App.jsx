@@ -5,7 +5,9 @@ import "react-toastify/dist/ReactToastify.css";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
 import ForgotPassword from "./components/ForgotPassword";
-import VerifyOtp from "./pages/VerifyOtp";
+import VerifyOtpSignup from "./pages/VerifyOtpSignup";
+import VerifyOtpLogin from "./pages/VerifyOtpLogin";
+import ResetPassword from "./components/resetPassword";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import RequireAuth from "./components/RequireAuth";
@@ -13,9 +15,6 @@ import Home from "./components/Home";
 import BrandPartnership from "./components/services/BrandPartnership";
 import GuestRoute from "./utills/guestRoute";
 import PrivateRoute from "./utills/privateRoute"
-import VerifyRoute from "./utills/verifyRoute";
-
-
 
 export default function App() {
   return (
@@ -38,15 +37,36 @@ export default function App() {
         {/* Auth routes without Navbar layout */}
         <Route path="/signup" element={<GuestRoute><Signup /></GuestRoute>} />
         <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
-        <Route path="/forgot" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
-        <Route path="/verify" element={    
-          <VerifyRoute>
-              <GuestRoute>
-                <VerifyOtp />
-             </GuestRoute>
-          </VerifyRoute>} />
-        {/* <Route path="/verify" element={<GuestRoute><VerifyOtp /></GuestRoute>} /> */}
-        {/* <Route path="/brandpartnership" element={<BrandPartnership />} /> */}
+        <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
+        
+        {/* Signup OTP Verification */}
+        <Route 
+          path="/verify-otp-signup" 
+          element={
+            <GuestRoute>
+              <VerifyOtpSignup />
+            </GuestRoute>
+          } 
+        />
+        
+        {/* Login/Password Reset OTP Verification */}
+        <Route 
+          path="/verify-otp-login" 
+          element={
+            <GuestRoute>
+              <VerifyOtpLogin />
+            </GuestRoute>
+          } 
+        />
+        
+        <Route 
+          path="/reset-password" 
+          element={
+            <GuestRoute>
+              <ResetPassword />
+            </GuestRoute>
+          } 
+        />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

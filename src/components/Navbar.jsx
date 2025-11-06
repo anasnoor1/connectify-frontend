@@ -12,7 +12,7 @@ export default function Navbar() {
 
     const handleLogout = () => {
     logoutUser();
-    navigate("/login");
+    navigate("/");
   };
 
   const isAuthPage =

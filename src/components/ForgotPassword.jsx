@@ -1,12 +1,23 @@
 import React, { useState } from "react";
-import { FiMail, FiLock, FiEye, FiEyeOff, FiKey, FiX } from "react-icons/fi";
+import { FiMail, FiX, FiArrowLeft } from "react-icons/fi";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
+import { Formik, Form, Field } from "formik";
+import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
-import { Formik, Form, Field } from "formik";
-import * as Yup from "yup";
+
+
+// Email validation schema matching Signup component
+const ForgotPasswordSchema = Yup.object({
+  email: Yup.string()
+    .matches(
+      /^(?![.])(?!.*[.]{2})[A-Za-z0-9._%+-]+(?<![.])@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+      "Enter a valid email (like a@b.com, must have @ and dot, no spaces, 2 letters after dot)"
+    )
+    .required("Email is required"),
+});
 
 const particleOptions = {
   particles: {
@@ -61,60 +72,62 @@ const ResetSchema = Yup.object({
 });
 
 const ForgotPassword = () => {
-  const [step, setStep] = useState("email");
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const particlesInit = async (engine) => await loadSlim(engine);
 
-  // --- Step 1: Request OTP ---
-  const requestOtp = async (values, { setSubmitting }) => {
-    const normalized = String(values.email).trim();
+  const handleSubmit = async (values, { setSubmitting }) => {
     try {
       setLoading(true);
-      await axios.post("/api/auth/password/forgot", { email: normalized });
-      toast.success("OTP sent to your email");
-      setEmail(normalized);
-      setStep("otp");
+      console.log("Sending OTP request to /api/auth/password/forgot with email:", values.email);
+      
+      // Add a timeout to the request
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      
+      try {
+        const response = await axios.post(
+          "/api/auth/password/forgot", 
+          { email: values.email },
+          { signal: controller.signal }
+        );
+        clearTimeout(timeoutId);
+        
+        console.log("OTP request successful:", response.data);
+        toast.success("OTP sent to your email");
+      
+        // Navigate to the login OTP verification page
+        navigate("/verify-otp-login", { 
+          state: { 
+            email: values.email,
+            from: 'forgot-password'
+          },
+          replace: true
+        });
+      } catch (requestError) {
+        clearTimeout(timeoutId);
+        throw requestError; // Re-throw to be caught by the outer catch
+      }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to send OTP");
-    } finally {
-      setLoading(false);
-      setSubmitting(false);
-    }
-  };
-
-  // --- Step 2: Verify OTP ---
-  const verifyOtp = async (values, { setSubmitting }) => {
-    try {
-      setLoading(true);
-      await axios.post("/api/auth/password/verify-reset", { email, otp: values.otp });
-      toast.success("OTP verified");
-      setOtp(values.otp);
-      setStep("reset");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Invalid OTP");
-    } finally {
-      setLoading(false);
-      setSubmitting(false);
-    }
-  };
-
-  // --- Step 3: Update Password ---
-  const updatePassword = async (values, { setSubmitting }) => {
-    try {
-      setLoading(true);
-      await axios.put("/api/auth/password/update", { email: String(email).trim(), otp, newPassword: values.newPassword });
-      toast.success("Password updated successfully!");
-      navigate("/login");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to update password");
+      console.error("Error in requestOtp:", err);
+      
+      if (err.code === 'ECONNABORTED' || err.message === 'canceled') {
+        toast.error("Request timed out. Please check your internet connection.");
+      } else if (err.response) {
+        // Server responded with an error
+        console.error("Server error:", err.response.data);
+        toast.error(err.response.data?.message || "Failed to send OTP. Please try again.");
+      } else if (err.request) {
+        // No response received
+        console.error("No response from server:", err.request);
+        toast.error("Could not connect to the server. Please try again later.");
+      } else {
+        // Other errors
+        console.error("Error:", err.message);
+        toast.error("An unexpected error occurred. Please try again.");
+      }
+      throw err; // Re-throw the error to be handled by Formik
     } finally {
       setLoading(false);
       setSubmitting(false);
@@ -132,199 +145,79 @@ const ForgotPassword = () => {
       />
 
       {/* Forgot Password Card */}
-      <div className="relative z-10 flex max-w-4xl w-full mx-auto shadow-2xl rounded-xl overflow-hidden">
-        {/* Left Side (Gradient Info) */}
-        <div className="flex-1 relative p-10 text-white bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 hidden lg:block">
-          <div className="relative z-10">
-            <h1 className="text-4xl font-bold mb-4">Reset Your Password</h1>
-            <p className="text-md font-light">
-              Secure your account by resetting your password. Enter your email,
-              verify with the OTP, and create a new password to regain access.
-            </p>
+      <div className="relative z-10 w-full max-w-md mx-auto bg-white rounded-xl shadow-2xl overflow-hidden">
+        <div className="p-8">
+          <div className="flex items-center mb-6">
+            <button
+              onClick={() => navigate(-1)}
+              className="mr-4 p-1 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-800 transition-colors"
+              aria-label="Go back"
+            >
+              <FiArrowLeft size={20} />
+            </button>
+            <h1 className="text-2xl font-bold text-gray-800">Reset Password</h1>
           </div>
-          <div className="absolute top-1/4 left-1/4 h-3 w-40 bg-orange-400 opacity-70 transform -rotate-45 rounded-full z-0"></div>
-          <div className="absolute top-2/3 left-1/3 h-5 w-64 bg-pink-400 opacity-60 transform -skew-y-12 rounded-full z-0"></div>
-          <div className="absolute bottom-1/4 right-1/4 h-2 w-32 bg-orange-300 opacity-80 transform rotate-12 rounded-full z-0"></div>
-        </div>
 
-        {/* Right Side (Form Steps) */}
-        <div className="flex-1 bg-white p-10 flex flex-col justify-center min-w-[350px]">
-          {/* Close (Back) Button */}
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={() => navigate(-1)}
-            className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
-            title="Close"
+          <p className="text-gray-600 mb-6">
+            Enter your email address and we'll send you a verification code to
+            reset your password.
+          </p>
+
+          <Formik
+            initialValues={{ email: '' }}
+            validationSchema={ForgotPasswordSchema}
+            onSubmit={handleSubmit}
           >
-            <FiX size={20} />
-          </button>
-          <h2 className="text-xl font-semibold text-center mb-8 tracking-wider text-gray-700">
-            {step === "email" && "FORGOT PASSWORD"}
-            {step === "otp" && "VERIFY OTP"}
-            {step === "reset" && "RESET PASSWORD"}
-          </h2>
-
-          {/* Step 1: Email */}
-          {step === "email" && (
-            <Formik initialValues={{ email }} validationSchema={EmailSchema} onSubmit={requestOtp} enableReinitialize>
-              {({ isSubmitting, errors, touched }) => (
-                <Form className="space-y-5">
+            {({ isSubmitting, errors, touched }) => (
+              <Form className="space-y-6">
+                <div className="space-y-1">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Email Address
+                  </label>
                   <div className="relative">
-                    <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiMail className="h-5 w-5 text-gray-400" />
+                    </div>
                     <Field
+                      id="email"
                       name="email"
                       type="email"
-                      placeholder="Enter your email"
-                      className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                        errors.email && touched.email ? "border-red-500" : "border-gray-300"
-                      }`}
-                      disabled={loading}
+                      autoComplete="email"
+                      className={`block w-full pl-10 pr-3 py-2 border ${errors.email && touched.email ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                      placeholder="you@example.com"
                     />
-                    {errors.email && touched.email && (
-                      <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-                    )}
                   </div>
+                  {errors.email && touched.email && (
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  )}
+                </div>
 
+                <div>
                   <button
                     type="submit"
-                    disabled={loading || isSubmitting}
-                    className="w-full py-3 text-white font-semibold rounded-lg 
-                    bg-gradient-to-r from-purple-500 to-indigo-600 
-                    hover:from-purple-600 hover:to-indigo-700 
-                    transition duration-150 ease-in-out cursor-pointer"
+                    disabled={isSubmitting || loading}
+                    className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${isSubmitting || loading ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
                   >
-                    {loading || isSubmitting ? "Sending..." : "Send OTP"}
+                    {loading ? 'Sending...' : 'Send Verification Code'}
                   </button>
-                </Form>
-              )}
-            </Formik>
-          )}
+                </div>
+              </Form>
+            )}
+          </Formik>
 
-          {/* Step 2: OTP */}
-          {step === "otp" && (
-            <Formik initialValues={{ otp }} validationSchema={OtpSchema} onSubmit={verifyOtp} enableReinitialize>
-              {({ isSubmitting, errors, touched }) => (
-                <Form className="space-y-5">
-                  <div className="relative">
-                    <FiKey className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <Field
-                      name="otp"
-                      type="text"
-                      placeholder="Enter OTP"
-                      className={`w-full p-3 pl-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                        errors.otp && touched.otp ? "border-red-500" : "border-gray-300"
-                      }`}
-                      disabled={loading}
-                    />
-                    {errors.otp && touched.otp && (
-                      <p className="text-red-500 text-sm mt-1">{errors.otp}</p>
-                    )}
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading || isSubmitting}
-                    className="w-full py-3 text-white font-semibold rounded-lg 
-                    bg-gradient-to-r from-purple-500 to-indigo-600 
-                    hover:from-purple-600 hover:to-indigo-700 
-                    transition duration-150 ease-in-out cursor-pointer"
-                  >
-                    {loading || isSubmitting ? "Verifying..." : "Verify OTP"}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => requestOtp({ email }, { setSubmitting: () => {} })}
-                    disabled={loading}
-                    className="text-sm text-indigo-600 hover:text-indigo-800 mt-2"
-                  >
-                    Resend OTP
-                  </button>
-                </Form>
-              )}
-            </Formik>
-          )}
-
-          {/* Step 3: Reset Password */}
-          {step === "reset" && (
-            <Formik
-              initialValues={{ newPassword: "", confirmPassword: "" }}
-              validationSchema={ResetSchema}
-              onSubmit={updatePassword}
-            >
-              {({ isSubmitting, errors, touched }) => (
-                <Form className="space-y-5">
-                  <div className="relative">
-                    <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <Field
-                      name="newPassword"
-                      type={showNew ? "text" : "password"}
-                      placeholder="New Password"
-                      className={`w-full p-3 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                        errors.newPassword && touched.newPassword ? "border-red-500" : "border-gray-300"
-                      }`}
-                      disabled={loading}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNew(!showNew)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    >
-                      {showNew ? <FiEyeOff size={18} /> : <FiEye size={18} />}
-                    </button>
-                    {errors.newPassword && touched.newPassword && (
-                      <p className="text-red-500 text-sm mt-1">{errors.newPassword}</p>
-                    )}
-                  </div>
-
-                  <div className="relative">
-                    <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <Field
-                      name="confirmPassword"
-                      type={showConfirm ? "text" : "password"}
-                      placeholder="Confirm Password"
-                      className={`w-full p-3 pl-10 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                        errors.confirmPassword && touched.confirmPassword ? "border-red-500" : "border-gray-300"
-                      }`}
-                      disabled={loading}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    >
-                      {showConfirm ? <FiEyeOff size={18} /> : <FiEye size={18} />}
-                    </button>
-                    {errors.confirmPassword && touched.confirmPassword && (
-                      <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
-                    )}
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading || isSubmitting}
-                    className="w-full py-3 text-white font-semibold rounded-lg 
-                    bg-gradient-to-r from-purple-500 to-indigo-600 
-                    hover:from-purple-600 hover:to-indigo-700 
-                    transition duration-150 ease-in-out cursor-pointer"
-                  >
-                    {loading || isSubmitting ? "Updating..." : "Confirm"}
-                  </button>
-                </Form>
-              )}
-            </Formik>
-          )}
-
-          {/* Back to Login */}
-          <div className="text-center mt-6 text-sm text-gray-600">
-            Remembered your password?{" "}
-            <Link
-              to="/login"
-              className="text-purple-600 hover:text-purple-800 font-semibold"
-            >
-              Back to Login
-            </Link>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Remember your password?{" "}
+              <Link
+                to="/login"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Sign in
+              </Link>
+            </p>
           </div>
         </div>
       </div>

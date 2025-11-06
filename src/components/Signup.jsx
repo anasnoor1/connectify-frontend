@@ -51,8 +51,10 @@ const SignupSchema = Yup.object({
     .required("Name is required"),
   email: Yup.string().email("Invalid email").required("Email is required"),
   password: Yup.string()
-    .min(6, "Minimum 6 characters")
-    .matches(/[A-Z]/, "Must contain at least one uppercase letter")
+    .min(8, "Minimum 8 characters")
+    .matches(/[a-z]/, "At least one lowercase letter")
+    .matches(/[A-Z]/, "At least one uppercase letter")
+    .matches(/[0-9]/, "At least one number")
     .required("Password is required"),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password"), null], "Passwords do not match")

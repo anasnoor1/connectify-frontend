@@ -76,8 +76,8 @@ const ForgotPassword = () => {
         console.log("OTP request successful:", response.data);
         toast.success("OTP sent to your email");
       
-        // Navigate to the login OTP verification page
-        navigate("/verify-otp-login", { 
+        // Navigate to the unified OTP verification page
+        navigate("/verify-otp", { 
           state: { 
             email: values.email,
             from: 'forgot-password'

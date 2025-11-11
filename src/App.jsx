@@ -1,20 +1,30 @@
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 import Signup from "./components/Signup";
 import Login from "./components/Login";
 import ForgotPassword from "./components/ForgotPassword";
-import VerifyOtp from "./pages/VerifyOtp";
+import VerifyOtpSignup from "./pages/VerifyOtpSignup";
+import VerifyOtpLogin from "./pages/VerifyOtpLogin";
+import ResetPassword from "./components/resetPassword";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
 import RequireAuth from "./components/RequireAuth";
 import Home from "./components/Home";
-import PrivateRoute from "./utills/privateRoute";
+import BrandPartnership from "./components/services/BrandPartnership";
+import About from "./components/About";
+import Contact from "./components/Contact";
 import GuestRoute from "./utills/guestRoute";
+<<<<<<< HEAD
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // In your main render function:
 
+=======
+import PrivateRoute from "./utills/privateRoute"
+import Profile from "./components/Profile";
+>>>>>>> auth-naeem
 export default function App() {
   return (
     <>
@@ -22,99 +32,63 @@ export default function App() {
         position="top-right"
         autoClose={3000}
         theme="dark"
-        progressStyle={{ background: "#7C3AED" }}
+        progressStyle={{ background: "#7c3aed" }}
       />
 
       <Routes>
-        {/* Navbar layout */}
+        {/* Public home route with Navbar layout */}
         <Route element={<Navbar />}>
-          {/* Default route (Home) */}
-          <Route path="/" element={<Home />} />
+          <Route index element={<Home />} />
+          <Route path="/brandpartnership" element={<PrivateRoute><BrandPartnership /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          
         </Route>
 
-        {/* Protected routes */}
-        <Route element={<RequireAuth />}>
-          <Route element={<Navbar />}>
-            {/* Example of a protected route */}
-            <Route path="/dashboard" element={<PrivateRoute>Dashboard</PrivateRoute>} />
-          </Route>
-        </Route>
-
-        {/* Auth routes (public) */}
-        <Route
-          path="/signup"
+        {/* Auth routes without Navbar layout */}
+        <Route path="/signup" element={<GuestRoute><Signup /></GuestRoute>} />
+        <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+        <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
+        
+        {/* Signup OTP Verification */}
+        <Route 
+          path="/verify-otp-signup" 
           element={
             <GuestRoute>
-              <Signup />
+              <VerifyOtpSignup />
             </GuestRoute>
-          }
+          } 
         />
-        <Route
-          path="/login"
+        
+        {/* Login/Password Reset OTP Verification */}
+        <Route 
+          path="/verify-otp-login" 
           element={
             <GuestRoute>
-              <Login />
+              <VerifyOtpLogin />
             </GuestRoute>
-          }
+          } 
         />
-        <Route
-          path="/forgot"
+        
+        <Route 
+          path="/reset-password" 
           element={
             <GuestRoute>
-              <ForgotPassword />
+              <ResetPassword />
             </GuestRoute>
-          }
+          } 
         />
-        <Route path="/verify" element={<VerifyOtp />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );
 }
 
-
-
+/////////////////////////
 // import { Routes, Route } from "react-router-dom";
 // import { ToastContainer } from "react-toastify";
 // import "react-toastify/dist/ReactToastify.css";
-// import Signup from "./components/Signup";
-// import Login from "./components/Login";
-// import ForgotPassword from "./components/ForgotPassword";
-// import VerifyOtp from "./pages/VerifyOtp";
-// import NotFound from "./pages/NotFound";
-// import Navbar from "./components/Navbar";
-// import RequireAuth from "./components/RequireAuth";
-// import Home from "./components/Home";
-// export default function App() {
-//   return (
-//     <>
-//       <ToastContainer
-//         position="top-right"
-//         autoClose={3000}
-//         theme="dark"
-//         progressStyle={{ background: "#7C3AED" }}
-//       />
-//       <Routes>
-//         {/* Protected app layout with Navbar wrapping content */}
-//         <Route element={<RequireAuth />}>
-//           <Route element={<Navbar />}>
-//             <Route index element={<Home />} />
-//           </Route>
-//         </Route>
-//         {/* Auth routes without Navbar layout */}
-//         <Route path="/signup" element={<Signup />} />
-//         <Route path="/login" element={<Login />} />
-//         <Route path="/forgot" element={<ForgotPassword />} />
-//         <Route path="/verify" element={<VerifyOtp />} />
-//         <Route path="*" element={<NotFound />} />
-//       </Routes>
-//     </>
-//   );
-// }
-
-// import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
-// import { ToastContainer } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
 
 // import Signup from "./components/Signup";
 // import Login from "./components/Login";
@@ -124,17 +98,9 @@ export default function App() {
 // import Navbar from "./components/Navbar";
 // import RequireAuth from "./components/RequireAuth";
 // import Home from "./components/Home";
+// import BrandPartnership from "./components/services/BrandPartnership";
 
 // export default function App() {
-//   const location = useLocation();
-//   const pathname = location.pathname;
-
-//   const isAuthPage =
-//     pathname === "/login" ||
-//     pathname === "/signup" ||
-//     pathname === "/forgot" ||
-//     pathname.startsWith("/verify");
-
 //   return (
 //     <>
 //       <ToastContainer
@@ -144,19 +110,23 @@ export default function App() {
 //         progressStyle={{ background: "#7c3aed" }}
 //       />
 
-//       {/* ✅ Only show Navbar when not on auth pages */}
-//       {!isAuthPage && <Navbar />}
-
 //       <Routes>
-//         <Route element={<RequireAuth />}>
+//         {/* Public home route with Navbar layout */}
+//         <Route element={<Navbar />}>
 //           <Route index element={<Home />} />
+//           <Route path="/brandpartnership" element={<BrandPartnership />} />
+          
 //         </Route>
+
+//         {/* Auth routes without Navbar layout */}
 //         <Route path="/signup" element={<Signup />} />
 //         <Route path="/login" element={<Login />} />
 //         <Route path="/forgot" element={<ForgotPassword />} />
 //         <Route path="/verify" element={<VerifyOtp />} />
+//         <Route path="/brandpartnership" element={<BrandPartnership />} />
 //         <Route path="*" element={<NotFound />} />
 //       </Routes>
 //     </>
 //   );
 // }
+

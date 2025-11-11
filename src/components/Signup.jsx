@@ -101,8 +101,8 @@ const Signup = () => {
       const res = await axios.post("/api/auth/register", values);
       toast.success(res.data.message || "Verification code sent to your email");
       
-      // Navigate to the new signup OTP verification page
-      navigate("/verify-otp-signup", { 
+      // Navigate to the unified OTP verification page
+      navigate("/verify-otp", { 
         state: { 
           email: values.email,
           from: 'signup'

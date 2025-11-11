@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
-import { FiKey, FiArrowLeft, FiX } from "react-icons/fi";
+import { FiArrowLeft, FiX } from "react-icons/fi";
 
 const VerifyOtp = () => {
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
@@ -15,76 +15,92 @@ const VerifyOtp = () => {
   const navigate = useNavigate();
   const inputsRef = useRef([]);
 
-  // Log the current location and search params for debugging
-  console.log('Current location:', location);
-  console.log('Search params:', Object.fromEntries(searchParams.entries()));
-  
   // Get email from URL params or location state
   const emailFromUrl = searchParams.get("email");
-  const locationState = location.state || {};
-  const emailFromState = locationState.email;
-  const from = locationState.from || 'signup'; // Default to 'signup' if not specified
-  
+  const emailFromState = location.state?.email;
   const email = emailFromState || emailFromUrl;
+  
+  // Determine flow type (signup or password reset)
+  const from = location.state?.from || 'signup';
   const isPasswordReset = from === 'forgot-password';
-  
-  console.log('Email from state/URL:', { email, from, isPasswordReset });
-  
-  // Redirect if no email is found
-  useEffect(() => {
-    console.log('VerifyOtp component mounted with:', { 
-      email, 
-      from, 
-      isPasswordReset,
-      locationState,
-      searchParams: Object.fromEntries(searchParams.entries())
-    });
-    
-    if (!email) {
-      console.log('No email found, redirecting...');
-      toast.error("Email not found. Please try again.");
-      const redirectTo = isPasswordReset ? '/forgot-password' : '/signup';
-      console.log('Redirecting to:', redirectTo);
-      navigate(redirectTo, { replace: true });
-    } else {
-      console.log('Email found, rendering OTP form');
-    }
-  }, [email, isPasswordReset, navigate]);
 
-  // API endpoints based on flow
+  // Determine localStorage key and API endpoints based on flow
+  const localStorageKey = isPasswordReset ? "otpExpiryTime" : "signupOtpExpiryTime";
   const verifyEndpoint = isPasswordReset 
     ? "/api/auth/password/verify-reset" 
     : "/api/auth/verify-otp";
   const resendEndpoint = isPasswordReset
     ? "/api/auth/password/forgot"
     : "/api/auth/resend-otp";
+
+  // UI text based on flow
+  const title = isPasswordReset ? "Verify Your Identity" : "Verify Your Email";
+  const buttonText = isPasswordReset ? "Continue to Reset Password" : "Verify Email";
   const successMessage = isPasswordReset 
     ? "OTP verified. Please set your new password." 
-    : "Email verified successfully!";
-  const successRedirect = isPasswordReset 
-    ? "/reset-password" 
-    : "/login";
+    : "Email verified successfully! You can now login.";
+  const errorRedirect = isPasswordReset ? "/forgot-password" : "/signup";
+  const errorMessage = isPasswordReset 
+    ? "Invalid access. Please request a password reset first."
+    : "Invalid access. Please sign up first.";
 
+  // Redirect if no email is found or if user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+
+    // If user is already logged in, redirect to home
+    if (token) {
+      navigate('/', { replace: true });
+      return;
+    }
+
+    // If no email in state or params, redirect based on flow
+    if (!email) {
+      toast.error(errorMessage);
+      navigate(errorRedirect, { replace: true });
+    }
+  }, [email, navigate, errorMessage, errorRedirect]);
+
+  // Focus first input on mount
   useEffect(() => {
     inputsRef.current[0]?.focus();
   }, []);
 
+  // Timer effect
   useEffect(() => {
     if (timeLeft <= 0) return;
     const id = setInterval(() => setTimeLeft((s) => s - 1), 1000);
     return () => clearInterval(id);
   }, [timeLeft]);
 
+  // Initialize timer from localStorage
+  useEffect(() => {
+    const expiryTime = localStorage.getItem(localStorageKey);
+    const now = Date.now();
+
+    if (expiryTime) {
+      const remaining = Math.floor((Number(expiryTime) - now) / 1000);
+      if (remaining > 0) {
+        setTimeLeft(remaining);
+      } else {
+        // Expired → reset timer
+        const newExpiry = now + 120 * 1000;
+        localStorage.setItem(localStorageKey, newExpiry);
+        setTimeLeft(120);
+        setDigits(["", "", "", "", "", ""]);
+      }
+    } else {
+      // No existing timer, set a new expiry time
+      const newExpiry = now + 120 * 1000;
+      localStorage.setItem(localStorageKey, newExpiry);
+      setTimeLeft(120);
+    }
+  }, [localStorageKey]);
+
   const validate = (value) => {
     if (!value) return "OTP is required";
-    if (!/^\d{4,8}$/.test(value)) return "Enter a valid numeric OTP";
+    if (!/^\d{6}$/.test(value)) return "Enter a valid 6-digit OTP";
     return "";
-  };
-
-  const validateSoft = (value) => {
-    if (!value) return "OTP is required";
-    if (value.length < 6) return "";
-    return validate(value);
   };
 
   const handleChange = (index, char) => {
@@ -93,69 +109,49 @@ const VerifyOtp = () => {
     if (!c) {
       next[index] = "";
       setDigits(next);
+      if (index > 0) {
+        inputsRef.current[index - 1]?.focus();
+      }
       return;
     }
-    next[index] = c.charAt(0);
+    next[index] = c;
     setDigits(next);
-    if (index < inputsRef.current.length - 1) {
+    if (index < 5) {
       inputsRef.current[index + 1]?.focus();
     }
     if (touched) {
-      const joined = next.join("").trim();
-      setError(joined.length === next.length ? validate(joined) : "");
-    }
-  };
-
-  const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace") {
-      if (digits[index]) {
-        const next = [...digits];
-        next[index] = "";
-        setDigits(next);
-      } else if (index > 0) {
-        inputsRef.current[index - 1]?.focus();
-        const next = [...digits];
-        next[index - 1] = "";
-        setDigits(next);
-      }
-      e.preventDefault();
-    }
-    if (e.key === "ArrowLeft" && index > 0) {
-      inputsRef.current[index - 1]?.focus();
-      e.preventDefault();
-    }
-    if (e.key === "ArrowRight" && index < inputsRef.current.length - 1) {
-      inputsRef.current[index + 1]?.focus();
-      e.preventDefault();
+      const joined = next.join("");
+      setError(joined.length === 6 ? validate(joined) : "");
     }
   };
 
   const handlePaste = (e) => {
-    const text = (e.clipboardData.getData("text") || "")
-      .replace(/\D/g, "")
-      .slice(0, digits.length);
-    if (!text) return;
     e.preventDefault();
+    const text = e.clipboardData.getData('text/plain').trim();
+    if (!/^\d{6}$/.test(text)) {
+      setError("Please paste a valid 6-digit OTP");
+      return;
+    }
     const next = [...digits];
-    for (let i = 0; i < digits.length; i++) {
+    for (let i = 0; i < 6; i++) {
       next[i] = text[i] || "";
     }
     setDigits(next);
-    const firstEmpty = next.findIndex((d) => d === "");
-    const focusIndex = firstEmpty === -1 ? digits.length - 1 : firstEmpty;
-    inputsRef.current[focusIndex]?.focus();
-    if (touched) {
-      const joined = next.join("").trim();
-      setError(joined.length === next.length ? validate(joined) : "");
+    inputsRef.current[5]?.focus();
+    setTouched(true);
+    setError("");
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !digits[index] && index > 0) {
+      inputsRef.current[index - 1]?.focus();
     }
   };
 
   const handleBlur = () => {
     setTouched(true);
-    const joined = digits.join("").trim();
-    setError(
-      joined.length === digits.length ? validate(joined) : validateSoft(joined)
-    );
+    const joined = digits.join("");
+    setError(joined.length === 6 ? validate(joined) : "");
   };
 
   const handleSubmit = async (e) => {
@@ -164,7 +160,7 @@ const VerifyOtp = () => {
     const validationError = validate(otp);
     setError(validationError);
     setTouched(true);
-    
+
     if (validationError) return;
     if (!email) {
       toast.error("Email not found. Please try again.");
@@ -173,103 +169,89 @@ const VerifyOtp = () => {
 
     try {
       setLoading(true);
-      console.log("Verifying OTP for:", { email, otp, verifyEndpoint });
+      await axios.post(verifyEndpoint, { email, otp });
       
-      // Verify the OTP
-      const response = await axios.post(verifyEndpoint, { email, otp });
-      console.log("OTP verification response:", response.data);
-      
+      // Clear expiry when verified
+      localStorage.removeItem(localStorageKey);
+
       toast.success(successMessage);
       
       if (isPasswordReset) {
-        // For password reset flow
-        console.log("Navigating to reset-password with state:", { email, otp });
-        navigate("/reset-password", { 
-          state: { 
-            email, 
-            otp,
-            from: 'verify-otp' 
-          },
+        // For password reset flow, navigate to reset password with email and otp
+        navigate("/reset-password", {
+          state: { email, otp },
           replace: true
         });
       } else {
-        // For signup flow
-        navigate("/login", { 
+        // For signup flow, navigate to login
+        navigate("/login", {
           state: { email },
-          replace: true 
+          replace: true
         });
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to verify OTP");
-      toast.error(err.response?.data?.message || "Failed to verify OTP");
+      const errorMessage = err.response?.data?.message || "Failed to verify OTP";
+      console.error("OTP verification error:", errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleResendOtp = async () => {
+  const resendOtp = async () => {
     if (!email) {
       toast.error("Email not found. Please try again.");
       return;
     }
-    
+
     try {
       setLoading(true);
-      console.log("Resending OTP to:", email);
-      
       await axios.post(resendEndpoint, { email });
       
-      // Reset the form
+      // Reset timer and store new expiry
+      const newExpiry = Date.now() + 120 * 1000;
+      localStorage.setItem(localStorageKey, newExpiry);
+
+      setTimeLeft(120);
       setDigits(["", "", "", "", "", ""]);
       inputsRef.current[0]?.focus();
       setTouched(false);
       setError("");
-      setTimeLeft(120);
-      
-      toast.success("OTP has been resent to your email");
+      toast.success("New OTP has been sent to your email");
     } catch (err) {
-      console.error("Error resending OTP:", err);
       const errorMessage = err.response?.data?.message || "Failed to resend OTP";
+      console.error("Resend OTP error:", errorMessage);
       toast.error(errorMessage);
-      
-      // If email is invalid or not found
-      if (err.response?.status === 400 || err.response?.status === 404) {
-        navigate(isPasswordReset ? '/forgot-password' : '/signup');
-      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500">
-      <div className="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm"></div>
-
-      <div className="relative z-10 w-full max-w-md bg-white rounded-xl shadow-2xl p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-md relative">
         <button
           type="button"
-          aria-label="Close"
-          onClick={() => {
-            sessionStorage.removeItem("allowVerifyOtp");
-            navigate(-1)}}
-          className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
-          title="Close"
+          aria-label={isPasswordReset ? "Back" : "Close"}
+          onClick={() => navigate(-1)}
+          className={`absolute ${isPasswordReset ? 'left-3' : 'right-3'} top-3 text-gray-500 hover:text-gray-700`}
+          title={isPasswordReset ? "Back" : "Close"}
         >
-          ×
+          {isPasswordReset ? <FiArrowLeft size={24} /> : <FiX size={24} />}
         </button>
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-3">
-          Verify Your Email
-        </h2>
-        <p className="text-center text-gray-500 mb-6">
-          Enter the 6-digit code sent to{" "}
-          <span className="text-indigo-600 font-medium">{email}</span>
-        </p>
+
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">
+            {title}
+          </h2>
+          <p className="text-gray-500 mb-6">
+            We've sent a 6-digit verification code to
+            <span className="text-indigo-600 font-medium"> {email}</span>
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div
-            className="flex justify-center gap-3"
-            onPaste={handlePaste}
-          >
+          <div className="flex justify-center gap-3" onPaste={handlePaste}>
             {digits.map((d, i) => (
               <input
                 key={i}
@@ -282,11 +264,11 @@ const VerifyOtp = () => {
                 onKeyDown={(e) => handleKeyDown(i, e)}
                 onFocus={(e) => e.target.select()}
                 onBlur={handleBlur}
-                className={`w-12 h-12 text-center text-xl font-semibold rounded-lg border ${
-                  touched && error
+                disabled={loading}
+                className={`w-12 h-12 text-center text-xl font-semibold rounded-lg border ${touched && error
                     ? "border-red-500"
                     : "border-gray-300 focus:border-indigo-500"
-                } focus:ring-2 focus:ring-indigo-500 outline-none`}
+                  } focus:ring-2 focus:ring-indigo-500 outline-none`}
               />
             ))}
           </div>
@@ -306,37 +288,34 @@ const VerifyOtp = () => {
               </span>
             ) : (
               <span className="text-red-500 font-medium">
-                Code expired. You can resend a new OTP.
+                Code expired. You can request a new one.
               </span>
             )}
           </div>
 
           <button
             type="submit"
-            disabled={timeLeft <= 0}
-            className={`w-full py-3 font-semibold text-white rounded-lg transition duration-150 ease-in-out cursor-pointer 
-            ${
-              timeLeft <= 0
+            disabled={loading || timeLeft <= 0}
+            className={`w-full py-3 font-semibold text-white rounded-lg transition duration-150 ease-in-out ${loading || timeLeft <= 0
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
-            }`}
+                : "bg-indigo-600 hover:bg-indigo-700"
+              }`}
           >
-            Verify OTP
+            {loading ? "Verifying..." : buttonText}
           </button>
 
           <div className="text-center text-sm text-gray-600">
-            Didn’t receive the code?{" "}
+            Didn't receive the code?{" "}
             <button
               type="button"
               onClick={resendOtp}
-              disabled={timeLeft > 0}
-              className={`font-semibold transition ${
-                timeLeft > 0
+              disabled={timeLeft > 0 || loading}
+              className={`font-semibold transition ${timeLeft > 0 || loading
                   ? "text-gray-400 cursor-not-allowed"
-                  : "text-indigo-600 hover:text-indigo-800 cursor-pointer"
-              }`}
+                  : "text-indigo-600 hover:text-indigo-800"
+                }`}
             >
-              Resend OTP
+              Resend Code
             </button>
           </div>
         </form>

@@ -5,8 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Signup from "./components/Signup";
 import Login from "./components/Login";
 import ForgotPassword from "./components/ForgotPassword";
-import VerifyOtpSignup from "./pages/VerifyOtpSignup";
-import VerifyOtpLogin from "./pages/VerifyOtpLogin";
+import VerifyOtp from "./pages/VerifyOtp";
 import ResetPassword from "./components/resetPassword";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/Navbar";
@@ -46,22 +45,12 @@ export default function App() {
         <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
         <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
         
-        {/* Signup OTP Verification */}
+        {/* Unified OTP Verification (handles both signup and password reset) */}
         <Route 
-          path="/verify-otp-signup" 
+          path="/verify-otp" 
           element={
             <GuestRoute>
-              <VerifyOtpSignup />
-            </GuestRoute>
-          } 
-        />
-        
-        {/* Login/Password Reset OTP Verification */}
-        <Route 
-          path="/verify-otp-login" 
-          element={
-            <GuestRoute>
-              <VerifyOtpLogin />
+              <VerifyOtp />
             </GuestRoute>
           } 
         />

@@ -1,7 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 import Signup from "./components/Signup";
 import Login from "./components/Login";
 import ForgotPassword from "./components/ForgotPassword";
@@ -15,13 +14,23 @@ import BrandPartnership from "./components/services/BrandPartnership";
 import About from "./components/About";
 import Contact from "./components/Contact";
 import GuestRoute from "./utills/guestRoute";
+import PrivateRoute from "./utills/privateRoute"
+import Profile from "./components/Profile"
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // In your main render function:
 
 export default function App() {
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  
+  // Always wrap with GoogleOAuthProvider to allow hooks to be called
+  // Use a placeholder if clientId is not set (prevents provider error, but OAuth won't work)
+  const providerClientId = clientId && clientId.trim() !== '' 
+    ? clientId 
+    : 'placeholder-client-id.apps.googleusercontent.com';
+  
   return (
-    <>
+    <GoogleOAuthProvider clientId={providerClientId}>
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -65,7 +74,7 @@ export default function App() {
         />
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </>
+    </GoogleOAuthProvider>
   );
 }
 

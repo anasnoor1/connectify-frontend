@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiUser, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
-import { FcGoogle } from "react-icons/fc";
 import Particles from "react-tsparticles";
 import { loadSlim } from "tsparticles-slim";
 import { Formik, Form, Field } from "formik";
@@ -9,7 +8,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Navigate, Link } from "react-router-dom";
 import { setToken, getToken } from "../utills/checkToken";
-import { useGoogleLogin } from '@react-oauth/google'; 
+
 
 const particleOptions = {
   particles: {
@@ -72,127 +71,127 @@ const LoginSchema = Yup.object({
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
-  
-  // Redirect if already logged in
+  const googleBtnRef = useRef(null);
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState("influencer");
+  const [pendingIdToken, setPendingIdToken] = useState("");
+  const [googleSubmitting, setGoogleSubmitting] = useState(false);
+
   if (getToken()) return <Navigate to="/" replace />;
-
-  // Handle Google OAuth
-  const handleGoogleSuccess = async (tokenResponse) => {
-    if (!tokenResponse) {
-      toast.error('No response from Google. Please try again.');
-      return;
-    }
-
-    const idToken = tokenResponse.access_token || tokenResponse.credential;
-    if (!idToken) {
-      toast.error('Failed to get token from Google. Please try again.');
-      return;
-    }
-
-    try {
-      setIsGoogleSubmitting(true);
-      const response = await axios.post(
-        "/api/auth/google", 
-        { idToken },
-        {
-          timeout: 10000,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-      
-      if (!response?.data?.token) {
-        throw new Error('No authentication token received');
-      }
-
-      setToken(response.data.token);
-      
-      // Store additional user data if available
-      if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-      }
-
-      toast.success(`Welcome back!`);
-      navigate("/");
-      
-    } catch (error) {
-      console.error('Google auth failed:', error);
-      
-      if (error.code === 'ERR_NETWORK') {
-        toast.error('Network error. Please check your connection.');
-      } else if (error.response?.status === 401) {
-        toast.error('Invalid credentials. Please try again.');
-      } else if (error.response?.status === 404) {
-        toast.info('No account found. Please sign up first.');
-        navigate('/signup');
-      } else {
-        toast.error(error.response?.data?.message || 'Google authentication failed');
-      }
-    } finally {
-      setIsGoogleSubmitting(false);
-    }
-  };
-
-  const handleGoogleError = (error) => {
-    console.error('Google sign in error:', error);
-    
-    // Don't show error if user closed the popup
-    if (error.error !== 'popup_closed_by_user') {
-      toast.error("Failed to sign in with Google. Please try again.");
-    }
-  };
-
-  const googleLogin = useGoogleLogin({
-    onSuccess: handleGoogleSuccess,
-    onError: handleGoogleError,
-    flow: 'implicit',
-    prompt: 'select_account', // Always show account selection
-    scope: 'profile email',   // Request basic profile info and email
-  });
 
   const particlesInit = async (engine) => await loadSlim(engine);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const google = window.google;
+    if (!google || !google.accounts || !google.accounts.id) {
+      console.log("Google API not loaded");
+      return;
+    }
+    try {
+      google.accounts.id.initialize({
+        client_id: "720475734209-do0bg2s9kce36tp0hvc6dlfvh9qhtvnf.apps.googleusercontent.com",
+        callback: (response) => {
+          console.log("Google callback received:", response);
+          const idToken = response?.credential;
+          if (!idToken) {
+            toast.error("Google sign-in failed - no token received");
+            return;
+          }
+          console.log("Google ID token received, length:", idToken.length);
+          setPendingIdToken(idToken);
+          setRoleModalOpen(true);
+        },
+      });
+      if (googleBtnRef.current) {
+        google.accounts.id.renderButton(googleBtnRef.current, {
+          theme: "outline",
+          size: "large",
+          text: "continue_with",
+          shape: "rectangular",
+          width: 320,
+        });
+        console.log("Google button rendered");
+      }
+    } catch (error) {
+      console.error("Google Sign-In initialization error:", error);
+    }
+  }, []);
+
+  const handleConfirmGoogleRole = async () => {
+    if (!pendingIdToken) {
+      toast.error("No Google token received");
+      return;
+    }
+
+    setGoogleSubmitting(true);
+    try {
+      console.log('Sending Google auth request with:', {
+        idTokenLength: pendingIdToken.length,
+        role: selectedRole
+      });
+
+      const res = await axios.post("/api/auth/google", {
+        idToken: pendingIdToken,
+        role: selectedRole,
+      });
+
+      console.log('Google auth response:', res.data);
+
+      const { token: jwtToken, user } = res.data || {};
+      if (jwtToken) {
+        // localStorage.setItem("token", jwtToken);
+        setToken(jwtToken);
+        if (user) localStorage.setItem("user", JSON.stringify(user));
+        toast.success("Logged in with Google");
+        setRoleModalOpen(false);
+        setPendingIdToken("");
+        navigate("/");
+      } else {
+        console.error('No token in response');
+        toast.error("Login failed - no token received");
+      }
+    } catch (e) {
+      console.error('Google auth error:', e);
+
+      if (e?.response?.status === 403) {
+        toast.error(e?.response?.data?.message || "Account is blocked");
+      } else if (e?.response?.status === 409) {
+        toast.error(e?.response?.data?.message || "Account already exists. Please login.");
+      } else if (e?.response?.status === 401) {
+        toast.error(e?.response?.data?.message || "Invalid Google token");
+      } else if (e?.response?.status === 400) {
+        toast.error(e?.response?.data?.message || "Bad request - missing information");
+      } else if (e?.response?.data?.message) {
+        toast.error(e.response.data.message);
+      } else if (e?.request) {
+        toast.error("Network error - cannot connect to server");
+      } else {
+        toast.error("Google authentication failed. Please try again.");
+      }
+    } finally {
+      setGoogleSubmitting(false);
+    }
+  };
 
   const handleLogin = async (values, { setSubmitting }) => {
     try {
-      setSubmitting(true);
-      const response = await axios.post(
-        "/api/auth/login", 
-        values,
-        {
-          timeout: 10000,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-      
-      if (response.data.token) {
-        setToken(response.data.token);
-        
-        // Store additional user data if available
-        if (response.data.user) {
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-        }
-        
-        toast.success("Login successful");
-        navigate("/");
-      } else {
-        throw new Error('No token received');
-      }
+      const res = await axios.post("/api/auth/login", values);
+      toast.success("Login successful");
+      setToken(res.data.token);
+      navigate("/");
     } catch (err) {
-      console.error('Login error:', err);
-      
-      if (err.code === 'ERR_NETWORK') {
-        toast.error('Network error. Please check your connection.');
-      } else if (err.response?.status === 403) {
-        const message = err.response?.data?.message || "Please verify your email first.";
-        toast.error(message);
+      if (err.response?.status === 403) {
+        toast.error(
+          err.response?.data?.message || "Please verify your email first."
+        );
         navigate(`/verify?email=${encodeURIComponent(values.email)}`);
-      } else if (err.response?.status === 400 || err.response?.status === 401) {
-        toast.error(err.response?.data?.message || "Invalid email or password");
-      } else if (err.response?.status === 500) {
-        toast.error('Server error. Please try again later.');
+      } else if (err.response?.status === 401) {
+        toast.error(err.response?.data?.message || "Invalid credentials");
+      } else if (err.response?.status === 400) {
+        toast.error(err.response?.data?.message || "Invalid credentials");
       } else {
-        toast.error(err.response?.data?.message || "Login failed. Please try again.");
+        toast.error("Login failed");
       }
     } finally {
       setSubmitting(false);
@@ -303,51 +302,12 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className={`w-full py-3 text-white font-semibold rounded-lg
-                  bg-gradient-to-r from-purple-500 to-indigo-600
-                  hover:from-purple-600 hover:to-indigo-700
-                  transition duration-150 ease-in-out mb-4
-                  ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+                  className="w-full py-3 text-white font-semibold rounded-lg
+              bg-gradient-to-r from-purple-500 to-indigo-600
+              hover:from-purple-600 hover:to-indigo-700
+              transition duration-150 ease-in-out cursor-pointer"
                 >
-                  {isSubmitting ? (
-                    <span className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Logging in...
-                    </span>
-                  ) : 'LOGIN'}
-                </button>
-
-                {/* Divider */}
-                <div className="flex items-center my-4">
-                  <div className="flex-1 h-px bg-gray-200"></div>
-                  <span className="px-4 text-gray-500 text-sm">OR</span>
-                  <div className="flex-1 h-px bg-gray-200"></div>
-                </div>
-
-                {/* Google Sign In Button */}
-                <button
-                  type="button"
-                  onClick={googleLogin}
-                  disabled={isGoogleSubmitting}
-                  className="w-full flex items-center justify-center gap-2 bg-white text-gray-800 py-3 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors mb-6 disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {isGoogleSubmitting ? (
-                    <>
-                      <svg className="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span>Signing in with Google...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FcGoogle className="text-xl" />
-                      <span>Continue with Google</span>
-                    </>
-                  )}
+                  {isSubmitting ? "Logging in..." : "LOGIN"}
                 </button>
 
                 {/* Signup Link */}

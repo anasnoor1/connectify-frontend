@@ -16,15 +16,10 @@ import BrandPartnership from "./components/services/BrandPartnership";
 import About from "./components/About";
 import Contact from "./components/Contact";
 import GuestRoute from "./utills/guestRoute";
-<<<<<<< HEAD
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // In your main render function:
 
-=======
-import PrivateRoute from "./utills/privateRoute"
-import Profile from "./components/Profile";
->>>>>>> auth-naeem
 export default function App() {
   return (
     <>

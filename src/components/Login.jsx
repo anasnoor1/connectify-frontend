@@ -9,11 +9,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Navigate, Link } from "react-router-dom";
 import { setToken, getToken } from "../utills/checkToken";
-<<<<<<< HEAD
 import { useGoogleLogin } from '@react-oauth/google'; 
-=======
-
->>>>>>> auth-naeem
 
 const particleOptions = {
   particles: {
@@ -76,7 +72,6 @@ const LoginSchema = Yup.object({
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-<<<<<<< HEAD
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
   
   // Redirect if already logged in
@@ -180,127 +175,6 @@ const Login = () => {
         
         toast.success("Login successful");
         navigate("/");
-=======
-  const googleBtnRef = useRef(null);
-  const [roleModalOpen, setRoleModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState("influencer");
-  const [pendingIdToken, setPendingIdToken] = useState("");
-  const [googleSubmitting, setGoogleSubmitting] = useState(false);
-
-  if (getToken()) return <Navigate to="/" replace />;
-
-  const particlesInit = async (engine) => await loadSlim(engine);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const google = window.google;
-    if (!google || !google.accounts || !google.accounts.id) {
-      console.log("Google API not loaded");
-      return;
-    }
-    try {
-      google.accounts.id.initialize({
-        client_id: "720475734209-do0bg2s9kce36tp0hvc6dlfvh9qhtvnf.apps.googleusercontent.com",
-        callback: (response) => {
-          console.log("Google callback received:", response);
-          const idToken = response?.credential;
-          if (!idToken) {
-            toast.error("Google sign-in failed - no token received");
-            return;
-          }
-          console.log("Google ID token received, length:", idToken.length);
-          setPendingIdToken(idToken);
-          setRoleModalOpen(true);
-        },
-      });
-      if (googleBtnRef.current) {
-        google.accounts.id.renderButton(googleBtnRef.current, {
-          theme: "outline",
-          size: "large",
-          text: "continue_with",
-          shape: "rectangular",
-          width: 320,
-        });
-        console.log("Google button rendered");
-      }
-    } catch (error) {
-      console.error("Google Sign-In initialization error:", error);
-    }
-  }, []);
-
-  const handleConfirmGoogleRole = async () => {
-    if (!pendingIdToken) {
-      toast.error("No Google token received");
-      return;
-    }
-
-    setGoogleSubmitting(true);
-    try {
-      console.log('Sending Google auth request with:', {
-        idTokenLength: pendingIdToken.length,
-        role: selectedRole
-      });
-
-      const res = await axios.post("/api/auth/google", {
-        idToken: pendingIdToken,
-        role: selectedRole,
-      });
-
-      console.log('Google auth response:', res.data);
-
-      const { token: jwtToken, user } = res.data || {};
-      if (jwtToken) {
-        // localStorage.setItem("token", jwtToken);
-        setToken(jwtToken);
-        if (user) localStorage.setItem("user", JSON.stringify(user));
-        toast.success("Logged in with Google");
-        setRoleModalOpen(false);
-        setPendingIdToken("");
-        navigate("/");
-      } else {
-        console.error('No token in response');
-        toast.error("Login failed - no token received");
-      }
-    } catch (e) {
-      console.error('Google auth error:', e);
-
-      if (e?.response?.status === 403) {
-        toast.error(e?.response?.data?.message || "Account is blocked");
-      } else if (e?.response?.status === 409) {
-        toast.error(e?.response?.data?.message || "Account already exists. Please login.");
-      } else if (e?.response?.status === 401) {
-        toast.error(e?.response?.data?.message || "Invalid Google token");
-      } else if (e?.response?.status === 400) {
-        toast.error(e?.response?.data?.message || "Bad request - missing information");
-      } else if (e?.response?.data?.message) {
-        toast.error(e.response.data.message);
-      } else if (e?.request) {
-        toast.error("Network error - cannot connect to server");
-      } else {
-        toast.error("Google authentication failed. Please try again.");
-      }
-    } finally {
-      setGoogleSubmitting(false);
-    }
-  };
-
-  const handleLogin = async (values, { setSubmitting }) => {
-    try {
-      const res = await axios.post("/api/auth/login", values);
-      toast.success("Login successful");
-      setToken(res.data.token);
-      navigate("/");
-    } catch (err) {
-      if (err.response?.status === 403) {
-        toast.error(
-          err.response?.data?.message || "Please verify your email first."
-        );
-        navigate(`/verify?email=${encodeURIComponent(values.email)}`);
-      } else if (err.response?.status === 401) {
-        toast.error(err.response?.data?.message || "Invalid credentials");
-      } else if (err.response?.status === 400) {
-        toast.error(err.response?.data?.message || "Invalid credentials");
->>>>>>> auth-naeem
       } else {
         throw new Error('No token received');
       }

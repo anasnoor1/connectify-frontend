@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import axios from "../utills/privateIntercept";
 import { useNavigate } from "react-router-dom";
@@ -45,6 +45,41 @@ export default function Profile() {
   const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
   const phoneRegex = /^\+?[0-9]{10,15}$/;
   const countWords = (t = '') => (t || '').trim().split(/\s+/).filter(Boolean).length;
+
+  // Client-side live profile completion (mirrors backend calculation)
+  const computeProfileCompletion = (profile = {}, role = '') => {
+    let completed = 0;
+    let total = 0;
+
+    if (role === 'brand') {
+      const fields = ['company_name', 'industry', 'website', 'bio', 'avatar_url'];
+      total = fields.length;
+      fields.forEach((f) => {
+        if (profile[f] && String(profile[f]).trim() !== '') completed++;
+      });
+    } else {
+      const fields = ['category', 'bio', 'avatar_url', 'social_links'];
+      total = fields.length;
+      fields.forEach((f) => {
+        if (f === 'social_links') {
+          const links = profile[f];
+          const hasLinks = Array.isArray(links)
+            ? links.length > 0
+            : String(links || '').trim() !== '';
+          if (hasLinks) completed++;
+        } else if (profile[f] && String(profile[f]).trim() !== '') {
+          completed++;
+        }
+      });
+    }
+
+    return Math.round((completed / Math.max(total, 1)) * 100);
+  };
+
+  const liveCompletion = useMemo(
+    () => computeProfileCompletion(data.profile || {}, data.user.role || ''),
+    [data.profile, data.user.role]
+  );
 
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const unsignedPreset = import.meta.env.VITE_CLOUDINARY_UNSIGNED_PRESET;
@@ -247,12 +282,12 @@ export default function Profile() {
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-700">Profile Completion</span>
-            <span className="text-sm font-bold">{data.stats?.profile_completion || 0}%</span>
+            <span className="text-sm font-bold">{liveCompletion}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
               className="bg-green-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${data.stats?.profile_completion || 0}%` }}
+              style={{ width: `${liveCompletion}%` }}
             ></div>
           </div>
         </div>

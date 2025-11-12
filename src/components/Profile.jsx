@@ -43,6 +43,24 @@ export default function Profile() {
     }
   };
 
+  const removeAvatar = async () => {
+    try {
+      setSaving(true);
+      // Optimistic update
+      setData(p => ({ ...p, profile: { ...(p.profile || {}), avatar_url: '' } }));
+      // Notify other components (e.g., Navbar)
+      window.dispatchEvent(new CustomEvent('avatar-updated', { detail: { url: '' } }));
+      const payload = { ...(data.profile || {}), avatar_url: '' };
+      await axios.put('/api/user/me', payload);
+      toast.success('Profile photo removed');
+      await loadProfile();
+    } catch (e) {
+      toast.error(e.response?.data?.message || 'Failed to remove photo');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
   const phoneRegex = /^\+?[0-9]{10,15}$/;
   const countWords = (t = '') => (t || '').trim().split(/\s+/).filter(Boolean).length;
@@ -119,10 +137,10 @@ export default function Profile() {
   const hasEmptyRequired = () => {
     const p = data.profile || {};
     if (data.user.role === 'brand') {
-      const req = [data.user.name, p.company_name, p.industry, p.website, p.avatar_url, p.phone, p.bio];
+      const req = [data.user.name, p.company_name, p.industry, p.website, p.phone, p.bio];
       return req.some(v => !String(v ?? '').trim());
     }
-    const req = [data.user.name, p.category, p.followers_count, p.engagement_rate, p.avatar_url, p.phone, p.social_links, p.bio];
+    const req = [data.user.name, p.category, p.followers_count, p.engagement_rate, p.phone, p.social_links, p.bio];
     return req.some(v => !String(v ?? '').trim());
   };
 
@@ -135,13 +153,13 @@ export default function Profile() {
     if (fullName === 'user.name' && !value) message = 'Name is required';
 
     if (data.user.role === 'brand') {
-      if (['company_name','industry','website','avatar_url','phone','bio'].includes(name) && !value) message = 'This field is required';
+      if (['company_name','industry','website','phone','bio'].includes(name) && !value) message = 'This field is required';
       if (name === 'company_name' && !value) message = 'Company name is required';
       if (name === 'website' && value && !urlRegex.test(value)) message = 'Enter a valid URL (http/https)';
       if (name === 'avatar_url' && value && !urlRegex.test(value)) message = 'Enter a valid URL (http/https)';
       if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) message = 'Enter 10-15 digits (optional +)';
     } else {
-      if (['category','followers_count','engagement_rate','avatar_url','phone','social_links','bio'].includes(name) && !value) message = 'This field is required';
+      if (['category','followers_count','engagement_rate','phone','social_links','bio'].includes(name) && !value) message = 'This field is required';
       if (name === 'followers_count') {
         const n = Number(value);
         if (value === '' || Number.isNaN(n)) message = 'This field is required';
@@ -174,9 +192,9 @@ export default function Profile() {
     const fields = [];
     fields.push('user.name');
     if (data.user.role === 'brand') {
-      fields.push('profile.company_name', 'profile.industry', 'profile.website', 'profile.avatar_url', 'profile.phone', 'profile.bio');
+      fields.push('profile.company_name', 'profile.industry', 'profile.website', 'profile.phone', 'profile.bio');
     } else {
-      fields.push('profile.category', 'profile.followers_count', 'profile.engagement_rate', 'profile.avatar_url', 'profile.phone', 'profile.social_links', 'profile.bio');
+      fields.push('profile.category', 'profile.followers_count', 'profile.engagement_rate', 'profile.phone', 'profile.social_links', 'profile.bio');
     }
     let ok = true;
     for (const f of fields) {
@@ -315,8 +333,9 @@ export default function Profile() {
           {data.profile.avatar_url && (
             <button
               type="button"
-              onClick={() => setData(p=>({ ...p, profile:{ ...(p.profile||{}), avatar_url: '' }}))}
-              className="text-sm text-red-600 hover:text-red-700"
+              onClick={removeAvatar}
+              className="text-sm text-red-600 hover:text-red-700 hover:underline underline-offset-2 cursor-pointer transition-colors"
+              title="Remove photo"
             >
               Remove photo
             </button>
@@ -386,7 +405,6 @@ export default function Profile() {
                     onChange={onChange}
                     onBlur={(e) => validateField(e.target.name, e.target.value)}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
-                  required
                   />
                   {errors['profile.avatar_url'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.avatar_url']}</p>)}
                 </div>

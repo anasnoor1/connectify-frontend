@@ -111,7 +111,7 @@ export default function Navbar() {
   useEffect(() => {
     const onAvatar = (e) => {
       const url = e?.detail?.url;
-      if (url) setUser((prev) => ({ ...prev, avatar: url }));
+      setUser((prev) => ({ ...prev, avatar: url || '' }));
     };
     window.addEventListener('avatar-updated', onAvatar);
     return () => window.removeEventListener('avatar-updated', onAvatar);

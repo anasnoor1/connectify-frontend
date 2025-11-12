@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import axios from "../utills/privateIntercept";
 import { useNavigate } from "react-router-dom";
+import { Camera, Mail, Shield, Loader2 } from "lucide-react";
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
@@ -239,11 +240,12 @@ export default function Profile() {
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-          <div className="space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        <div className="animate-pulse space-y-6">
+          <div className="h-32 bg-gradient-to-r from-indigo-500/30 to-purple-500/30 rounded-xl" />
+          <div className="bg-white rounded-xl shadow p-6 space-y-4">
+            <div className="h-6 bg-gray-200 rounded w-1/3" />
+            <div className="h-4 bg-gray-200 rounded w-2/3" />
+            <div className="h-4 bg-gray-200 rounded w-1/2" />
           </div>
         </div>
       </div>
@@ -252,44 +254,73 @@ export default function Profile() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        {/* Profile Picture (header-style at top) */}
-        <div className="mb-6 text-center">
-          <div className="inline-flex items-center justify-center h-28 w-28 rounded-full ring-2 ring-gray-200 bg-gray-50 overflow-hidden shadow-sm">
-            {data.profile.avatar_url ? (
-              <img src={data.profile.avatar_url} alt="avatar" className="h-full w-full object-cover" />
-            ) : (
-              <span className="text-3xl font-semibold text-gray-500">
-                {(data.user.name || data.user.email || 'U').charAt(0).toUpperCase()}
-              </span>
-            )}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full ring-4 ring-white/20 bg-white/10 backdrop-blur flex items-center justify-center overflow-hidden border border-white/20 shadow-lg">
+                {data.profile.avatar_url ? (
+                  <img src={data.profile.avatar_url} alt="avatar" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-3xl sm:text-4xl font-semibold">
+                    {(data.user.name || data.user.email || 'U').charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <input id="avatar-input" type="file" accept="image/*" className="hidden" onChange={(e)=> uploadAvatar(e.target.files?.[0])} />
+              <button
+                type="button"
+                onClick={()=> document.getElementById('avatar-input').click()}
+                className="absolute -bottom-2 -right-2 inline-flex items-center gap-1 bg-white text-indigo-700 px-2 py-1 rounded-full text-xs shadow"
+              >
+                <Camera className="h-4 w-4" />
+                {uploading ? 'Uploading' : 'Change'}
+              </button>
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold leading-tight">{data.user.name || 'Your Name'}</h1>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
+                {!!data.user.email && (
+                  <span className="inline-flex items-center gap-1 bg-white/15 px-2 py-1 rounded-full">
+                    <Mail className="h-3.5 w-3.5" /> {data.user.email}
+                  </span>
+                )}
+                {!!data.user.role && (
+                  <span className="inline-flex items-center gap-1 bg-white/15 px-2 py-1 rounded-full capitalize">
+                    <Shield className="h-3.5 w-3.5" /> {data.user.role}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-          <div className="mt-3 flex items-center justify-center gap-4">
-            <input id="avatar-input" type="file" accept="image/*" className="hidden" onChange={(e)=> uploadAvatar(e.target.files?.[0])} />
-            <button type="button" onClick={()=> document.getElementById('avatar-input').click()} className="px-3 py-1.5 text-sm rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Change Photo</button>
-            {data.profile.avatar_url && (
-              <button type="button" onClick={() => setData(p=>({ ...p, profile:{ ...(p.profile||{}), avatar_url: '' }}))} className="text-sm text-red-600 underline">Remove</button>
-            )}
+          <div className="min-w-44">
+            <div className="text-xs text-white/80 mb-1">Profile Completion</div>
+            <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-emerald-300 rounded-full transition-all duration-300"
+                style={{ width: `${liveCompletion}%` }}
+              />
+            </div>
+            <div className="text-right text-sm font-semibold mt-1">{liveCompletion}%</div>
           </div>
-          {uploading && (<p className="text-xs text-gray-500 mt-2">Uploading...</p>)}
-          {errors['profile.avatar_url'] && (<p className="text-red-600 text-xs mt-2">{errors['profile.avatar_url']}</p>)}
         </div>
-
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Profile Settings</h1>
-        <p className="text-gray-600 mb-4">Manage Profile</p>
-        
-        {/* Profile Completion */}
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-700">Profile Completion</span>
-            <span className="text-sm font-bold">{liveCompletion}%</span>
+      </div>
+      
+      <div className="bg-white rounded-2xl shadow p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Profile Settings</h2>
+            <p className="text-sm text-gray-600">Manage your account details</p>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-green-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${liveCompletion}%` }}
-            ></div>
-          </div>
+          {data.profile.avatar_url && (
+            <button
+              type="button"
+              onClick={() => setData(p=>({ ...p, profile:{ ...(p.profile||{}), avatar_url: '' }}))}
+              className="text-sm text-red-600 hover:text-red-700"
+            >
+              Remove photo
+            </button>
+          )}
         </div>
 
         <form onSubmit={onSubmit}>
@@ -302,7 +333,7 @@ export default function Profile() {
                 value={data.user.name || ""}
                 onChange={onChange}
                 onBlur={(e) => validateField(e.target.name, e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                 required
               />
               {errors['user.name'] && (<p className="text-red-600 text-xs mt-1">{errors['user.name']}</p>)}
@@ -320,7 +351,7 @@ export default function Profile() {
                   value={data.profile.company_name || ""}
                   onChange={onChange}
                   onBlur={(e) => validateField(e.target.name, e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                   required
                 />
                 {errors['profile.company_name'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.company_name']}</p>)}
@@ -331,7 +362,7 @@ export default function Profile() {
                   name="profile.industry"
                   value={data.profile.industry || ""}
                   onChange={onChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                 />
               </div>
               <div>
@@ -341,7 +372,7 @@ export default function Profile() {
                   value={data.profile.website || ""}
                   onChange={onChange}
                   onBlur={(e) => validateField(e.target.name, e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                 required
                 />
                 {errors['profile.website'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.website']}</p>)}
@@ -354,7 +385,7 @@ export default function Profile() {
                     value={data.profile.avatar_url || ""}
                     onChange={onChange}
                     onBlur={(e) => validateField(e.target.name, e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                   required
                   />
                   {errors['profile.avatar_url'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.avatar_url']}</p>)}
@@ -366,7 +397,7 @@ export default function Profile() {
                     value={data.profile.phone || ""}
                     onChange={onChange}
                     onBlur={(e) => validateField(e.target.name, e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                   />
                   {errors['profile.phone'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.phone']}</p>)}
                 </div>
@@ -377,7 +408,7 @@ export default function Profile() {
                   name="profile.bio"
                   value={data.profile.bio || ""}
                   onChange={onChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 h-24 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 h-28 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                   required
                 />
                 <div className="flex items-center justify-between mt-1">
@@ -395,7 +426,7 @@ export default function Profile() {
                   value={data.profile.category || ""}
                   onChange={onChange}
                   onBlur={(e) => validateField(e.target.name, e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                   required
                 />
                 {errors['profile.category'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.category']}</p>)}
@@ -409,7 +440,7 @@ export default function Profile() {
                     value={data.profile.followers_count || ""}
                     onChange={onChange}
                     onBlur={(e) => validateField(e.target.name, e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                     required
                   />
                   {errors['profile.followers_count'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.followers_count']}</p>)}
@@ -423,7 +454,7 @@ export default function Profile() {
                     value={data.profile.engagement_rate || ""}
                     onChange={onChange}
                     onBlur={(e) => validateField(e.target.name, e.target.value)}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                     required
                   />
                   {errors['profile.engagement_rate'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.engagement_rate']}</p>)}
@@ -436,7 +467,7 @@ export default function Profile() {
                   value={data.profile.phone || ""}
                   onChange={onChange}
                   onBlur={(e) => validateField(e.target.name, e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                   required
                 />
                 {errors['profile.phone'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.phone']}</p>)}
@@ -448,7 +479,7 @@ export default function Profile() {
                   value={Array.isArray(data.profile.social_links) ? data.profile.social_links.join(', ') : (data.profile.social_links || "")}
                   onChange={onChange}
                   onBlur={(e) => validateField(e.target.name, e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                   required
                 />
                 {errors['profile.social_links'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.social_links']}</p>)}
@@ -459,7 +490,7 @@ export default function Profile() {
                   name="profile.bio"
                   value={data.profile.bio || ""}
                   onChange={onChange}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 h-24 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 h-28 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
                   required
                 />
                 <div className="flex items-center justify-between mt-1">
@@ -470,13 +501,13 @@ export default function Profile() {
             </div>
           )}
 
-          <div className="pt-6 border-t border-gray-200 mt-6">
+          <div className="pt-6 border-t border-gray-200 mt-6 flex items-center justify-end">
             <button
               type="submit"
               disabled={saving || Object.values(errors).some(Boolean) || hasEmptyRequired()}
-              className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {saving ? "Saving..." : "Save Profile"}
+              {saving ? (<><Loader2 className="h-4 w-4 animate-spin" /> Saving...</>) : 'Save Profile'}
             </button>
           </div>
         </form>

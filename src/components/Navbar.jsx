@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Outlet, useLocation, useNavigate, Link } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, Link, NavLink } from "react-router-dom";
 import logo from "../assets/connectifylogo.png";
 import { getToken, logout as logoutUser } from "../utills/checkToken";
 import axios from "../utills/privateIntercept";
@@ -150,43 +150,68 @@ export default function Navbar() {
               }`}
             >
               <li>
-                <Link
+                <NavLink
                   to="/"
-                  className="block px-6 py-2 text-black hover:text-black"
+                  end
+                  className={({ isActive }) =>
+                    `block px-6 py-2 transition-colors ${
+                      isActive
+                        ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
+                        : "text-gray-700 hover:text-indigo-600"
+                    }`
+                  }
                   onClick={() => setMenuOpen(false)}
                 >
                   Home
-                </Link>
+                </NavLink>
               </li>
                <li>
-                <Link
+                <NavLink
                   to="/brandpartnership"
-                  className="block px-6 py-2 hover:text-indigo-600"
+                  className={({ isActive }) =>
+                    `block px-6 py-2 transition-colors ${
+                      isActive
+                        ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
+                        : "text-gray-700 hover:text-indigo-600"
+                    }`
+                  }
                   onClick={() => setMenuOpen(false)}
                 >
                   Brand Partnership
-                </Link>
+                </NavLink>
               </li>
 
 
               <li>
-                <Link
+                <NavLink
                   to="/about"
-                  className="block px-6 py-2 hover:text-indigo-600"
+                  className={({ isActive }) =>
+                    `block px-6 py-2 transition-colors ${
+                      isActive
+                        ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
+                        : "text-gray-700 hover:text-indigo-600"
+                    }`
+                  }
                   onClick={() => setMenuOpen(false)}
                 >
                   About Us
-                </Link>
+                </NavLink>
               </li>
 
               <li>
-                <Link
+                <NavLink
                   to="/contact"
-                  className="block px-6 py-2 hover:text-indigo-600"
+                  className={({ isActive }) =>
+                    `block px-6 py-2 transition-colors ${
+                      isActive
+                        ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
+                        : "text-gray-700 hover:text-indigo-600"
+                    }`
+                  }
                   onClick={() => setMenuOpen(false)}
                 >
                   Contact Us
-                </Link>
+                </NavLink>
               </li>
 
               {/* Show logout button only if logged in */}

@@ -249,7 +249,7 @@ export default function About() {
 
       {/* Pillars */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border p-6">
+        <div className="bg-white rounded-xl shadow-sm border p-6 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-300">
           <div className="h-12 w-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4">
             <IconVision />
           </div>
@@ -258,7 +258,7 @@ export default function About() {
             Empower every creator and brand to collaborate seamlessly and grow together.
           </p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border p-6">
+        <div className="bg-white rounded-xl shadow-sm border p-6 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-300">
           <div className="h-12 w-12 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center mb-4">
             <IconValues />
           </div>
@@ -267,7 +267,7 @@ export default function About() {
             Transparency, performance, and long-term relationships.
           </p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border p-6">
+        <div className="bg-white rounded-xl shadow-sm border p-6 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-fuchsia-300">
           <div className="h-12 w-12 rounded-xl bg-fuchsia-100 text-fuchsia-600 flex items-center justify-center mb-4">
             <IconWhyUs />
           </div>
@@ -286,7 +286,7 @@ export default function About() {
           { icon: <IconPartnerships />, label: "Partnerships", value: "50k+" },
           { icon: <IconCountries />, label: "Countries", value: "30+" },
         ].map((s) => (
-          <div key={s.label} className="bg-white rounded-xl shadow-sm border p-5 flex items-center gap-3">
+          <div key={s.label} className="bg-white rounded-xl shadow-sm border p-5 flex items-center gap-3 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-200">
             <div className="h-10 w-10 rounded-lg bg-gray-100 text-indigo-600 flex items-center justify-center">
               {s.icon}
             </div>
@@ -322,7 +322,7 @@ export default function About() {
           return (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
               {creators.map((c) => (
-                <div key={c.handle} className="group bg-white border rounded-xl shadow-sm p-3 hover:shadow transition">
+                <div key={c.handle} className="group bg-white border rounded-xl shadow-sm p-3 hover:shadow transition-all duration-200 hover:-translate-y-1 hover:border-indigo-200">
                   <div className="relative mx-auto h-24 w-24 rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-indigo-300 transition">
                     <img src={c.img} alt={c.name} className="h-full w-full object-cover" />
                     <span className="absolute inset-0 rounded-full" style={{background:"radial-gradient(closest-side, rgba(167,139,250,0.25), transparent)"}}/>
@@ -345,22 +345,22 @@ export default function About() {
       <section className="mt-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Trusted by brands</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 items-center">
-          <div className="flex items-center justify-center bg-white border rounded-xl p-5 opacity-80 hover:opacity-100 transition">
+          <div className="flex items-center justify-center bg-white border rounded-xl p-5 opacity-80 hover:opacity-100 transition-all duration-200 hover:-translate-y-1 hover:shadow">
             <LogoAurora />
           </div>
-          <div className="flex items-center justify-center bg-white border rounded-xl p-5 opacity-80 hover:opacity-100 transition">
+          <div className="flex items-center justify-center bg-white border rounded-xl p-5 opacity-80 hover:opacity-100 transition-all duration-200 hover:-translate-y-1 hover:shadow">
             <LogoNimbus />
           </div>
-          <div className="flex items-center justify-center bg-white border rounded-xl p-5 opacity-80 hover:opacity-100 transition">
+          <div className="flex items-center justify-center bg-white border rounded-xl p-5 opacity-80 hover:opacity-100 transition-all duration-200 hover:-translate-y-1 hover:shadow">
             <LogoVertex />
           </div>
-          <div className="flex items-center justify-center bg-white border rounded-xl p-5 opacity-80 hover:opacity-100 transition">
+          <div className="flex items-center justify-center bg-white border rounded-xl p-5 opacity-80 hover:opacity-100 transition-all duration-200 hover:-translate-y-1 hover:shadow">
             <LogoPulse />
           </div>
-          <div className="flex items-center justify-center bg-white border rounded-xl p-5 opacity-80 hover:opacity-100 transition">
+          <div className="flex items-center justify-center bg-white border rounded-xl p-5 opacity-80 hover:opacity-100 transition-all duration-200 hover:-translate-y-1 hover:shadow">
             <LogoOrbit />
           </div>
-          <div className="flex items-center justify-center bg-white border rounded-xl p-5 opacity-80 hover:opacity-100 transition">
+          <div className="flex items-center justify-center bg-white border rounded-xl p-5 opacity-80 hover:opacity-100 transition-all duration-200 hover:-translate-y-1 hover:shadow">
             <LogoLyra />
           </div>
         </div>

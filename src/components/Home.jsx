@@ -1,5 +1,6 @@
 
 import React from "react";
+import { Link } from "react-router-dom";
 import hero from "../assets/hero-1.webp";
 // import WhyChoose from './whyChoose'
 import Testimonials  from './Testimonials'
@@ -119,13 +120,13 @@ const Home = () => {
               <div className="flex space-x-4">
                 <a
                   href="#"
-                  className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700"
+                  className="bg-indigo-600 text-white px-5 py-2 rounded-lg transition-colors shadow-sm hover:bg-indigo-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400 active:scale-[0.98]"
                 >
                   Discover More
                 </a>
                 <a
                   href="#"
-                  className="flex items-center space-x-2 text-indigo-600 font-medium hover:underline"
+                  className="flex items-center space-x-2 text-indigo-600 font-medium hover:underline hover:underline-offset-4 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded"
                 >
                   <span>Meet Our Talent</span>
                   <i className="fa-solid fa-arrow-right"></i>
@@ -152,9 +153,14 @@ const Home = () => {
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 items-center">
               {partners.map((Logo, i) => (
-                <div key={i} className="flex items-center justify-center p-5 opacity-80 hover:opacity-100 transition">
+                <Link
+                  to="/brandpartnership"
+                  key={i}
+                  aria-label="Explore Brand Partnership"
+                  className="flex items-center justify-center p-5 opacity-80 hover:opacity-100 transition-all duration-200 hover:-translate-y-1 hover:shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer"
+                >
                   <Logo />
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -234,10 +240,10 @@ const Home = () => {
                   </p>
                   <a
                     href="/service_detail"
-                    className="text-indigo-600 font-medium hover:underline flex items-center space-x-2"
+                    className="text-indigo-600 font-medium flex items-center gap-2 hover:underline hover:underline-offset-4 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded"
                   >
                     <span>Learn More</span>
-                    <i className="fa-solid fa-arrow-right"></i>
+                    <i className="fa-solid fa-arrow-right transition-transform group-hover:translate-x-0.5"></i>
                   </a>
                 </div>
               ))}
@@ -253,7 +259,7 @@ const Home = () => {
                 </div>
                 <a
                   href="/contact"
-                  className="inline-flex items-center space-x-2 bg-white text-indigo-600 px-4 py-2 rounded-md font-medium hover:bg-gray-100 transition"
+                  className="inline-flex items-center space-x-2 bg-white text-indigo-600 px-4 py-2 rounded-md font-medium transition-colors hover:bg-gray-100 hover:shadow focus:outline-none focus:ring-2 focus:ring-white/60 active:scale-[0.98]"
                 >
                   <span>Get Started</span>
                   <i className="fa-solid fa-arrow-right"></i>

@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { isLoggedIn } from "../utills/checkToken";
+import { isLoggedIn } from "../../utills/checkToken";
 
 export default function RequireAuth() {
 

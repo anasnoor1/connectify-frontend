@@ -1,21 +1,21 @@
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Signup from "./components/Signup";
-import Login from "./components/Login";
-import ForgotPassword from "./components/ForgotPassword";
+import Signup from "./components/auth/Signup";
+import Login from "./components/auth/Login";
+import ForgotPassword from "./components/auth/ForgotPassword";
 import VerifyOtp from "./pages/VerifyOtp";
-import ResetPassword from "./components/resetPassword";
+import ResetPassword from "./components/auth/resetPassword";
 import NotFound from "./pages/NotFound";
-import Navbar from "./components/Navbar";
-import RequireAuth from "./components/RequireAuth";
-import Home from "./components/Home";
+import Navbar from "./components/navbar/Navbar";
+// import RequireAuth from "./components/auth/RequireAuth";
+import Home from "./components/home/Home";
 import BrandPartnership from "./components/services/BrandPartnership";
 import About from "./components/About";
 import Contact from "./components/Contact";
 import GuestRoute from "./utills/guestRoute";
 import PrivateRoute from "./utills/privateRoute"
-import Profile from "./components/Profile"
+import Profile from "./components/profile/Profile"
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // In your main render function:
@@ -41,7 +41,7 @@ export default function App() {
       <Routes>
         {/* Public home route with Navbar layout */}
         <Route element={<Navbar />}>
-          <Route index element={<Home />} />
+          <Route path="/" element={<Home />} />
           <Route path="/brandpartnership" element={<PrivateRoute><BrandPartnership /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/about" element={<About />} />

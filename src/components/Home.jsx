@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import hero from "../assets/hero-1.webp";
 // import WhyChoose from './whyChoose'
 import Testimonials  from './Testimonials'
-
+import Footer from './Footer'
 function LogoAurora() {
   return (
     <svg viewBox="0 0 80 24" className="h-12 w-auto" xmlns="http://www.w3.org/2000/svg" fill="none">
@@ -271,6 +271,7 @@ const Home = () => {
       </main>
       {/* <WhyChoose /> */}
       <Testimonials />
+      <Footer />
     </div>
   );
 };

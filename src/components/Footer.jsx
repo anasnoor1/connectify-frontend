@@ -126,13 +126,7 @@ const Footer = () => {
             </form>
           </div>
         </div>
-
         <div className="border-t border-gray-700"></div>
-
-        {/* Bottom Section */}
-        <div className="text-center text-sm text-gray-400">
-          <p>Connectify © 2025 All Rights Reserved by Abid</p>
-        </div>
       </div>
     </footer>
   );

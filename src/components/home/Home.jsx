@@ -2,10 +2,10 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react"
 
-import hero from "../assets/hero-1.webp";
+import hero from "../../assets/hero-1.webp";
 // import WhyChoose from './whyChoose'
-import Testimonials from './Testimonials'
-import Footer from './Footer'
+import Testimonials from '../home/homeComponents/Testimonials'
+import Footer from '../footer/Footer'
 function LogoAurora() {
   return (
     <svg

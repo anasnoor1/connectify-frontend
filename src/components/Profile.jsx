@@ -1,12 +1,14 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import axios from "../utills/privateIntercept";
 import { useNavigate } from "react-router-dom";
-import { Camera, Mail, Shield, Loader2 } from "lucide-react";
+import { Camera, Mail, Shield, Loader2, Instagram } from "lucide-react";
 
 export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [fetchingInstagram, setFetchingInstagram] = useState(false);
+  const [instagramData, setInstagramData] = useState(null);
   const [data, setData] = useState({
     user: { name: "", email: "", role: "" },
     profile: {},
@@ -44,18 +46,55 @@ export default function Profile() {
   };
 
   const removeAvatar = async () => {
+    if (!data.profile?.avatar_url) return;
+    
+    if (!window.confirm('Are you sure you want to remove your profile picture?')) {
+      return;
+    }
+    
+    // Save the current avatar URL at the function scope
+    const currentAvatar = data.profile?.avatar_url;
+    
     try {
       setSaving(true);
+      
       // Optimistic update
-      setData(p => ({ ...p, profile: { ...(p.profile || {}), avatar_url: '' } }));
-      // Notify other components (e.g., Navbar)
-      window.dispatchEvent(new CustomEvent('avatar-updated', { detail: { url: '' } }));
+      setData(p => ({ 
+        ...p, 
+        profile: { 
+          ...(p.profile || {}), 
+          avatar_url: '' 
+        } 
+      }));
+      
+      // Update other components
+      window.dispatchEvent(new CustomEvent('avatar-updated', { 
+        detail: { url: '' } 
+      }));
+      
+      // Save to the backend
       const payload = { ...(data.profile || {}), avatar_url: '' };
       await axios.put('/api/user/me', payload);
-      toast.success('Profile photo removed');
-      await loadProfile();
+      
+      toast.success('Profile picture removed');
+      
     } catch (e) {
-      toast.error(e.response?.data?.message || 'Failed to remove photo');
+      console.error('Remove avatar error:', e);
+      
+      // Revert on error
+      setData(p => ({ 
+        ...p, 
+        profile: { 
+          ...(p.profile || {}), 
+          avatar_url: currentAvatar 
+        } 
+      }));
+      
+      window.dispatchEvent(new CustomEvent('avatar-updated', { 
+        detail: { url: currentAvatar } 
+      }));
+      
+      toast.error(e.response?.data?.message || 'Failed to remove profile picture');
     } finally {
       setSaving(false);
     }
@@ -111,26 +150,139 @@ export default function Profile() {
     }
     try {
       setUploading(true);
+      
+      // Save the current avatar URL in case we need to revert
+      const currentAvatar = data.profile?.avatar_url;
+      
+      // Optimistic update
+      const tempUrl = URL.createObjectURL(file);
+      setData(prev => ({
+        ...prev,
+        profile: { ...(prev.profile || {}), avatar_url: tempUrl }
+      }));
+      
+      // Upload to Cloudinary
       const form = new FormData();
       form.append('file', file);
       form.append('upload_preset', unsignedPreset);
+      
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: 'POST',
         body: form,
       });
+      
       const json = await res.json();
-      if (!res.ok || !json.secure_url) throw new Error(json.error?.message || 'Upload failed');
+      if (!res.ok || !json.secure_url) {
+        // Revert to previous avatar if upload fails
+        setData(prev => ({
+          ...prev,
+          profile: { ...(prev.profile || {}), avatar_url: currentAvatar }
+        }));
+        throw new Error(json.error?.message || 'Upload failed');
+      }
+      
+      // Update with the permanent URL
       setData(prev => ({
         ...prev,
         profile: { ...(prev.profile || {}), avatar_url: json.secure_url }
       }));
-      validateField('profile.avatar_url', json.secure_url);
-      window.dispatchEvent(new CustomEvent('avatar-updated', { detail: { url: json.secure_url } }));
-      toast.success('Profile picture uploaded');
+      
+      // Update other components
+      window.dispatchEvent(new CustomEvent('avatar-updated', { 
+        detail: { url: json.secure_url } 
+      }));
+      
+      // Save to the backend
+      const payload = { ...(data.profile || {}), avatar_url: json.secure_url };
+      await axios.put('/api/user/me', payload);
+      
+      toast.success('Profile picture updated');
+      
     } catch (err) {
+      console.error('Upload error:', err);
       toast.error(err.message || 'Failed to upload image');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const fetchInstagramData = useCallback(async (username) => {
+    if (!username) return;
+    
+    try {
+      setFetchingInstagram(true);
+      const response = await axios.get(`/api/instagram/${encodeURIComponent(username)}`);
+      
+      // Update the profile data with fetched values
+      const newData = {
+        ...data,
+        profile: {
+          ...data.profile,
+          instagram_username: username,
+          followers_count: response.data.followers_count,
+          engagement_rate: response.data.engagement_rate,
+          social_links: data.profile.social_links || `https://instagram.com/${username}`
+        }
+      };
+      
+      // Update both local state and component data
+      setData(newData);
+      setInstagramUsername(username);
+      
+      // Clear any previous errors
+      setErrors(prev => ({
+        ...prev,
+        'profile.followers_count': '',
+        'profile.engagement_rate': ''
+      }));
+      
+      return response.data; // Return the fetched data
+      
+    } catch (error) {
+      console.error('Error fetching Instagram data:', error);
+      toast.error(error.response?.data?.message || 'Failed to fetch Instagram data');
+      
+      // Clear the fields if there's an error
+      setData(prev => ({
+        ...prev,
+        profile: {
+          ...prev.profile,
+          followers_count: '',
+          engagement_rate: ''
+        }
+      }));
+      throw error; // Re-throw to handle in the calling function
+    } finally {
+      setFetchingInstagram(false);
+    }
+  }, []);
+
+  // Track the Instagram username in component state
+  const [instagramUsername, setInstagramUsername] = useState('');
+
+  // Update local state when profile data loads
+  useEffect(() => {
+    if (data.profile?.instagram_username) {
+      setInstagramUsername(data.profile.instagram_username);
+    }
+  }, [data.profile?.instagram_username]);
+
+  const handleInstagramUsernameChange = (e) => {
+    setInstagramUsername(e.target.value);
+  };
+
+  const handleInstagramUsernameBlur = async (e) => {
+    const username = e.target.value.trim();
+    if (username && username !== data.profile?.instagram_username) {
+      try {
+        const result = await fetchInstagramData(username);
+        if (result) {
+          // Update the input field with the new username
+          setInstagramUsername(username);
+        }
+      } catch (error) {
+        // Error is already handled in fetchInstagramData
+      }
     }
   };
 
@@ -140,7 +292,7 @@ export default function Profile() {
       const req = [data.user.name, p.company_name, p.industry, p.website, p.phone, p.bio];
       return req.some(v => !String(v ?? '').trim());
     }
-    const req = [data.user.name, p.category, p.followers_count, p.engagement_rate, p.phone, p.social_links, p.bio];
+    const req = [data.user.name, p.category, p.phone, p.social_links, p.bio];
     return req.some(v => !String(v ?? '').trim());
   };
 
@@ -159,16 +311,21 @@ export default function Profile() {
       if (name === 'avatar_url' && value && !urlRegex.test(value)) message = 'Enter a valid URL (http/https)';
       if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) message = 'Enter 10-15 digits (optional +)';
     } else {
-      if (['category','followers_count','engagement_rate','phone','social_links','bio'].includes(name) && !value) message = 'This field is required';
+      // Make followers_count and engagement_rate not required when entered via Instagram
+      const requiredFields = ['category', 'phone', 'social_links', 'bio'];
+      if (requiredFields.includes(name) && !value) message = 'This field is required';
+      
       if (name === 'followers_count') {
         const n = Number(value);
-        if (value === '' || Number.isNaN(n)) message = 'This field is required';
-        else if (n < 0) message = 'Followers must be 0 or more';
+        if (value !== '' && !Number.isNaN(n) && n < 0) {
+          message = 'Followers must be 0 or more';
+        }
       }
       if (name === 'engagement_rate') {
         const n = Number(value);
-        if (value === '' || Number.isNaN(n)) message = 'This field is required';
-        else if (n < 0 || n > 100) message = 'Rate must be between 0 and 100';
+        if (value !== '' && !Number.isNaN(n) && (n < 0 || n > 100)) {
+          message = 'Rate must be between 0 and 100';
+        }
       }
       if (name === 'avatar_url' && value && !urlRegex.test(value)) message = 'Enter a valid URL (http/https)';
       if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) message = 'Enter 10-15 digits (optional +)';
@@ -236,17 +393,41 @@ export default function Profile() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateAll()) {
+      toast.error('Please fix the errors in the form');
+      return;
+    }
+    
     try {
-      if (!validateAll()) return;
       setSaving(true);
+      
+      // If there's a new Instagram username, fetch its data first
+      if (instagramUsername && instagramUsername !== data.profile?.instagram_username) {
+        try {
+          await fetchInstagramData(instagramUsername);
+        } catch (error) {
+          // If Instagram fetch fails, still proceed with saving other data
+          console.error('Error fetching Instagram data:', error);
+        }
+      }
+      
+      // Prepare the payload with the latest data including Instagram username
       const payload = {
         ...(data.profile || {}),
+        instagram_username: instagramUsername || data.profile?.instagram_username,
         name: data.user.name
       };
       
+      // Save the profile
       const res = await axios.put("/api/user/me", payload);
-      toast.success(res.data?.message || "Profile updated successfully");
+      
+      // Update local state with the saved data
       await loadProfile();
+      
+      // Show success message only after everything is done
+      toast.success(res.data?.message || "Profile updated successfully");
+      
     } catch (e) {
       console.error("Profile update error:", e);
       toast.error(e.response?.data?.message || "Update failed");
@@ -276,24 +457,44 @@ export default function Profile() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full ring-4 ring-white/20 bg-white/10 backdrop-blur flex items-center justify-center overflow-hidden border border-white/20 shadow-lg">
-                {data.profile.avatar_url ? (
-                  <img src={data.profile.avatar_url} alt="avatar" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-3xl sm:text-4xl font-semibold">
-                    {(data.user.name || data.user.email || 'U').charAt(0).toUpperCase()}
-                  </span>
+              <div className="flex items-center gap-4">
+                <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full ring-4 ring-white/20 bg-white/10 backdrop-blur flex-shrink-0 overflow-hidden border border-white/20 shadow-lg">
+                  {data.profile.avatar_url ? (
+                    <img src={data.profile.avatar_url} alt="avatar" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="h-full w-full flex items-center justify-center text-3xl sm:text-4xl font-semibold bg-gradient-to-br from-indigo-100 to-purple-100">
+                      {(data.user.name || data.user.email || 'U').charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <input id="avatar-input" type="file" accept="image/*" className="hidden" onChange={(e)=> uploadAvatar(e.target.files?.[0])} />
+                  <button
+                    type="button"
+                    onClick={()=> document.getElementById('avatar-input').click()}
+                    className="absolute -bottom-2 -right-2 inline-flex items-center gap-1 bg-white text-indigo-700 px-2 py-1 rounded-full text-xs shadow hover:bg-gray-50 transition-colors"
+                  >
+                    <Camera className="h-3 w-3" />
+                    {uploading ? '...' : ''}
+                  </button>
+                </div>
+                
+                {(data.profile.followers_count !== undefined && data.profile.followers_count !== null && data.profile.followers_count !== '') && (
+                  <div className="bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-md border border-white/20">
+                    <div className="flex items-center gap-2 text-indigo-700">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-1a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v1h-3zM4.75 12.094A5.973 5.973 0 004 15v1H1v-1a3 3 0 013.75-2.906z" />
+                      </svg>
+                      <div>
+                        <div className="text-xs font-medium text-gray-500">Followers</div>
+                        <div className="text-lg font-bold">
+                          {typeof data.profile.followers_count === 'number' 
+                            ? data.profile.followers_count.toLocaleString() 
+                            : data.profile.followers_count}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
-              <input id="avatar-input" type="file" accept="image/*" className="hidden" onChange={(e)=> uploadAvatar(e.target.files?.[0])} />
-              <button
-                type="button"
-                onClick={()=> document.getElementById('avatar-input').click()}
-                className="absolute -bottom-2 -right-2 inline-flex items-center gap-1 bg-white text-indigo-700 px-2 py-1 rounded-full text-xs shadow"
-              >
-                <Camera className="h-4 w-4" />
-                {uploading ? 'Uploading' : 'Change'}
-              </button>
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold leading-tight">{data.user.name || 'Your Name'}</h1>
@@ -450,33 +651,37 @@ export default function Profile() {
                 {errors['profile.category'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.category']}</p>)}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Followers</label>
-                  <input
-                    type="number"
-                    name="profile.followers_count"
-                    value={data.profile.followers_count || ""}
-                    onChange={onChange}
-                    onBlur={(e) => validateField(e.target.name, e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
-                    required
-                  />
-                  {errors['profile.followers_count'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.followers_count']}</p>)}
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Instagram Username</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Instagram className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      name="profile.instagram_username"
+                      value={instagramUsername || ""}
+                      onChange={handleInstagramUsernameChange}
+                      onBlur={handleInstagramUsernameBlur}
+                      className="w-full border border-gray-300 rounded-lg pl-10 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
+                      placeholder="Enter your Instagram username"
+                    />
+                  </div>
+                  {fetchingInstagram && (
+                    <div className="mt-1 text-xs text-gray-500 flex items-center">
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" /> Fetching Instagram data...
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Engagement Rate (%)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    name="profile.engagement_rate"
-                    value={data.profile.engagement_rate || ""}
-                    onChange={onChange}
-                    onBlur={(e) => validateField(e.target.name, e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 bg-gray-50"
-                    required
-                  />
-                  {errors['profile.engagement_rate'] && (<p className="text-red-600 text-xs mt-1">{errors['profile.engagement_rate']}</p>)}
-                </div>
+                <input
+                  type="hidden"
+                  name="profile.followers_count"
+                  value={data.profile.followers_count || ""}
+                />
+                <input
+                  type="hidden"
+                  name="profile.engagement_rate"
+                  value={data.profile.engagement_rate || ""}
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>

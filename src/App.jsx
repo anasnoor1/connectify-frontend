@@ -18,6 +18,7 @@ import Contact from "./components/Contact";
 import GuestRoute from "./utills/guestRoute";
 import PrivateRoute from "./utills/privateRoute"
 import Profile from "./components/Profile";
+import InstagramProfile from "./components/InstagramProfile";
 export default function App() {
   return (
     <>
@@ -34,6 +35,7 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="/brandpartnership" element={<PrivateRoute><BrandPartnership /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/instagram" element={<InstagramProfile />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           

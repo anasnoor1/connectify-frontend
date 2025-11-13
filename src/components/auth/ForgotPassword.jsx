@@ -8,7 +8,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
 
-
 // Email validation schema matching Signup component
 const ForgotPasswordSchema = Yup.object({
   email: Yup.string()
@@ -51,26 +50,6 @@ const particleOptions = {
   background: { color: "#1f2937" },
 };
 
-const EmailSchema = Yup.object({
-  email: Yup.string().email("Invalid email").required("Email is required"),
-});
-
-const OtpSchema = Yup.object({
-  otp: Yup.string().trim().required("Enter OTP"),
-});
-
-const ResetSchema = Yup.object({
-  newPassword: Yup.string()
-    .min(8, "Minimum 8 characters")
-    .matches(/[a-z]/, "At least one lowercase letter")
-    .matches(/[A-Z]/, "At least one uppercase letter")
-    .matches(/[0-9]/, "At least one number")
-    .required("Password is required"),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref("newPassword"), null], "Passwords do not match")
-    .required("Please confirm password"),
-});
-
 const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -97,8 +76,8 @@ const ForgotPassword = () => {
         console.log("OTP request successful:", response.data);
         toast.success("OTP sent to your email");
       
-        // Navigate to the login OTP verification page
-        navigate("/verify-otp-login", { 
+        // Navigate to the unified OTP verification page
+        navigate("/verify-otp", { 
           state: { 
             email: values.email,
             from: 'forgot-password'

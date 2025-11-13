@@ -11,14 +11,14 @@ const GuestRoute = ({ children }) => {
   }
 
   // If trying to access OTP or reset password pages directly without proper state
-  const protectedPaths = ['/verify-otp-signup', '/verify-otp-login', '/reset-password'];
+  const protectedPaths = ['/verify-otp', '/reset-password'];
   const isProtectedPath = protectedPaths.some(path => location.pathname.startsWith(path));
   
   if (isProtectedPath) {
     // Check if we have the required state for OTP or reset password flow
     const state = location.state;
     const hasValidState = 
-      (location.pathname.startsWith('/verify-otp-') && state?.email) ||
+      (location.pathname === '/verify-otp' && state?.email) ||
       (location.pathname === '/reset-password' && state?.email && state?.otp);
     
     if (!hasValidState) {

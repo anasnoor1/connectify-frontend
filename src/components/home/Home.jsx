@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react"
@@ -9,9 +8,21 @@ import Testimonials from './Testimonials'
 import Footer from './Footer'
 function LogoAurora() {
   return (
-    <svg viewBox="0 0 80 24" className="h-12 w-auto" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <svg
+      viewBox="0 0 80 24"
+      className="h-12 w-auto"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+    >
       <defs>
-        <linearGradient id="grad-logo-a-home" x1="0" y1="0" x2="80" y2="24" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="grad-logo-a-home"
+          x1="0"
+          y1="0"
+          x2="80"
+          y2="24"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#a78bfa" />
           <stop offset="1" stopColor="#60a5fa" />
         </linearGradient>
@@ -25,9 +36,21 @@ function LogoAurora() {
 
 function LogoNimbus() {
   return (
-    <svg viewBox="0 0 80 24" className="h-12 w-auto" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <svg
+      viewBox="0 0 80 24"
+      className="h-12 w-auto"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+    >
       <defs>
-        <linearGradient id="grad-logo-b-home" x1="0" y1="0" x2="80" y2="24" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="grad-logo-b-home"
+          x1="0"
+          y1="0"
+          x2="80"
+          y2="24"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#60a5fa" />
           <stop offset="1" stopColor="#f472b6" />
         </linearGradient>
@@ -41,9 +64,21 @@ function LogoNimbus() {
 
 function LogoVertex() {
   return (
-    <svg viewBox="0 0 80 24" className="h-12 w-auto" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <svg
+      viewBox="0 0 80 24"
+      className="h-12 w-auto"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+    >
       <defs>
-        <linearGradient id="grad-logo-c-home" x1="0" y1="0" x2="80" y2="24" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="grad-logo-c-home"
+          x1="0"
+          y1="0"
+          x2="80"
+          y2="24"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#f472b6" />
           <stop offset="1" stopColor="#a78bfa" />
         </linearGradient>
@@ -56,9 +91,21 @@ function LogoVertex() {
 
 function LogoPulse() {
   return (
-    <svg viewBox="0 0 80 24" className="h-12 w-auto" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <svg
+      viewBox="0 0 80 24"
+      className="h-12 w-auto"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+    >
       <defs>
-        <linearGradient id="grad-logo-d-home" x1="0" y1="0" x2="80" y2="24" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="grad-logo-d-home"
+          x1="0"
+          y1="0"
+          x2="80"
+          y2="24"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#60a5fa" />
           <stop offset="1" stopColor="#a78bfa" />
         </linearGradient>
@@ -71,9 +118,21 @@ function LogoPulse() {
 
 function LogoOrbit() {
   return (
-    <svg viewBox="0 0 80 24" className="h-12 w-auto" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <svg
+      viewBox="0 0 80 24"
+      className="h-12 w-auto"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+    >
       <defs>
-        <linearGradient id="grad-logo-e-home" x1="0" y1="0" x2="80" y2="24" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="grad-logo-e-home"
+          x1="0"
+          y1="0"
+          x2="80"
+          y2="24"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#a78bfa" />
           <stop offset="1" stopColor="#f472b6" />
         </linearGradient>
@@ -87,9 +146,21 @@ function LogoOrbit() {
 
 function LogoLyra() {
   return (
-    <svg viewBox="0 0 80 24" className="h-12 w-auto" xmlns="http://www.w3.org/2000/svg" fill="none">
+    <svg
+      viewBox="0 0 80 24"
+      className="h-12 w-auto"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+    >
       <defs>
-        <linearGradient id="grad-logo-f-home" x1="0" y1="0" x2="80" y2="24" gradientUnits="userSpaceOnUse">
+        <linearGradient
+          id="grad-logo-f-home"
+          x1="0"
+          y1="0"
+          x2="80"
+          y2="24"
+          gradientUnits="userSpaceOnUse"
+        >
           <stop stopColor="#f472b6" />
           <stop offset="1" stopColor="#60a5fa" />
         </linearGradient>
@@ -114,7 +185,7 @@ const Home = () => {
     <div className="font-sans text-gray-800">
       <main>
         {/* Hero Section */}
-        <section className="bg-indigo-50 py-20">
+        {/* <section className="bg-indigo-50 py-20">
           <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
             <div>
               <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -143,14 +214,47 @@ const Home = () => {
             </div>
 
             <div className="flex justify-center">
-              <img
-                src={hero}
-                alt="Hero"
-                className="rounded-xl shadow-lg"
-              />
+              <img src={hero} alt="Hero" className="rounded-xl shadow-lg" />
             </div>
           </div>
-        </section>
+        </section> */}
+        <section className="bg-indigo-50 py-20">
+      <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Transforming Talent into{" "}
+            <span className="text-indigo-600">Influence</span>
+          </h1>
+
+          <p className="text-gray-600 mb-6">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ornare
+            nisl aliquam ut consectetur maecenas eros.
+          </p>
+
+          <div className="flex space-x-4">
+            {/* ✅ Replace <a> with Link */}
+            <Link
+              to="#"
+              className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700"
+            >
+              Discover More
+            </Link>
+
+            <Link
+              to="#"
+              className="flex items-center space-x-2 text-indigo-600 font-medium hover:underline"
+            >
+              <span>Meet Our Talent</span>
+              <i className="fa-solid fa-arrow-right"></i>
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <img src={hero} alt="Hero" className="rounded-xl shadow-lg" />
+        </div>
+      </div>
+    </section>
 
         {/* Partner Section */}
         <section className="py-16 bg-white">
@@ -177,11 +281,7 @@ const Home = () => {
         {/* About Section */}
         <section className="py-20 bg-gray-50">
           <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
-            <img
-              src={hero}
-              alt="About Us"
-              className="rounded-lg shadow-md"
-            />
+            <img src={hero} alt="About Us" className="rounded-lg shadow-md" />
             <div>
               <h4 className="text-indigo-600 font-semibold">// About Us</h4>
               <h2 className="text-3xl font-bold mt-2 mb-6">
@@ -239,7 +339,8 @@ const Home = () => {
                 Tailored Solutions for Talent and Influence
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Sed ac suscipit tellus, a volutpat erat. Proin sit amet fermentum massa.
+                Sed ac suscipit tellus, a volutpat erat. Proin sit amet
+                fermentum massa.
               </p>
             </div>
 
@@ -286,20 +387,21 @@ const Home = () => {
                 >
                   <span>Get Started</span>
                   <i className="fa-solid fa-arrow-right"></i>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
         </section>
       </main>
-      {/* <WhyChoose /> */}
+      <WhyChoose />
       <Testimonials />
+      <HeroSection />
+      <FAQSection />
     </div>
   );
 };
 
 export default Home;
-
 
 // import React from "react";
 // const Home = () => {
@@ -330,7 +432,7 @@ export default Home;
 //                 <span className="text-indigo-600">Influence</span>
 //               </h1>
 //               <p className="text-gray-600 mb-6">
-//                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+//                 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 //                 Ornare nisl aliquam ut consectetur maecenas eros.
 //               </p>
 //               <div className="flex space-x-4">
@@ -394,11 +496,11 @@ export default Home;
 //                 Pioneering the Future of Talent and Influence Together
 //               </h2>
 //               <p className="text-gray-600 mb-6">
-//                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+//                 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 //                 Varius magna semper primis ut auctor justo lacus dictum morbi.
 //               </p>
 //               <blockquote className="italic text-gray-700 border-l-4 border-indigo-500 pl-4 mb-6">
-//                 “Senectus ullamcorper mollis posuere fringilla sit velit. 
+//                 “Senectus ullamcorper mollis posuere fringilla sit velit.
 //                 Nisl velit etiam per mus cursus suscipit habitasse viverra.”
 //               </blockquote>
 //               <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
@@ -449,7 +551,7 @@ export default Home;
 //                     {service}
 //                   </h3>
 //                   <p className="text-gray-600 mb-4">
-//                     Sed velit magna, dictum sit amet ante eu, tristique tempor ex. 
+//                     Sed velit magna, dictum sit amet ante eu, tristique tempor ex.
 //                     Phasellus neque enim nunc, ultrices eget bibendum id.
 //                   </p>
 //                   <a
@@ -488,5 +590,3 @@ export default Home;
 // };
 
 // export default Home;
-
-

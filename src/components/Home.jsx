@@ -1,9 +1,11 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react"
+
 import hero from "../assets/hero-1.webp";
 // import WhyChoose from './whyChoose'
-import Testimonials  from './Testimonials'
+import Testimonials from './Testimonials'
 import Footer from './Footer'
 function LogoAurora() {
   return (
@@ -14,8 +16,8 @@ function LogoAurora() {
           <stop offset="1" stopColor="#60a5fa" />
         </linearGradient>
       </defs>
-      <circle cx="12" cy="12" r="8" stroke="url(#grad-logo-a-home)" strokeWidth="2"/>
-      <circle cx="12" cy="12" r="3" fill="#a78bfa"/>
+      <circle cx="12" cy="12" r="8" stroke="url(#grad-logo-a-home)" strokeWidth="2" />
+      <circle cx="12" cy="12" r="3" fill="#a78bfa" />
       <text x="26" y="16" fontSize="12" fill="#111827" fontFamily="ui-sans-serif, system-ui">Aurora</text>
     </svg>
   );
@@ -30,8 +32,8 @@ function LogoNimbus() {
           <stop offset="1" stopColor="#f472b6" />
         </linearGradient>
       </defs>
-      <rect x="4" y="5" width="16" height="14" rx="3" stroke="url(#grad-logo-b-home)" strokeWidth="2"/>
-      <path d="M8 15l8-6" stroke="#60a5fa" strokeWidth="2"/>
+      <rect x="4" y="5" width="16" height="14" rx="3" stroke="url(#grad-logo-b-home)" strokeWidth="2" />
+      <path d="M8 15l8-6" stroke="#60a5fa" strokeWidth="2" />
       <text x="26" y="16" fontSize="12" fill="#111827" fontFamily="ui-sans-serif, system-ui">Nimbus</text>
     </svg>
   );
@@ -46,7 +48,7 @@ function LogoVertex() {
           <stop offset="1" stopColor="#a78bfa" />
         </linearGradient>
       </defs>
-      <path d="M12 6l6 12H6L12 6Z" stroke="url(#grad-logo-c-home)" strokeWidth="2" fill="none"/>
+      <path d="M12 6l6 12H6L12 6Z" stroke="url(#grad-logo-c-home)" strokeWidth="2" fill="none" />
       <text x="26" y="16" fontSize="12" fill="#111827" fontFamily="ui-sans-serif, system-ui">Vertex</text>
     </svg>
   );
@@ -61,7 +63,7 @@ function LogoPulse() {
           <stop offset="1" stopColor="#a78bfa" />
         </linearGradient>
       </defs>
-      <path d="M4 12h6l2-4 3 8 2-5h7" stroke="url(#grad-logo-d-home)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M4 12h6l2-4 3 8 2-5h7" stroke="url(#grad-logo-d-home)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       <text x="26" y="16" fontSize="12" fill="#111827" fontFamily="ui-sans-serif, system-ui">Pulse</text>
     </svg>
   );
@@ -76,8 +78,8 @@ function LogoOrbit() {
           <stop offset="1" stopColor="#f472b6" />
         </linearGradient>
       </defs>
-      <circle cx="12" cy="12" r="5" stroke="url(#grad-logo-e-home)" strokeWidth="2"/>
-      <ellipse cx="12" cy="12" rx="9" ry="4" stroke="url(#grad-logo-e-home)" strokeWidth="2"/>
+      <circle cx="12" cy="12" r="5" stroke="url(#grad-logo-e-home)" strokeWidth="2" />
+      <ellipse cx="12" cy="12" rx="9" ry="4" stroke="url(#grad-logo-e-home)" strokeWidth="2" />
       <text x="26" y="16" fontSize="12" fill="#111827" fontFamily="ui-sans-serif, system-ui">Orbit</text>
     </svg>
   );
@@ -92,8 +94,8 @@ function LogoLyra() {
           <stop offset="1" stopColor="#60a5fa" />
         </linearGradient>
       </defs>
-      <path d="M6 16l6-8 6 8" stroke="url(#grad-logo-f-home)" strokeWidth="2" fill="none"/>
-      <path d="M9 12h6" stroke="#f472b6" strokeWidth="2"/>
+      <path d="M6 16l6-8 6 8" stroke="url(#grad-logo-f-home)" strokeWidth="2" fill="none" />
+      <path d="M9 12h6" stroke="#f472b6" strokeWidth="2" />
       <text x="26" y="16" fontSize="12" fill="#111827" fontFamily="ui-sans-serif, system-ui">Lyra</text>
     </svg>
   );
@@ -101,7 +103,13 @@ function LogoLyra() {
 
 const Home = () => {
   const partners = [LogoAurora, LogoNimbus, LogoVertex, LogoPulse, LogoOrbit, LogoLyra];
-
+  const [stats, setStats] = useState({ totalBrands: 0, totalInfluencers: 0 });
+  useEffect(() => {
+    fetch("http://localhost:5000/api/auth/counts") // adjust URL if needed
+      .then((res) => res.json())
+      .then((data) => setStats(data))
+      .catch((err) => console.error("Error fetching counts:", err));
+  }, []);
   return (
     <div className="font-sans text-gray-800">
       <main>
@@ -114,7 +122,7 @@ const Home = () => {
                 <span className="text-indigo-600">Influence</span>
               </h1>
               <p className="text-gray-600 mb-6">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                 Ornare nisl aliquam ut consectetur maecenas eros.
               </p>
               <div className="flex space-x-4">
@@ -180,11 +188,11 @@ const Home = () => {
                 Pioneering the Future of Talent and Influence Together
               </h2>
               <p className="text-gray-600 mb-6">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
                 Varius magna semper primis ut auctor justo lacus dictum morbi.
               </p>
               <blockquote className="italic text-gray-700 border-l-4 border-indigo-500 pl-4 mb-6">
-                “Senectus ullamcorper mollis posuere fringilla sit velit. 
+                “Senectus ullamcorper mollis posuere fringilla sit velit.
                 Nisl velit etiam per mus cursus suscipit habitasse viverra.”
               </blockquote>
               <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
@@ -193,7 +201,7 @@ const Home = () => {
                 <li>Volutpat porta neque primis</li>
                 <li>Etiam sit amet cursus arcu</li>
               </ul>
-              <div className="flex space-x-10">
+              {/* <div className="flex space-x-10">
                 <div>
                   <p className="text-4xl font-bold text-indigo-600">12+</p>
                   <p>Years of Experience</p>
@@ -202,7 +210,22 @@ const Home = () => {
                   <p className="text-4xl font-bold text-indigo-600">270+</p>
                   <p>Creative Talents</p>
                 </div>
+              </div> */}
+              <div className="flex space-x-10">
+                <div>
+                  <p className="text-4xl font-bold text-indigo-600">
+                    {stats.totalBrands}+
+                  </p>
+                  <p>Total Brands</p>
+                </div>
+                <div>
+                  <p className="text-4xl font-bold text-indigo-600">
+                    {stats.totalInfluencers}+
+                  </p>
+                  <p>Creative Influencers</p>
+                </div>
               </div>
+
             </div>
           </div>
         </section>
@@ -235,7 +258,7 @@ const Home = () => {
                     {service}
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    Sed velit magna, dictum sit amet ante eu, tristique tempor ex. 
+                    Sed velit magna, dictum sit amet ante eu, tristique tempor ex.
                     Phasellus neque enim nunc, ultrices eget bibendum id.
                   </p>
                   <a
@@ -271,7 +294,6 @@ const Home = () => {
       </main>
       {/* <WhyChoose /> */}
       <Testimonials />
-      <Footer />
     </div>
   );
 };

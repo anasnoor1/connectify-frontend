@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate, Link, NavLink } from "react-router-do
 import logo from "../assets/connectifylogo.png";
 import { getToken, logout as logoutUser } from "../utills/checkToken";
 import axios from "../utills/privateIntercept";
-
+import Footer from "../components/Footer"
 function IconProfile() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -358,9 +358,7 @@ export default function Navbar() {
 
       {/* Footer */}
       {!isAuthPage && (
-        <footer className="border-t border-gray-200 py-4 bg-white text-center text-gray-500 text-sm">
-          © {new Date().getFullYear()} Connectify. All rights reserved.
-        </footer>
+        <Footer />
       )}
     </div>
   );

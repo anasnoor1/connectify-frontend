@@ -211,22 +211,27 @@ export default function Profile() {
     
     try {
       setFetchingInstagram(true);
+      
+      // Only fetch if the username has actually changed
+      if (username === data.profile?.instagram_username) {
+        return; // Skip if same username
+      }
+      
       const response = await axios.get(`/api/instagram/${encodeURIComponent(username)}`);
       
-      // Update the profile data with fetched values
-      const newData = {
-        ...data,
+      // Only update the specific Instagram-related fields
+      setData(prev => ({
+        ...prev,
         profile: {
-          ...data.profile,
+          ...prev.profile, // Keep all existing profile data
           instagram_username: username,
           followers_count: response.data.followers_count,
           engagement_rate: response.data.engagement_rate,
-          social_links: data.profile.social_links || `https://instagram.com/${username}`
+          social_links: `https://instagram.com/${username}`
         }
-      };
+      }));
       
-      // Update both local state and component data
-      setData(newData);
+      // Update the local Instagram username state
       setInstagramUsername(username);
       
       // Clear any previous errors
@@ -458,7 +463,7 @@ export default function Profile() {
           <div className="flex items-center gap-4">
             <div className="relative">
               <div className="flex items-center gap-4">
-                <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full ring-4 ring-white/20 bg-white/10 backdrop-blur flex-shrink-0 overflow-hidden border border-white/20 shadow-lg">
+                <div className="relative group h-24 w-24 rounded-full ring-4 ring-white/20 bg-white/10 backdrop-blur flex-shrink-0 overflow-hidden border border-white/20 shadow-lg">
                   {data.profile.avatar_url ? (
                     <img src={data.profile.avatar_url} alt="avatar" className="h-full w-full object-cover" />
                   ) : (
@@ -466,15 +471,28 @@ export default function Profile() {
                       {(data.user.name || data.user.email || 'U').charAt(0).toUpperCase()}
                     </span>
                   )}
-                  <input id="avatar-input" type="file" accept="image/*" className="hidden" onChange={(e)=> uploadAvatar(e.target.files?.[0])} />
-                  <button
-                    type="button"
-                    onClick={()=> document.getElementById('avatar-input').click()}
-                    className="absolute -bottom-2 -right-2 inline-flex items-center gap-1 bg-white text-indigo-700 px-2 py-1 rounded-full text-xs shadow hover:bg-gray-50 transition-colors"
-                  >
-                    <Camera className="h-3 w-3" />
-                    {uploading ? '...' : ''}
-                  </button>
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <label className="cursor-pointer p-2 bg-white/80 rounded-full text-indigo-700 hover:bg-white transition-colors">
+                      <Camera className="h-5 w-5" />
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) {
+                            uploadAvatar(e.target.files[0]);
+                            // Reset the input value to allow selecting the same file again
+                            e.target.value = '';
+                          }
+                        }} 
+                      />
+                    </label>
+                  </div>
+                  {uploading && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                    </div>
+                  )}
                 </div>
                 
                 {(data.profile.followers_count !== undefined && data.profile.followers_count !== null && data.profile.followers_count !== '') && (

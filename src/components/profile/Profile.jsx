@@ -8,7 +8,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fetchingInstagram, setFetchingInstagram] = useState(false);
-  const [instagramData, setInstagramData] = useState(null);
+  // const [instagramData, setInstagramData] = useState(null);
   const [data, setData] = useState({
     user: { name: "", email: "", role: "" },
     profile: {},
@@ -101,7 +101,8 @@ export default function Profile() {
   };
 
   const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
-  const phoneRegex = /^\+?[0-9]{10,15}$/;
+  // const phoneRegex = /^\+?[0-9]{10,15}$/;
+  const phoneRegex = /^(?:\+92|92|0)?3[0-9]{9}$/;
   const countWords = (t = '') => (t || '').trim().split(/\s+/).filter(Boolean).length;
 
   // Client-side live profile completion (mirrors backend calculation)
@@ -285,8 +286,8 @@ export default function Profile() {
           // Update the input field with the new username
           setInstagramUsername(username);
         }
-      } catch (error) {
-        // Error is already handled in fetchInstagramData
+      } catch (err) {
+        console.error(err.msg)
       }
     }
   };
@@ -314,7 +315,10 @@ export default function Profile() {
       if (name === 'company_name' && !value) message = 'Company name is required';
       if (name === 'website' && value && !urlRegex.test(value)) message = 'Enter a valid URL (http/https)';
       if (name === 'avatar_url' && value && !urlRegex.test(value)) message = 'Enter a valid URL (http/https)';
-      if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) message = 'Enter 10-15 digits (optional +)';
+      // if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) message = 'Enter 10-15 digits (optional +)';
+      if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) {
+        message = 'Enter a valid Pakistani phone number (e.g. +923001234567 or 03001234567)';
+      }
     } else {
       // Make followers_count and engagement_rate not required when entered via Instagram
       const requiredFields = ['category', 'phone', 'social_links', 'bio'];
@@ -333,7 +337,10 @@ export default function Profile() {
         }
       }
       if (name === 'avatar_url' && value && !urlRegex.test(value)) message = 'Enter a valid URL (http/https)';
-      if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) message = 'Enter 10-15 digits (optional +)';
+      // if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) message = 'Enter 10-15 digits (optional +)';
+      if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) {
+        message = 'Enter a valid Pakistani phone number (e.g. +923001234567 or 03001234567)';
+      }
       if (name === 'social_links' && value) {
         const items = value.split(',').map(s => s.trim()).filter(Boolean);
         const invalid = items.find(u => !urlRegex.test(u));

@@ -381,9 +381,9 @@ const Home = () => {
                     Let’s make it happen together with our expert team.
                   </p>
                 </div>
-                <a
-                  href="/contact"
-                  className="inline-flex items-center space-x-2 bg-white text-indigo-600 px-4 py-2 rounded-md font-medium transition-colors hover:bg-gray-100 hover:shadow focus:outline-none focus:ring-2 focus:ring-white/60 active:scale-[0.98]"
+                <Link
+                  to="/contact"
+                  className="inline-flex items-center space-x-2 bg-white text-indigo-600 px-4 py-2 rounded-md font-medium hover:bg-gray-100 transition"
                 >
                   <span>Get Started</span>
                   <i className="fa-solid fa-arrow-right"></i>

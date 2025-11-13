@@ -78,7 +78,7 @@ const handleInputChange = (e, setFieldValue) => {
   setFieldValue(name, value);
 };
 
-const Signup = () => {
+const Signup = ({ onClose, onSwitch }) => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);

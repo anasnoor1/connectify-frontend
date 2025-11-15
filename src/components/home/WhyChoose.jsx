@@ -1,16 +1,15 @@
 import React from "react";
 import { FaThumbsUp, FaHandshake, FaChartBar, FaPlay } from "react-icons/fa";
-import hero from "../../../../src/assets/hero-1.webp";
-import galaxyBg from "../../../../src/assets/Galaxy-Background.webp";
+import hero from "../../assets/hero-1.webp";
+import galaxyBg from "../../assets/Galaxy-Background.webp";
 
-const WhyWorkWithUs = () => {
+const WhyChoose = () => {
   return (
     <section
       style={{ backgroundImage: `url(${galaxyBg})` }}
       className="relative bg-contain bg-center text-white py-20"
     >
       <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-12 items-center">
-        
         {/* Left - Reasons List */}
         <div>
           <h4 className="text-indigo-400 font-semibold">// Why Work with Us</h4>
@@ -24,7 +23,6 @@ const WhyWorkWithUs = () => {
                 </p>
               </div>
             </li>
-
             <li className="flex items-start space-x-4">
               <FaHandshake className="text-indigo-400 text-2xl mt-1" />
               <div>
@@ -34,7 +32,6 @@ const WhyWorkWithUs = () => {
                 </p>
               </div>
             </li>
-
             <li className="flex items-start space-x-4">
               <FaChartBar className="text-indigo-400 text-2xl mt-1" />
               <div>
@@ -74,8 +71,7 @@ const WhyWorkWithUs = () => {
         {/* Right - Image with play button */}
         <div className="relative flex flex-col items-center">
           <p className="text-gray-300 mb-4 text-center">
-            Sed ac suscipit tellus, a volutpat erat. Proin sit amet fermentum
-            massa. Cras tincidunt cursus auctor.
+            Sed ac suscipit tellus, a volutpat erat. Proin sit amet fermentum massa. Cras tincidunt cursus auctor.
           </p>
           <div className="relative">
             <img
@@ -114,4 +110,4 @@ const ProgressBar = ({ title, percent }) => (
   </div>
 );
 
-export default WhyWorkWithUs;
+export default WhyChoose;

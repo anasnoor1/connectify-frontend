@@ -15,10 +15,6 @@ import About from "./components/About";
 import Contact from "./components/Contact";
 import GuestRoute from "./utills/guestRoute";
 import PrivateRoute from "./utills/privateRoute"
-<<<<<<< Updated upstream
-import Profile from "./components/Profile";
-import InstagramProfile from "./components/InstagramProfile";
-=======
 import Profile from "./components/profile/Profile"
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import InstagramProfile from "./components/profile/ProfileComponents/InstagramProfile";
@@ -30,7 +26,6 @@ import CreateCampaign from "./pages/campaign/CreateCampaign";
 
 // In your main render function:
 
->>>>>>> Stashed changes
 export default function App() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   
@@ -55,7 +50,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/brandpartnership" element={<PrivateRoute><BrandPartnership /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-          <Route path="/instagram" element={<InstagramProfile />} />
+          <Route path="/instagram" element={<InstagramProfile/>} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           

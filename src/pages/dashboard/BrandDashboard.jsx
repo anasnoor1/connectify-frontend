@@ -4,7 +4,7 @@ import axios from '../../utills/privateIntercept';
 
 import { LayoutDashboard, Zap, Clock, CheckCircle, AlertCircle, TrendingUp, Users, Calendar, ArrowUpRight } from 'lucide-react';
 
-const Dashboard = () => {
+const BrandDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -370,4 +370,4 @@ const RecentCampaigns = ({ campaigns }) => {
   );
 };
 
-export default Dashboard;
+export default BrandDashboard;

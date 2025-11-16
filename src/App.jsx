@@ -20,7 +20,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import InstagramProfile from "./components/profile/ProfileComponents/InstagramProfile";
 
 // Import new dashboard and campaign components
-import Dashboard from "./pages/dashboard/Dashboard";
+import DashboardRouter from "./pages/dashboard/DashboardRouter";
 import CampaignList from "./pages/campaign/CampaignList";
 import CreateCampaign from "./pages/campaign/CreateCampaign";
 
@@ -55,7 +55,7 @@ export default function App() {
           <Route path="/contact" element={<Contact />} />
           
           {/* New Dashboard and Campaign Routes - Protected */}
-          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/dashboard" element={<PrivateRoute><DashboardRouter /></PrivateRoute>} />
           <Route path="/campaigns" element={<PrivateRoute><CampaignList /></PrivateRoute>} />
           <Route path="/campaigns/create" element={<PrivateRoute><CreateCampaign /></PrivateRoute>} />
         </Route>

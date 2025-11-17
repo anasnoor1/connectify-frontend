@@ -4,54 +4,6 @@ import Loader from "../../utills/loader";
 
 import { NavLink, useNavigate } from "react-router-dom";
 
-/**
- * Influencer Dashboard
- * - Tailwind-based
- * - Replace `mockCampaigns` with real API data (fetch in useEffect)
- * - Theme: indigo -> violet accents (from your provided screenshots)
- */
-
-// const mockCampaigns = [
-//   {
-//     id: "c1",
-//     name: "Summer Splash 2024",
-//     brand: "NexGen Apparel",
-//     start: "2024-07-25",
-//     end: "2024-08-31",
-//     budget: "₨ 500,000",
-//     status: "Active",
-//     image: "/images/campaign-hero-1.jpg", // replace or use remote url
-//     reach: "1.2M",
-//     conversions: "12%",
-//     description: "Short brief about the campaign & deliverables.",
-//   },
-//   {
-//     id: "c2",
-//     name: "New Product Launch - Q4",
-//     brand: "GlowTech",
-//     start: "2024-10-15",
-//     end: "2024-11-20",
-//     budget: "₨ 5,00,000",
-//     status: "Pending",
-//     image: "/images/campaign-hero-2.jpg",
-//     reach: "500k",
-//     conversions: "3.5%",
-//     description: "Unboxing + 60s reel + 2 posts.",
-//   },
-//   {
-//     id: "c3",
-//     name: "Winter Collection Drive",
-//     brand: "UrbanStreet",
-//     start: "2023-12-01",
-//     end: "2023-12-31",
-//     budget: "₨ 3,50,000",
-//     status: "Completed",
-//     image: "/images/campaign-hero-3.jpg",
-//     reach: "800k",
-//     conversions: "7%",
-//     description: "High-visibility campaign for winter collection.",
-//   },
-// ];
 
 function StatusBadge({ status }) {
   const map = {
@@ -87,6 +39,10 @@ function CampaignCard({ campaign, onOpenChat }) {
             <div>
               <h3 className="text-lg font-semibold text-slate-900">{campaign.name}</h3>
               <p className="text-sm text-slate-500">{campaign.brand}</p>
+              <p className="text-xs text-indigo-600 font-medium mt-1">
+                {campaign.category}
+              </p>
+
             </div>
             <div className="flex flex-col items-end gap-2">
               <StatusBadge status={campaign.status} />
@@ -161,7 +117,8 @@ export default function InfluencerDashboard() {
       ?.filter((c) => {
         const matchQuery =
           c.campaignName?.toLowerCase().includes(query.toLowerCase()) ||
-          c.description?.toLowerCase().includes(query.toLowerCase());
+          c.description?.toLowerCase().includes(query.toLowerCase())||
+          c.category?.toLowerCase().includes(query.toLowerCase());
 
         const matchStatus =
           status === "All" || c.status?.toLowerCase() === status.toLowerCase();
@@ -175,23 +132,6 @@ export default function InfluencerDashboard() {
       });
   }, [campaigns, query, status, sortBy]);
 
-
-  // const filtered = useMemo(() => {
-  //   return campaigns
-  //     .filter((c) => {
-  //       if (status !== "All" && c.status !== status) return false;
-  //       if (!query) return true;
-  //       return (
-  //         c.name.toLowerCase().includes(query.toLowerCase()) ||
-  //         c.brand.toLowerCase().includes(query.toLowerCase())
-  //       );
-  //     })
-  //     .sort((a, b) => {
-  //       if (sortBy === "latest") return new Date(b.start) - new Date(a.start);
-  //       if (sortBy === "oldest") return new Date(a.start) - new Date(b.start);
-  //       return 0;
-  //     });
-  // }, [campaigns, query, status, sortBy]);
 
   function openChat(campaignId) {
     // navigate to your chat route (replace with your route)

@@ -130,7 +130,7 @@ const Footer = () => {
 
         {/* Bottom Section */}
         <div className="text-center text-sm text-gray-400">
-          <p>Connectify © 2025 All Rights Reserved by Abid</p>
+          <p>Connectify © 2025 All Rights Reserved by Connectify Team .</p>
         </div>
       </div>
     </footer>

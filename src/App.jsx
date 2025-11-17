@@ -19,6 +19,7 @@ import Profile from "./components/profile/Profile"
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import InstagramProfile from "./components/profile/ProfileComponents/InstagramProfile";
 import InfluencerDashboard from "./components/dashboard/InfluencersDashboard";
+import CreateCampaign from "./components/dashboard/Compaigns/createCompaign";
 
 
 
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/influencer/dashboard" element={<PrivateRoute><InfluencerDashboard /></PrivateRoute>} />
           {/* <Route path="/chat/:campaignId" element={<PrivateRoute><ChatPage /></PrivateRoute>} /> */}
+          <Route path="/campaigns/create" element={<PrivateRoute><CreateCampaign /></PrivateRoute>} />
           <Route path="/instagram" element={<InstagramProfile/>} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from '../../utills/privateIntercept';
+import axios from '../../../utills/privateIntercept';
 
 const CreateCampaign = () => {
   const navigate = useNavigate();

@@ -20,9 +20,9 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import InstagramProfile from "./components/profile/ProfileComponents/InstagramProfile";
 
 // Import new dashboard and campaign components
-import DashboardRouter from "./pages/dashboard/DashboardRouter";
-import CampaignList from "./pages/campaign/CampaignList";
-import CreateCampaign from "./pages/campaign/CreateCampaign";
+import DashboardRouter from "./components/dashboard/DashboardRouter";
+import CampaignList from "./components/dashboard/campaign/CampaignList";
+import CreateCampaign from "./components/dashboard/campaign/CreateCampaign";
 
 // In your main render function:
 

@@ -208,62 +208,128 @@ export default function Profile() {
   };
 
   const fetchInstagramData = useCallback(async (username) => {
-    if (!username) return;
+  if (!username) return;
+  
+  try {
+    setFetchingInstagram(true);
     
-    try {
-      setFetchingInstagram(true);
-      
-      // Only fetch if the username has actually changed
-      if (username === data.profile?.instagram_username) {
-        return; // Skip if same username
-      }
-      
-      const response = await axios.get(`/api/instagram/${encodeURIComponent(username)}`);
-      
-      // Only update the specific Instagram-related fields
-      setData(prev => ({
-        ...prev,
-        profile: {
-          ...prev.profile, // Keep all existing profile data
-          instagram_username: username,
-          followers_count: response.data.followers_count,
-          engagement_rate: response.data.engagement_rate,
-          social_links: `https://instagram.com/${username}`
-        }
-      }));
-      
-      // Update the local Instagram username state
-      setInstagramUsername(username);
-      
-      // Clear any previous errors
-      setErrors(prev => ({
-        ...prev,
-        'profile.followers_count': '',
-        'profile.engagement_rate': ''
-      }));
-      
-      return response.data; // Return the fetched data
-      
-    } catch (error) {
-      console.error('Error fetching Instagram data:', error);
-      toast.error(error.response?.data?.message || 'Failed to fetch Instagram data');
-      
-      // Clear the fields if there's an error
-      setData(prev => ({
-        ...prev,
-        profile: {
-          ...prev.profile,
-          followers_count: '',
-          engagement_rate: ''
-        }
-      }));
-      throw error; // Re-throw to handle in the calling function
-    } finally {
-      setFetchingInstagram(false);
+    // Only fetch if the username has actually changed
+    if (username === data.profile?.instagram_username) {
+      return; // Skip if same username
     }
-  }, []);
+    
+    const response = await axios.get(`/api/instagram/${encodeURIComponent(username)}`);
+    const instaData = response.data;
+    
+    // Update the profile with Instagram data
+    setData(prev => ({
+      ...prev,
+      profile: {
+        ...prev.profile, // Keep all existing profile data
+        instagram_username: username,
+        full_name: instaData.full_name || prev.profile?.full_name || '',
+        following_count: instaData.following_count || 0,
+        followers_count: instaData.followers_count || 0,
+        post_count: instaData.post_count || 0,
+        engagement_rate: instaData.is_private ? 0 : (instaData.engagement_rate || 0),
+        is_verified: instaData.is_verified || false,
+        bio: instaData.bio || prev.profile?.bio || '',
+        average_likes: instaData.average_likes || 0,
+        average_comments: instaData.average_comments || 0,
+        profile_pic_url: instaData.profile_pic_url || prev.profile?.profile_pic_url || '',
+        social_links: `https://instagram.com/${username}`
+      }
+    }));
+    
+    // Update the local Instagram username state
+    setInstagramUsername(username);
+    
+    // Clear any previous errors
+    setErrors(prev => ({
+      ...prev,
+      'profile.followers_count': '',
+      'profile.engagement_rate': ''
+    }));
+    
+    return instaData; // Return the fetched data
+  } catch (error) {
+    console.error('Error fetching Instagram data:', error);
+    toast.error(error.response?.data?.message || 'Failed to fetch Instagram data');
+    
+    // Clear the fields if there's an error
+    setData(prev => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        followers_count: '',
+        engagement_rate: ''
+      }
+    }));
+    throw error; // Re-throw to handle in the calling function
+  } finally {
+    setFetchingInstagram(false);
+  }
+}, [data.profile?.instagram_username]);
+
+  // const fetchInstagramData = useCallback(async (username) => {
+  //   if (!username) return;
+    
+  //   try {
+  //     setFetchingInstagram(true);
+      
+  //     // Only fetch if the username has actually changed
+  //     if (username === data.profile?.instagram_username) {
+  //       return; // Skip if same username
+  //     }
+      
+  //     const response = await axios.get(`/api/instagram/${encodeURIComponent(username)}`);
+      
+  //     // Only update the specific Instagram-related fields
+  //     setData(prev => ({
+  //       ...prev,
+  //       profile: {
+  //         ...prev.profile, // Keep all existing profile data
+  //         instagram_username: username,
+  //         followers_count: response.data.followers_count,
+  //         engagement_rate: response.data.engagement_rate,
+  //         social_links: `https://instagram.com/${username}`
+  //       }
+  //     }));
+      
+  //     // Update the local Instagram username state
+  //     setInstagramUsername(username);
+      
+  //     // Clear any previous errors
+  //     setErrors(prev => ({
+  //       ...prev,
+  //       'profile.followers_count': '',
+  //       'profile.engagement_rate': ''
+  //     }));
+      
+  //     return response.data; // Return the fetched data
+      
+  //   } catch (error) {
+  //     console.error('Error fetching Instagram data:', error);
+  //     toast.error(error.response?.data?.message || 'Failed to fetch Instagram data');
+      
+  //     // Clear the fields if there's an error
+  //     setData(prev => ({
+  //       ...prev,
+  //       profile: {
+  //         ...prev.profile,
+  //         followers_count: '',
+  //         engagement_rate: ''
+  //       }
+  //     }));
+  //     throw error; // Re-throw to handle in the calling function
+  //   } finally {
+  //     setFetchingInstagram(false);
+  //   }
+  // }, []);
 
   // Track the Instagram username in component state
+  
+  
   const [instagramUsername, setInstagramUsername] = useState('');
 
   // Update local state when profile data loads

@@ -7,7 +7,7 @@ import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Navigate, Link } from "react-router-dom";
-import { setToken, getToken } from "../utills/checkToken";
+import { setToken, getToken } from "../../utills/checkToken";
 
 
 const particleOptions = {

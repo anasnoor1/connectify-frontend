@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 
 const FAQSection = () => {
   const [activeTab, setActiveTab] = useState("General");
@@ -111,9 +112,12 @@ const FAQSection = () => {
               Didn’t find what you were looking for? Reach out to us — we're
               happy to help!
             </p>
-            <button className="mt-4 bg-purple-500 hover:bg-purple-600 px-5 py-2 rounded-full font-medium transition-all">
-              Contact Us
-            </button>
+            <Link
+  to="/contact"
+  className="mt-4 bg-purple-500 hover:bg-purple-600 px-5 py-2 rounded-full font-medium transition-all inline-block text-white text-center"
+>
+  Contact Us
+</Link>
           </div>
         </div>
       </div>

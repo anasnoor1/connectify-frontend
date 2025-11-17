@@ -1,22 +1,26 @@
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Signup from "./components/Signup";
-import Login from "./components/Login";
-import ForgotPassword from "./components/ForgotPassword";
+import Signup from "./components/auth/Signup";
+import Login from "./components/auth/Login";
+import ForgotPassword from "./components/auth/ForgotPassword";
 import VerifyOtp from "./pages/VerifyOtp";
-import ResetPassword from "./components/resetPassword";
+import ResetPassword from "./components/auth/resetPassword";
 import NotFound from "./pages/NotFound";
-import Navbar from "./components/Navbar";
-import RequireAuth from "./components/RequireAuth";
-import Home from "./components/Home";
+import Navbar from "./components/navbar/Navbar";
+// import RequireAuth from "./components/auth/RequireAuth";
+import Home from "./components/home/Home";
 import BrandPartnership from "./components/services/BrandPartnership";
 import About from "./components/About";
 import Contact from "./components/Contact";
 import GuestRoute from "./utills/guestRoute";
 import PrivateRoute from "./utills/privateRoute"
-import Profile from "./components/Profile"
+import Profile from "./components/profile/Profile"
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import InstagramProfile from "./components/profile/ProfileComponents/InstagramProfile";
+import InfluencerDashboard from "./components/dashboard/InfluencersDashboard";
+
+
 
 // In your main render function:
 
@@ -33,7 +37,7 @@ export default function App() {
     <GoogleOAuthProvider clientId={providerClientId}>
       <ToastContainer
         position="top-right"
-        autoClose={3000}
+        autoClose={2000}
         theme="dark"
         progressStyle={{ background: "#7c3aed" }}
       />
@@ -41,9 +45,12 @@ export default function App() {
       <Routes>
         {/* Public home route with Navbar layout */}
         <Route element={<Navbar />}>
-          <Route index element={<Home />} />
+          <Route path="/" element={<Home />} />
           <Route path="/brandpartnership" element={<PrivateRoute><BrandPartnership /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/influencer/dashboard" element={<PrivateRoute><InfluencerDashboard /></PrivateRoute>} />
+          {/* <Route path="/chat/:campaignId" element={<PrivateRoute><ChatPage /></PrivateRoute>} /> */}
+          <Route path="/instagram" element={<InstagramProfile/>} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           
@@ -77,49 +84,3 @@ export default function App() {
     </GoogleOAuthProvider>
   );
 }
-
-/////////////////////////
-// import { Routes, Route } from "react-router-dom";
-// import { ToastContainer } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-
-// import Signup from "./components/Signup";
-// import Login from "./components/Login";
-// import ForgotPassword from "./components/ForgotPassword";
-// import VerifyOtp from "./pages/VerifyOtp";
-// import NotFound from "./pages/NotFound";
-// import Navbar from "./components/Navbar";
-// import RequireAuth from "./components/RequireAuth";
-// import Home from "./components/Home";
-// import BrandPartnership from "./components/services/BrandPartnership";
-
-// export default function App() {
-//   return (
-//     <>
-//       <ToastContainer
-//         position="top-right"
-//         autoClose={3000}
-//         theme="dark"
-//         progressStyle={{ background: "#7c3aed" }}
-//       />
-
-//       <Routes>
-//         {/* Public home route with Navbar layout */}
-//         <Route element={<Navbar />}>
-//           <Route index element={<Home />} />
-//           <Route path="/brandpartnership" element={<BrandPartnership />} />
-          
-//         </Route>
-
-//         {/* Auth routes without Navbar layout */}
-//         <Route path="/signup" element={<Signup />} />
-//         <Route path="/login" element={<Login />} />
-//         <Route path="/forgot" element={<ForgotPassword />} />
-//         <Route path="/verify" element={<VerifyOtp />} />
-//         <Route path="/brandpartnership" element={<BrandPartnership />} />
-//         <Route path="*" element={<NotFound />} />
-//       </Routes>
-//     </>
-//   );
-// }
-

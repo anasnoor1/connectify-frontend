@@ -7,7 +7,7 @@ import * as Yup from "yup";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate, Navigate, Link } from "react-router-dom";
-import { isLoggedIn } from "../utills/checkToken";
+import { isLoggedIn } from "../../utills/checkToken";
 
 const particleOptions = {
   particles: {

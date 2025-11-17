@@ -1,11 +1,11 @@
 import React from "react";
 import { FaPlay, FaStar } from "react-icons/fa";
-import hero from "../assets/hero-1.webp"; 
-import olivia from "../assets/olivia.webp";
-import sophia from "../assets/sophie.webp";
-import ethan from "../assets/ethan.webp";
-import jackie from "../assets/jackie.webp";
-import galaxyBg from "../assets/Galaxy-Background.webp";
+import hero from "../../../../src/assets/hero-1.webp"; 
+import olivia from "../../../../src/assets/olivia.webp";
+import sophia from "../../../../src/assets/sophie.webp";
+import ethan from "../../../../src/assets/ethan.webp";
+import jackie from "../../../../src/assets/jackie.webp";
+import galaxyBg from "../../../../src/assets/Galaxy-Background.webp";
 
 const Testimonials = () => {
   return (

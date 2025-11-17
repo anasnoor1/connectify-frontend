@@ -1,4 +1,7 @@
-import React, { useMemo, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import axiosInstance from "../../utills/privateIntercept";
+import Loader from "../../utills/loader";
+
 import { NavLink, useNavigate } from "react-router-dom";
 
 /**
@@ -8,47 +11,47 @@ import { NavLink, useNavigate } from "react-router-dom";
  * - Theme: indigo -> violet accents (from your provided screenshots)
  */
 
-const mockCampaigns = [
-  {
-    id: "c1",
-    name: "Summer Splash 2024",
-    brand: "NexGen Apparel",
-    start: "2024-07-25",
-    end: "2024-08-31",
-    budget: "₨ 500,000",
-    status: "Active",
-    image: "/images/campaign-hero-1.jpg", // replace or use remote url
-    reach: "1.2M",
-    conversions: "12%",
-    description: "Short brief about the campaign & deliverables.",
-  },
-  {
-    id: "c2",
-    name: "New Product Launch - Q4",
-    brand: "GlowTech",
-    start: "2024-10-15",
-    end: "2024-11-20",
-    budget: "₨ 5,00,000",
-    status: "Pending",
-    image: "/images/campaign-hero-2.jpg",
-    reach: "500k",
-    conversions: "3.5%",
-    description: "Unboxing + 60s reel + 2 posts.",
-  },
-  {
-    id: "c3",
-    name: "Winter Collection Drive",
-    brand: "UrbanStreet",
-    start: "2023-12-01",
-    end: "2023-12-31",
-    budget: "₨ 3,50,000",
-    status: "Completed",
-    image: "/images/campaign-hero-3.jpg",
-    reach: "800k",
-    conversions: "7%",
-    description: "High-visibility campaign for winter collection.",
-  },
-];
+// const mockCampaigns = [
+//   {
+//     id: "c1",
+//     name: "Summer Splash 2024",
+//     brand: "NexGen Apparel",
+//     start: "2024-07-25",
+//     end: "2024-08-31",
+//     budget: "₨ 500,000",
+//     status: "Active",
+//     image: "/images/campaign-hero-1.jpg", // replace or use remote url
+//     reach: "1.2M",
+//     conversions: "12%",
+//     description: "Short brief about the campaign & deliverables.",
+//   },
+//   {
+//     id: "c2",
+//     name: "New Product Launch - Q4",
+//     brand: "GlowTech",
+//     start: "2024-10-15",
+//     end: "2024-11-20",
+//     budget: "₨ 5,00,000",
+//     status: "Pending",
+//     image: "/images/campaign-hero-2.jpg",
+//     reach: "500k",
+//     conversions: "3.5%",
+//     description: "Unboxing + 60s reel + 2 posts.",
+//   },
+//   {
+//     id: "c3",
+//     name: "Winter Collection Drive",
+//     brand: "UrbanStreet",
+//     start: "2023-12-01",
+//     end: "2023-12-31",
+//     budget: "₨ 3,50,000",
+//     status: "Completed",
+//     image: "/images/campaign-hero-3.jpg",
+//     reach: "800k",
+//     conversions: "7%",
+//     description: "High-visibility campaign for winter collection.",
+//   },
+// ];
 
 function StatusBadge({ status }) {
   const map = {
@@ -124,35 +127,77 @@ function CampaignCard({ campaign, onOpenChat }) {
 }
 
 export default function InfluencerDashboard() {
+  const [campaigns, setCampaigns] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        setLoading(true);
+
+        const res = await axiosInstance.get("/api/campaigns");
+
+        setCampaigns(res.data.data.campaigns || []);
+      } catch (error) {
+        console.error("Error fetching campaigns:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCampaigns();
+  }, []);
+
+
+
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [sortBy, setSortBy] = useState("latest");
 
-  const campaigns = useMemo(() => mockCampaigns, []);
-
-  const filtered = useMemo(() => {
+  // const campaigns = useMemo(() => mockCampaigns, []);
+  const filteredCampaigns = useMemo(() => {
     return campaigns
-      .filter((c) => {
-        if (status !== "All" && c.status !== status) return false;
-        if (!query) return true;
-        return (
-          c.name.toLowerCase().includes(query.toLowerCase()) ||
-          c.brand.toLowerCase().includes(query.toLowerCase())
-        );
+      ?.filter((c) => {
+        const matchQuery =
+          c.campaignName?.toLowerCase().includes(query.toLowerCase()) ||
+          c.description?.toLowerCase().includes(query.toLowerCase());
+
+        const matchStatus =
+          status === "All" || c.status?.toLowerCase() === status.toLowerCase();
+
+        return matchQuery && matchStatus;
       })
-      .sort((a, b) => {
-        if (sortBy === "latest") return new Date(b.start) - new Date(a.start);
-        if (sortBy === "oldest") return new Date(a.start) - new Date(b.start);
+      ?.sort((a, b) => {
+        if (sortBy === "newest") return new Date(b.createdAt) - new Date(a.createdAt);
+        if (sortBy === "oldest") return new Date(a.createdAt) - new Date(b.createdAt);
         return 0;
       });
   }, [campaigns, query, status, sortBy]);
+
+
+  // const filtered = useMemo(() => {
+  //   return campaigns
+  //     .filter((c) => {
+  //       if (status !== "All" && c.status !== status) return false;
+  //       if (!query) return true;
+  //       return (
+  //         c.name.toLowerCase().includes(query.toLowerCase()) ||
+  //         c.brand.toLowerCase().includes(query.toLowerCase())
+  //       );
+  //     })
+  //     .sort((a, b) => {
+  //       if (sortBy === "latest") return new Date(b.start) - new Date(a.start);
+  //       if (sortBy === "oldest") return new Date(a.start) - new Date(b.start);
+  //       return 0;
+  //     });
+  // }, [campaigns, query, status, sortBy]);
 
   function openChat(campaignId) {
     // navigate to your chat route (replace with your route)
     navigate(`/chat/${campaignId}`);
   }
-
+  if (loading) return <Loader />;
   return (
     <div className="min-h-screen py-6">
       <div className="max-w-7xl mx-auto px-4">
@@ -280,12 +325,15 @@ export default function InfluencerDashboard() {
 
             {/* Campaign grid */}
             <div className="mt-6 grid gap-6 grid-cols-1 lg:grid-cols-2">
-              {filtered.length === 0 ? (
+              {/* {filtered.length === 0 ? ( */}
+              {filteredCampaigns.length === 0 ? (
+
                 <div className="p-8 bg-white border border-gray-100 rounded-2xl text-center text-slate-500">
                   No campaigns found.
                 </div>
               ) : (
-                filtered.map((c) => (
+                filteredCampaigns.map((c) => (
+
                   <CampaignCard key={c.id} campaign={c} onOpenChat={openChat} />
                 ))
               )}
@@ -293,7 +341,8 @@ export default function InfluencerDashboard() {
 
             {/* Pagination placeholder */}
             <div className="mt-6 flex items-center justify-between text-sm text-slate-500">
-              <div>Showing {filtered.length} of {campaigns.length}</div>
+              <div>Showing {filteredCampaigns.length} of {campaigns.length}
+              </div>
               <div className="space-x-2">
                 <button className="px-3 py-1 rounded-md border border-gray-200">Prev</button>
                 <button className="px-3 py-1 rounded-md border border-gray-200">Next</button>

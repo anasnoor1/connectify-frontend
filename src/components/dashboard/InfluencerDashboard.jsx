@@ -59,8 +59,8 @@ function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
 
           <div className="mt-4 flex items-center justify-between gap-3">
             <div className="flex items-center gap-4 text-xs text-slate-500">
-              <div>Start: <span className="text-slate-700 ml-1">{campaign.start}</span></div>
-              <div>End: <span className="text-slate-700 ml-1">{campaign.end}</span></div>
+              {/* <div>Start: <span className="text-slate-700 ml-1">{campaign.start}</span></div>
+              <div>End: <span className="text-slate-700 ml-1">{campaign.end}</span></div> */}
             </div>
 
             <div className="flex items-center gap-2">

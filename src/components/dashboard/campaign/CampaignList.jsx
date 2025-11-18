@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from '../../utills/privateIntercept';
+import axios from '../../../utills/privateIntercept';
 import { Plus, Filter, RefreshCcw, Calendar, DollarSign, Tag, Trash2, Edit2, Eye } from 'lucide-react';
 
 const CampaignList = () => {

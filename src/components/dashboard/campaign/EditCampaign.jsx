@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
->>>>>>>> e3ca39234e6bccea101203f55ea4d8b9b5928a43:src/components/dashboard/campaign/EditCampaign.jsx
 import axios from '../../../utills/privateIntercept';
 
 const defaultFormState = {
@@ -106,289 +105,30 @@ const EditCampaign = () => {
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
-    
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from '../../../utills/privateIntercept';
-
-const lettersOnlyRegex = /^[A-Za-z\s]+$/; // letters and spaces
-const interestsRegex = /^[A-Za-z\s,]+$/; // letters, spaces and commas
-const digitsRegex = /^\d+$/; // whole digits only
-const decimalNumberRegex = /^\d+(\.\d+)?$/; // integer or decimal
-const contentTypeRegex = /^[A-Za-z\s,]+$/; // letters, spaces, commas
-
-const hasLeadingOrTrailingSpace = (v) => {
-  if (typeof v !== 'string') return false;
-  return v.startsWith(' ') || v.endsWith(' ');
-};
-
-const safeTrim = (v) => (typeof v === 'string' ? v.trim() : String(v ?? '').trim());
-
-const validateTitle = (v) => {
-  const raw = String(v ?? '');
-  if (!safeTrim(raw)) return 'Title is required.';
-  if (hasLeadingOrTrailingSpace(raw)) return 'No leading or trailing spaces allowed.';
-  const value = raw.trim();
-  if (value.length < 2) return 'Title must be at least 2 letters.';
-  if (!lettersOnlyRegex.test(value)) return 'Title can only contain letters and spaces.';
-  return '';
-};
-
-const validateDescription = (v) => {
-  const raw = String(v ?? '');
-  if (!safeTrim(raw)) return 'Description is required.';
-  if (hasLeadingOrTrailingSpace(raw)) return 'No leading or trailing spaces allowed.';
-  const value = raw.trim();
-  if (value.length < 2) return 'Description must be at least 2 letters.';
-  if (!lettersOnlyRegex.test(value)) return 'Description can only contain letters and spaces.';
-  return '';
-};
-
-const validateBudget = (v) => {
-  const value = safeTrim(v ?? '');
-  if (value === '') return 'Budget is required.';
-  if (!digitsRegex.test(value)) return 'Budget must contain only integer numbers.';
-  if (Number(value) < 0) return 'Budget cannot be negative.';
-  return '';
-};
-
-const validateAgeMin = (v) => {
-  const raw = safeTrim(v ?? '');
-  if (raw === '') return 'Minimum age is required.';
-  if (!digitsRegex.test(raw)) return 'Minimum age must be a whole number.';
-  if (Number(raw) < 18) return 'Minimum age must be 18 or older.';
-  return '';
-};
-
-const validateAgeMax = (v) => {
-  const raw = safeTrim(v ?? '');
-  if (raw === '') return 'Maximum age is required.';
-  if (!digitsRegex.test(raw)) return 'Maximum age must be a whole number.';
-  return '';
-};
-
-const validateLocation = (v) => {
-  const raw = String(v ?? '');
-  if (!safeTrim(raw)) return 'Location is required.';
-  if (hasLeadingOrTrailingSpace(raw)) return 'No leading or trailing spaces allowed.';
-  const value = raw.trim();
-  if (!lettersOnlyRegex.test(value)) return 'Location can only contain letters and spaces.';
-  return '';
-};
-
-const validateInterests = (v) => {
-  const raw = String(v ?? '');
-  if (!safeTrim(raw)) return 'Interests are required.';
-  if (hasLeadingOrTrailingSpace(raw)) return 'No leading or trailing spaces allowed.';
-  const value = raw.trim();
-  if (!interestsRegex.test(value)) return 'Interests can only contain letters, spaces and commas.';
-  return '';
-};
-
-const validateMinFollowers = (v) => {
-  const value = safeTrim(v ?? '');
-  if (value === '') return 'Minimum followers is required.';
-  if (!digitsRegex.test(value)) return 'Minimum followers must contain only whole numbers.';
-  if (Number(value) < 0) return 'Minimum followers cannot be negative.';
-  return '';
-};
-
-const validateMinEngagement = (v) => {
-  const value = safeTrim(v ?? '');
-  if (value === '') return 'Minimum engagement rate is required.';
-  if (!decimalNumberRegex.test(value)) return 'Engagement rate must be a valid number (e.g., 2.5).';
-  if (Number(value) < 0) return 'Engagement rate cannot be negative.';
-  return '';
-};
-
-const validateContentType = (v) => {
-  const raw = String(v ?? '');
-  if (!safeTrim(raw)) return 'Content type is required.';
-  if (hasLeadingOrTrailingSpace(raw)) return 'No leading or trailing spaces allowed.';
-  const value = raw.trim();
-  if (!contentTypeRegex.test(value)) return 'Content type can only contain letters, spaces and commas.';
-  return '';
-};
-
-const validateDeadline = (v) => {
-  if (!v) return 'Deadline is required.';
-  const selected = new Date(v);
-  const today = new Date();
-  selected.setHours(0, 0, 0, 0);
-  today.setHours(0, 0, 0, 0);
-  if (Number.isNaN(selected.getTime())) return 'Invalid date.';
-  if (selected <= today) return 'Deadline must be a future date (after today).';
-  return '';
-};
-
-const validateAll = (fields) => {
-  const aMin = fields?.target_audience?.age_range?.min;
-  const aMax = fields?.target_audience?.age_range?.max;
-
-  const errors = {
-    title: validateTitle(fields?.title),
-    description: validateDescription(fields?.description),
-    budget: validateBudget(fields?.budget),
-    age_min: validateAgeMin(aMin),
-    age_max: validateAgeMax(aMax),
-    location: validateLocation(fields?.target_audience?.location),
-    interests: validateInterests(fields?.target_audience?.interests),
-    req_min_followers: validateMinFollowers(fields?.requirements?.min_followers),
-    req_min_engagement: validateMinEngagement(fields?.requirements?.min_engagement),
-    req_content_type: validateContentType(fields?.requirements?.content_type),
-    req_deadline: validateDeadline(fields?.requirements?.deadline)
-  };
-
-  if (!errors.age_min && !errors.age_max) {
-    if (Number(aMax) < Number(aMin)) {
-      errors.age_max = 'Maximum age must be greater than or equal to minimum age.';
-    }
-  }
-
-  return errors;
-};
-
-const CreateCampaign = () => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    budget: '',
-    category: '',
-    target_audience: {
-      age_range: { min: '', max: '' },
-      gender: 'all',
-      location: '',
-      interests: ''
-    },
-    requirements: {
-      min_followers: '',
-      min_engagement: '',
-      content_type: '',
-      deadline: ''
-    },
-    social_media: [{ platform: '', requirements: '' }]
-  });
-
-  const runValidation = (data) => {
-    const baseErrors = validateAll(data);
-    const filteredErrors = Object.fromEntries(
-      Object.entries(baseErrors).filter(([, message]) => Boolean(message))
-    );
-
-    if (!safeTrim(data.category ?? '')) {
-      filteredErrors.category = 'Please select a category.';
-    }
-
-    const hasValidSocial = data.social_media.some(
-      (platform) =>
-        platform.platform && platform.requirements && platform.requirements.trim().length >= 10
-    );
-    if (!hasValidSocial) {
-      filteredErrors.social_media = 'Add at least one platform with clear deliverable requirements (10+ characters).';
-    }
-
-    return filteredErrors;
-  };
-
-  const validateAndSetErrors = (data) => {
-    const nextErrors = runValidation(data || formData);
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
-  };
-
-  const fieldKeyFromName = (name) => {
-    if (!name) return '';
-    if (name === 'target_audience.age_range.min') return 'age_min';
-    if (name === 'target_audience.age_range.max') return 'age_max';
-    if (name === 'target_audience.location') return 'location';
-    if (name === 'target_audience.interests') return 'interests';
-    if (name === 'requirements.min_followers') return 'req_min_followers';
-    if (name === 'requirements.min_engagement') return 'req_min_engagement';
-    if (name === 'requirements.content_type') return 'req_content_type';
-    if (name === 'requirements.deadline') return 'req_deadline';
-    return name;
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    const errorKey = fieldKeyFromName(name);
-    if (errorKey) {
-      setTouched(prev => ({ ...prev, [errorKey]: true }));
-    }
-
-    setFormData(prev => {
-      let updated;
-      if (name.includes('.')) {
-        const [parent, child, subchild] = name.split('.');
-        updated = {
-          ...prev,
-          [parent]: {
-            ...prev[parent],
-            [child]: subchild ? {
-              ...prev[parent][child],
-              [subchild]: value
-            } : value
-          }
-        };
-      } else {
-        updated = { ...prev, [name]: value };
-      }
-      setErrors(runValidation(updated));
-      return updated;
-    });
->>>>>>> e3ca39234e6bccea101203f55ea4d8b9b5928a43
   };
 
   const handleSocialMediaChange = (index, field, value) => {
     const updatedSocialMedia = [...formData.social_media];
     updatedSocialMedia[index][field] = value;
-    setTouched(prev => ({ ...prev, social_media: true }));
-    setFormData(prev => {
-      const updated = { ...prev, social_media: updatedSocialMedia };
-      setErrors(runValidation(updated));
-      return updated;
-    });
+    setFormData((prev) => ({ ...prev, social_media: updatedSocialMedia }));
   };
 
   const addSocialMediaField = () => {
-    setFormData(prev => {
-      const updated = {
-        ...prev,
-        social_media: [...prev.social_media, { platform: '', requirements: '' }]
-      };
-      setErrors(runValidation(updated));
-      return updated;
-    });
+    setFormData((prev) => ({
+      ...prev,
+      social_media: [...prev.social_media, { platform: '', requirements: '' }]
+    }));
   };
 
   const removeSocialMediaField = (index) => {
-    setFormData(prev => {
-      const updated = {
-        ...prev,
-        social_media: prev.social_media.filter((_, i) => i !== index)
-      };
-      setErrors(runValidation(updated));
-      return updated;
-    });
+    setFormData((prev) => ({
+      ...prev,
+      social_media: prev.social_media.filter((_, i) => i !== index)
+    }));
   };
-
-  const shouldShowError = (key) => (formSubmitted || touched[key]) && errors[key];
-
-  const renderError = (key) => (
-    shouldShowError(key) ? <p className="text-sm text-red-500 mt-1">{errors[key]}</p> : null
-  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormSubmitted(true);
-    if (!validateAndSetErrors()) {
-      return;
-    }
     setLoading(true);
 
     try {
@@ -401,39 +141,58 @@ const CreateCampaign = () => {
             min: Number(formData.target_audience.age_range.min) || 0,
             max: Number(formData.target_audience.age_range.max) || 100
           },
-          interests: formData.target_audience.interests.split(',').map(i => i.trim()).filter(Boolean)
+          interests: formData.target_audience.interests
+            .split(',')
+            .map((i) => i.trim())
+            .filter(Boolean)
         },
         requirements: {
           ...formData.requirements,
           min_followers: Number(formData.requirements.min_followers) || 0,
           min_engagement: Number(formData.requirements.min_engagement) || 0,
-          content_type: formData.requirements.content_type.split(',').map(i => i.trim()).filter(Boolean),
+          content_type: formData.requirements.content_type
+            .split(',')
+            .map((i) => i.trim())
+            .filter(Boolean),
           deadline: formData.requirements.deadline || null
         },
-        social_media: formData.social_media.filter(sm => sm.platform && sm.requirements)
+        social_media: formData.social_media.filter(
+          (sm) => sm.platform && sm.requirements
+        )
       };
 
-      await axios.post('/api/campaigns', submitData);
+      await axios.put(`/api/campaigns/${id}`, submitData);
       navigate('/campaigns');
     } catch (err) {
-      alert('Failed to create campaign');
-      console.error('Create campaign error:', err);
+      console.error('Update campaign error:', err);
+      alert('Failed to update campaign');
     } finally {
       setLoading(false);
     }
   };
 
+  if (fetching) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600"></div>
+          <p className="text-gray-600 font-medium">Loading campaign...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Create New Campaign</h1>
-          
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Campaign</h1>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Basic Information</h2>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Campaign Title *
@@ -447,7 +206,6 @@ const CreateCampaign = () => {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="Enter campaign title"
                 />
-                {renderError('title')}
               </div>
 
               <div>
@@ -463,7 +221,6 @@ const CreateCampaign = () => {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="Describe your campaign..."
                 />
-                {renderError('description')}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -480,7 +237,6 @@ const CreateCampaign = () => {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="Enter budget"
                   />
-                  {renderError('budget')}
                 </div>
 
                 <div>
@@ -505,7 +261,6 @@ const CreateCampaign = () => {
                     <option value="gaming">Gaming</option>
                     <option value="other">Other</option>
                   </select>
-                  {renderError('category')}
                 </div>
               </div>
             </div>
@@ -513,7 +268,7 @@ const CreateCampaign = () => {
             {/* Target Audience */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Target Audience</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -527,7 +282,6 @@ const CreateCampaign = () => {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="18"
                   />
-                  {renderError('age_min')}
                 </div>
 
                 <div>
@@ -542,7 +296,6 @@ const CreateCampaign = () => {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="35"
                   />
-                  {renderError('age_max')}
                 </div>
 
                 <div>
@@ -574,7 +327,6 @@ const CreateCampaign = () => {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="e.g., United States, Global"
                 />
-                {renderError('location')}
               </div>
 
               <div>
@@ -589,14 +341,13 @@ const CreateCampaign = () => {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="e.g., fashion, beauty, travel"
                 />
-                {renderError('interests')}
               </div>
             </div>
 
             {/* Requirements */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-gray-900">Influencer Requirements</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -610,7 +361,6 @@ const CreateCampaign = () => {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="1000"
                   />
-                  {renderError('req_min_followers')}
                 </div>
 
                 <div>
@@ -626,7 +376,6 @@ const CreateCampaign = () => {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     placeholder="2.5"
                   />
-                  {renderError('req_min_engagement')}
                 </div>
               </div>
 
@@ -642,7 +391,6 @@ const CreateCampaign = () => {
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="e.g., posts, stories, reels"
                 />
-                {renderError('req_content_type')}
               </div>
 
               <div>
@@ -656,7 +404,6 @@ const CreateCampaign = () => {
                   onChange={handleChange}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
-                {renderError('req_deadline')}
               </div>
             </div>
 
@@ -692,7 +439,7 @@ const CreateCampaign = () => {
                       <option value="facebook">Facebook</option>
                     </select>
                   </div>
-                  
+
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Requirements
@@ -717,7 +464,6 @@ const CreateCampaign = () => {
                   )}
                 </div>
               ))}
-              {renderError('social_media')}
             </div>
 
             {/* Submit Buttons */}
@@ -727,7 +473,7 @@ const CreateCampaign = () => {
                 disabled={loading}
                 className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
               >
-                {loading ? 'Creating...' : 'Create Campaign'}
+                {loading ? 'Saving...' : 'Save Changes'}
               </button>
               <button
                 type="button"
@@ -744,4 +490,4 @@ const CreateCampaign = () => {
   );
 };
 
-export default CreateCampaign;
+export default EditCampaign;

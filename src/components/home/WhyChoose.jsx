@@ -111,3 +111,4 @@ const ProgressBar = ({ title, percent }) => (
 );
 
 export default WhyChoose;
+

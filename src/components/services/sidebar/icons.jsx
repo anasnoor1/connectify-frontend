@@ -20,7 +20,7 @@ const FindUsOn = () => {
         {/* Facebook */}
         <Link
           to="/"
-          className="bg-[#7c4dff] hover:bg-[#6a38ff] text-white w-10 h-10 flex items-center justify-center rounded-md transition-all"
+          className="bg-[#7c4dff] hover:bg-[#6a38ff] text-white w-10 h-10 flex items-center justify-center rounded-md transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-white/60 active:scale-[0.98]"
         >
           <FontAwesomeIcon icon={faFacebookF} />
         </Link>
@@ -28,7 +28,7 @@ const FindUsOn = () => {
         {/* Instagram */}
         <Link
           to="/"
-          className="bg-[#7c4dff] hover:bg-[#6a38ff] text-white w-10 h-10 flex items-center justify-center rounded-md transition-all"
+          className="bg-[#7c4dff] hover:bg-[#6a38ff] text-white w-10 h-10 flex items-center justify-center rounded-md transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-white/60 active:scale-[0.98]"
         >
           <FontAwesomeIcon icon={faInstagram} />
         </Link>
@@ -36,7 +36,7 @@ const FindUsOn = () => {
         {/* LinkedIn */}
         <Link
           to="/"
-          className="bg-[#7c4dff] hover:bg-[#6a38ff] text-white w-10 h-10 flex items-center justify-center rounded-md transition-all"
+          className="bg-[#7c4dff] hover:bg-[#6a38ff] text-white w-10 h-10 flex items-center justify-center rounded-md transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-white/60 active:scale-[0.98]"
         >
           <FontAwesomeIcon icon={faLinkedinIn} />
         </Link>
@@ -44,7 +44,7 @@ const FindUsOn = () => {
         {/* YouTube */}
         <Link
           to="/"
-          className="bg-[#7c4dff] hover:bg-[#6a38ff] text-white w-10 h-10 flex items-center justify-center rounded-md transition-all"
+          className="bg-[#7c4dff] hover:bg-[#6a38ff] text-white w-10 h-10 flex items-center justify-center rounded-md transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-white/60 active:scale-[0.98]"
         >
           <FontAwesomeIcon icon={faYoutube} />
         </Link>

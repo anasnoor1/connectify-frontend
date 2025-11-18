@@ -23,6 +23,11 @@ import CreateCampaign from "./components/dashboard/Compaigns/createCompaign";
 
 
 
+// Import new dashboard and campaign components
+import DashboardRouter from "./components/dashboard/DashboardRouter";
+import CampaignList from "./components/dashboard/campaign/CampaignList";
+import CreateCampaign from "./components/dashboard/campaign/CreateCampaign";
+
 // In your main render function:
 
 export default function App() {
@@ -56,6 +61,10 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           
+          {/* New Dashboard and Campaign Routes - Protected */}
+          <Route path="/dashboard" element={<PrivateRoute><DashboardRouter /></PrivateRoute>} />
+          <Route path="/campaigns" element={<PrivateRoute><CampaignList /></PrivateRoute>} />
+          <Route path="/campaigns/create" element={<PrivateRoute><CreateCampaign /></PrivateRoute>} />
         </Route>
 
         {/* Auth routes without Navbar layout */}

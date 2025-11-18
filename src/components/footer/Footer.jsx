@@ -125,7 +125,6 @@ const Footer = () => {
             </form>
           </div>
         </div>
-
         <div className="border-t border-gray-700"></div>
 
         {/* Bottom Section */}

@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import teamBg from "../../../assets/letconnect.webp"; 
 
 const ImpactSection = () => {
@@ -19,9 +20,9 @@ const ImpactSection = () => {
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit
           tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.
         </p>
-        <button className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-indigo-500 hover:to-blue-500 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300">
+        <Link to="/contact" className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-indigo-500 hover:to-blue-500 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300">
           Contact Us
-        </button>
+        </Link>
       </div>
     </div>
   );

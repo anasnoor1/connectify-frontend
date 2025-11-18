@@ -54,7 +54,7 @@ function IconSend() {
           <stop offset="1" stopColor="#f472b6" />
         </linearGradient>
       </defs>
-      <path d="M4 11l15-7-7 15-1-6-7-2Z" stroke="url(#grad-send)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M4 11l15-7-7 15-1-6-7-2Z" stroke="#ffffff" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
@@ -120,7 +120,7 @@ export default function Contact() {
       </section>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 bg-white rounded-xl shadow-sm border p-6">
+        <div className="md:col-span-2 bg-white rounded-xl shadow-sm border p-6 transition-all duration-200 hover:shadow-md">
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -157,7 +157,7 @@ export default function Contact() {
             </div>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 via-fuchsia-600 to-blue-500 text-white px-5 py-2.5 rounded-lg hover:opacity-95 transition shadow-sm"
+              className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg transition shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 active:scale-[0.98]"
             >
               <IconSend />
               <span>Send Message</span>
@@ -169,15 +169,21 @@ export default function Contact() {
           </form>
         </div>
         <div className="space-y-4">
-          <div className="bg-white rounded-xl shadow-sm border p-6">
+          <div className="bg-white rounded-xl shadow-sm border p-6 transition-all duration-200 hover:shadow-md">
             <h3 className="text-lg font-semibold text-gray-900">Reach us</h3>
             <ul className="mt-3 space-y-3 text-gray-700">
-              <li className="flex items-center gap-3"><span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-indigo-50 text-indigo-600"><IconMail /></span> support@connectify.com</li>
-              <li className="flex items-center gap-3"><span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-fuchsia-50 text-fuchsia-600"><IconPhone /></span> 03035926784</li>
+              <li className="flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-indigo-50 text-indigo-600"><IconMail /></span>
+                <a href="mailto:support@connectify.com" className="hover:underline hover:underline-offset-4 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded">support@connectify.com</a>
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-fuchsia-50 text-fuchsia-600"><IconPhone /></span>
+                <a href="tel:03035926784" className="hover:underline hover:underline-offset-4 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded">03035926784</a>
+              </li>
               <li className="flex items-center gap-3"><span className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-blue-50 text-blue-600"><IconLocation /></span> Remote-first</li>
             </ul>
           </div>
-          <div className="bg-white rounded-xl shadow-sm border p-6">
+          <div className="bg-white rounded-xl shadow-sm border p-6 transition-all duration-200 hover:shadow-md">
             <h3 className="text-lg font-semibold text-gray-900">Office hours</h3>
             <p className="mt-2 text-gray-600 text-sm">Mon–Fri: 9:00 AM – 6:00 PM PKT</p>
             <p className="text-gray-600 text-sm">Sat–Sun: Closed</p>

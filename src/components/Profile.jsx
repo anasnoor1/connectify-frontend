@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { toast } from "react-toastify";
-import axios from "../../utills/privateIntercept";
+import axios from "../utills/privateIntercept";
 import { useNavigate } from "react-router-dom";
 import { Camera, Mail, Shield, Loader2, Instagram } from "lucide-react";
 
@@ -8,7 +8,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fetchingInstagram, setFetchingInstagram] = useState(false);
-  // const [instagramData, setInstagramData] = useState(null);
+  const [instagramData, setInstagramData] = useState(null);
   const [data, setData] = useState({
     user: { name: "", email: "", role: "" },
     profile: {},
@@ -101,8 +101,7 @@ export default function Profile() {
   };
 
   const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
-  // const phoneRegex = /^\+?[0-9]{10,15}$/;
-  const phoneRegex = /^(?:\+92|92|0)?3[0-9]{9}$/;
+  const phoneRegex = /^\+?[0-9]{10,15}$/;
   const countWords = (t = '') => (t || '').trim().split(/\s+/).filter(Boolean).length;
 
   // Client-side live profile completion (mirrors backend calculation)
@@ -208,128 +207,62 @@ export default function Profile() {
   };
 
   const fetchInstagramData = useCallback(async (username) => {
-  if (!username) return;
-  
-  try {
-    setFetchingInstagram(true);
+    if (!username) return;
     
-    // Only fetch if the username has actually changed
-    if (username === data.profile?.instagram_username) {
-      return; // Skip if same username
+    try {
+      setFetchingInstagram(true);
+      
+      // Only fetch if the username has actually changed
+      if (username === data.profile?.instagram_username) {
+        return; // Skip if same username
+      }
+      
+      const response = await axios.get(`/api/instagram/${encodeURIComponent(username)}`);
+      
+      // Only update the specific Instagram-related fields
+      setData(prev => ({
+        ...prev,
+        profile: {
+          ...prev.profile, // Keep all existing profile data
+          instagram_username: username,
+          followers_count: response.data.followers_count,
+          engagement_rate: response.data.engagement_rate,
+          social_links: `https://instagram.com/${username}`
+        }
+      }));
+      
+      // Update the local Instagram username state
+      setInstagramUsername(username);
+      
+      // Clear any previous errors
+      setErrors(prev => ({
+        ...prev,
+        'profile.followers_count': '',
+        'profile.engagement_rate': ''
+      }));
+      
+      return response.data; // Return the fetched data
+      
+    } catch (error) {
+      console.error('Error fetching Instagram data:', error);
+      toast.error(error.response?.data?.message || 'Failed to fetch Instagram data');
+      
+      // Clear the fields if there's an error
+      setData(prev => ({
+        ...prev,
+        profile: {
+          ...prev.profile,
+          followers_count: '',
+          engagement_rate: ''
+        }
+      }));
+      throw error; // Re-throw to handle in the calling function
+    } finally {
+      setFetchingInstagram(false);
     }
-    
-    const response = await axios.get(`/api/instagram/${encodeURIComponent(username)}`);
-    const instaData = response.data;
-    
-    // Update the profile with Instagram data
-    setData(prev => ({
-      ...prev,
-      profile: {
-        ...prev.profile, // Keep all existing profile data
-        instagram_username: username,
-        full_name: instaData.full_name || prev.profile?.full_name || '',
-        following_count: instaData.following_count || 0,
-        followers_count: instaData.followers_count || 0,
-        post_count: instaData.post_count || 0,
-        engagement_rate: instaData.is_private ? 0 : (instaData.engagement_rate || 0),
-        is_verified: instaData.is_verified || false,
-        bio: instaData.bio || prev.profile?.bio || '',
-        average_likes: instaData.average_likes || 0,
-        average_comments: instaData.average_comments || 0,
-        profile_pic_url: instaData.profile_pic_url || prev.profile?.profile_pic_url || '',
-        social_links: `https://instagram.com/${username}`
-      }
-    }));
-    
-    // Update the local Instagram username state
-    setInstagramUsername(username);
-    
-    // Clear any previous errors
-    setErrors(prev => ({
-      ...prev,
-      'profile.followers_count': '',
-      'profile.engagement_rate': ''
-    }));
-    
-    return instaData; // Return the fetched data
-  } catch (error) {
-    console.error('Error fetching Instagram data:', error);
-    toast.error(error.response?.data?.message || 'Failed to fetch Instagram data');
-    
-    // Clear the fields if there's an error
-    setData(prev => ({
-      ...prev,
-      profile: {
-        ...prev.profile,
-        followers_count: '',
-        engagement_rate: ''
-      }
-    }));
-    throw error; // Re-throw to handle in the calling function
-  } finally {
-    setFetchingInstagram(false);
-  }
-}, [data.profile?.instagram_username]);
-
-  // const fetchInstagramData = useCallback(async (username) => {
-  //   if (!username) return;
-    
-  //   try {
-  //     setFetchingInstagram(true);
-      
-  //     // Only fetch if the username has actually changed
-  //     if (username === data.profile?.instagram_username) {
-  //       return; // Skip if same username
-  //     }
-      
-  //     const response = await axios.get(`/api/instagram/${encodeURIComponent(username)}`);
-      
-  //     // Only update the specific Instagram-related fields
-  //     setData(prev => ({
-  //       ...prev,
-  //       profile: {
-  //         ...prev.profile, // Keep all existing profile data
-  //         instagram_username: username,
-  //         followers_count: response.data.followers_count,
-  //         engagement_rate: response.data.engagement_rate,
-  //         social_links: `https://instagram.com/${username}`
-  //       }
-  //     }));
-      
-  //     // Update the local Instagram username state
-  //     setInstagramUsername(username);
-      
-  //     // Clear any previous errors
-  //     setErrors(prev => ({
-  //       ...prev,
-  //       'profile.followers_count': '',
-  //       'profile.engagement_rate': ''
-  //     }));
-      
-  //     return response.data; // Return the fetched data
-      
-  //   } catch (error) {
-  //     console.error('Error fetching Instagram data:', error);
-  //     toast.error(error.response?.data?.message || 'Failed to fetch Instagram data');
-      
-  //     // Clear the fields if there's an error
-  //     setData(prev => ({
-  //       ...prev,
-  //       profile: {
-  //         ...prev.profile,
-  //         followers_count: '',
-  //         engagement_rate: ''
-  //       }
-  //     }));
-  //     throw error; // Re-throw to handle in the calling function
-  //   } finally {
-  //     setFetchingInstagram(false);
-  //   }
-  // }, []);
+  }, []);
 
   // Track the Instagram username in component state
-  
-  
   const [instagramUsername, setInstagramUsername] = useState('');
 
   // Update local state when profile data loads
@@ -352,8 +285,8 @@ export default function Profile() {
           // Update the input field with the new username
           setInstagramUsername(username);
         }
-      } catch (err) {
-        console.error(err.msg)
+      } catch (error) {
+        // Error is already handled in fetchInstagramData
       }
     }
   };
@@ -381,10 +314,7 @@ export default function Profile() {
       if (name === 'company_name' && !value) message = 'Company name is required';
       if (name === 'website' && value && !urlRegex.test(value)) message = 'Enter a valid URL (http/https)';
       if (name === 'avatar_url' && value && !urlRegex.test(value)) message = 'Enter a valid URL (http/https)';
-      // if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) message = 'Enter 10-15 digits (optional +)';
-      if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) {
-        message = 'Enter a valid Pakistani phone number (e.g. +923001234567 or 03001234567)';
-      }
+      if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) message = 'Enter 10-15 digits (optional +)';
     } else {
       // Make followers_count and engagement_rate not required when entered via Instagram
       const requiredFields = ['category', 'phone', 'social_links', 'bio'];
@@ -403,10 +333,7 @@ export default function Profile() {
         }
       }
       if (name === 'avatar_url' && value && !urlRegex.test(value)) message = 'Enter a valid URL (http/https)';
-      // if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) message = 'Enter 10-15 digits (optional +)';
-      if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) {
-        message = 'Enter a valid Pakistani phone number (e.g. +923001234567 or 03001234567)';
-      }
+      if (name === 'phone' && value && !phoneRegex.test(value.replace(/\s|-/g, ''))) message = 'Enter 10-15 digits (optional +)';
       if (name === 'social_links' && value) {
         const items = value.split(',').map(s => s.trim()).filter(Boolean);
         const invalid = items.find(u => !urlRegex.test(u));

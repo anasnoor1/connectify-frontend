@@ -27,7 +27,7 @@ const Footer = () => {
             <Link to="/contact"  className="hover:text-white">
               Contact Us
             </Link>
-          </div>
+          </div>  
         </div>
 
         <div className="border-t border-gray-700"></div>

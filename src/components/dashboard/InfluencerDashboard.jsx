@@ -180,7 +180,6 @@ export default function InfluencerDashboard() {
     navigate(`/chat/${campaignId}`);
   }
   if (loading) return <Loader />;
-
   return (
     <div className="min-h-screen py-6">
       <div className="max-w-7xl mx-auto px-4">
@@ -353,4 +352,3 @@ export default function InfluencerDashboard() {
     </div>
   );
 }
-

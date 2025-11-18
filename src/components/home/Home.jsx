@@ -416,4 +416,3 @@ useEffect(() => {
 };
 
 export default Home;
-

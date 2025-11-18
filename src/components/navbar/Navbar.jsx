@@ -61,6 +61,7 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const token = getToken();
+  const isBrand = user.role?.toLowerCase() === "brand";
 
   const handleLogout = () => {
     logoutUser();
@@ -184,21 +185,23 @@ export default function Navbar() {
                       Dashboard
                     </NavLink>
                   </li>
-                  <li>
-                    <NavLink
-                      to="/campaigns"
-                      className={({ isActive }) =>
-                        `block px-6 py-2 transition-colors ${
-                          isActive
-                            ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
-                            : "text-gray-700 hover:text-indigo-600"
-                        }`
-                      }
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      Campaigns
-                    </NavLink>
-                  </li>
+                  {isBrand && (
+                    <li>
+                      <NavLink
+                        to="/campaigns"
+                        className={({ isActive }) =>
+                          `block px-6 py-2 transition-colors ${
+                            isActive
+                              ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
+                              : "text-gray-700 hover:text-indigo-600"
+                          }`
+                        }
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        Campaigns
+                      </NavLink>
+                    </li>
+                  )}
                 </>
               )}
 

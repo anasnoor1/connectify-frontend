@@ -19,7 +19,7 @@ import Profile from "./components/profile/Profile"
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import InstagramProfile from "./components/profile/ProfileComponents/InstagramProfile";
 import InfluencerDashboard from "./components/dashboard/InfluencersDashboard";
-import CreateCampaign from "./components/dashboard/Compaigns/createCompaign";
+// import CreateCampaign from "./components/dashboard/Compaigns/createCompaign";
 
 
 
@@ -29,7 +29,7 @@ import CampaignList from "./components/dashboard/campaign/CampaignList";
 import CampaignDetail from "./components/dashboard/campaign/CampaignDetail";
 import CreateCampaign from "./components/dashboard/campaign/CreateCampaign";
 import MyProposals from "./components/dashboard/influencerDashboardComponents/myProposals";
-import InfluencerDashboard from "./components/dashboard/InfluencerDashboard";
+// import InfluencerDashboard from "./components/dashboard/InfluencerDashboard";
 import EditCampaign from "./components/dashboard/campaign/EditCampaign";
 
 // In your main render function:

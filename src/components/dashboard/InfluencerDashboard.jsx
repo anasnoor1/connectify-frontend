@@ -1,57 +1,11 @@
 import { useEffect, useState, useMemo } from "react";
 import axiosInstance from "../../utills/privateIntercept";
 import Loader from "../../utills/loader";
+import ProposalModal from "./influencerDashboardComponents/proposalModal";
+
 
 import { NavLink, useNavigate } from "react-router-dom";
 
-/**
- * Influencer Dashboard
- * - Tailwind-based
- * - Replace `mockCampaigns` with real API data (fetch in useEffect)
- * - Theme: indigo -> violet accents (from your provided screenshots)
- */
-
-// const mockCampaigns = [
-//   {
-//     id: "c1",
-//     name: "Summer Splash 2024",
-//     brand: "NexGen Apparel",
-//     start: "2024-07-25",
-//     end: "2024-08-31",
-//     budget: "₨ 500,000",
-//     status: "Active",
-//     image: "/images/campaign-hero-1.jpg", // replace or use remote url
-//     reach: "1.2M",
-//     conversions: "12%",
-//     description: "Short brief about the campaign & deliverables.",
-//   },
-//   {
-//     id: "c2",
-//     name: "New Product Launch - Q4",
-//     brand: "GlowTech",
-//     start: "2024-10-15",
-//     end: "2024-11-20",
-//     budget: "₨ 5,00,000",
-//     status: "Pending",
-//     image: "/images/campaign-hero-2.jpg",
-//     reach: "500k",
-//     conversions: "3.5%",
-//     description: "Unboxing + 60s reel + 2 posts.",
-//   },
-//   {
-//     id: "c3",
-//     name: "Winter Collection Drive",
-//     brand: "UrbanStreet",
-//     start: "2023-12-01",
-//     end: "2023-12-31",
-//     budget: "₨ 3,50,000",
-//     status: "Completed",
-//     image: "/images/campaign-hero-3.jpg",
-//     reach: "800k",
-//     conversions: "7%",
-//     description: "High-visibility campaign for winter collection.",
-//   },
-// ];
 
 function StatusBadge({ status }) {
   const map = {
@@ -64,7 +18,7 @@ function StatusBadge({ status }) {
   return <span className={`text-xs font-medium px-2 py-1 rounded-full ${map[status] || "bg-gray-100 text-gray-800"}`}>{status}</span>;
 }
 
-function CampaignCard({ campaign, onOpenChat }) {
+function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
   return (
     <div className="bg-white shadow-md rounded-2xl overflow-hidden border border-gray-100">
       <div className="md:flex">
@@ -87,6 +41,10 @@ function CampaignCard({ campaign, onOpenChat }) {
             <div>
               <h3 className="text-lg font-semibold text-slate-900">{campaign.name}</h3>
               <p className="text-sm text-slate-500">{campaign.brand}</p>
+              <p className="text-xs text-indigo-600 font-medium mt-1">
+                {campaign.category}
+              </p>
+
             </div>
             <div className="flex flex-col items-end gap-2">
               <StatusBadge status={campaign.status} />
@@ -106,18 +64,25 @@ function CampaignCard({ campaign, onOpenChat }) {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
+              {/* <button
                 onClick={() => onOpenChat(campaign.id)}
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-500 text-white text-sm shadow-sm hover:scale-[1.01] transition"
               >
                 Open Chat
-              </button>
+              </button> */}
 
               <button
                 className="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition"
-                onClick={() => alert("Open proposal composer (example)")}>
+                // onClick={() => onOpenProposal(campaign)}
+                onClick={() => {
+                  console.log("SELECTED CAMPAIGN:", campaign);
+                  onOpenProposal(campaign);
+                }}
+
+              >
                 Propose
               </button>
+
             </div>
           </div>
         </div>
@@ -129,6 +94,14 @@ function CampaignCard({ campaign, onOpenChat }) {
 export default function InfluencerDashboard() {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [openProposal, setOpenProposal] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
+
+  function openProposalModal(campaign) {
+    setSelectedCampaign(campaign);
+    setOpenProposal(true);
+  }
+
 
   useEffect(() => {
     const fetchCampaigns = async () => {
@@ -148,6 +121,31 @@ export default function InfluencerDashboard() {
     fetchCampaigns();
   }, []);
 
+//   useEffect(() => {
+//   const fetchCampaigns = async () => {
+//     try {
+//       setLoading(true);
+
+//       const res = await axiosInstance.get("/api/campaigns");
+
+//       // Map campaigns to include brand name directly
+//       const campaignsWithBrand = (res.data.data.campaigns || []).map(c => ({
+//         ...c,
+//         brand: c.brand_id?.name || "Unknown Brand", // <- brand name
+//         brandEmail: c.brand_id?.email || "",        // optional
+//       }));
+
+//       setCampaigns(campaignsWithBrand);
+//     } catch (error) {
+//       console.error("Error fetching campaigns:", error);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   fetchCampaigns();
+// }, []);
+
 
 
   const navigate = useNavigate();
@@ -161,7 +159,8 @@ export default function InfluencerDashboard() {
       ?.filter((c) => {
         const matchQuery =
           c.campaignName?.toLowerCase().includes(query.toLowerCase()) ||
-          c.description?.toLowerCase().includes(query.toLowerCase());
+          c.description?.toLowerCase().includes(query.toLowerCase()) ||
+          c.category?.toLowerCase().includes(query.toLowerCase());
 
         const matchStatus =
           status === "All" || c.status?.toLowerCase() === status.toLowerCase();
@@ -176,28 +175,12 @@ export default function InfluencerDashboard() {
   }, [campaigns, query, status, sortBy]);
 
 
-  // const filtered = useMemo(() => {
-  //   return campaigns
-  //     .filter((c) => {
-  //       if (status !== "All" && c.status !== status) return false;
-  //       if (!query) return true;
-  //       return (
-  //         c.name.toLowerCase().includes(query.toLowerCase()) ||
-  //         c.brand.toLowerCase().includes(query.toLowerCase())
-  //       );
-  //     })
-  //     .sort((a, b) => {
-  //       if (sortBy === "latest") return new Date(b.start) - new Date(a.start);
-  //       if (sortBy === "oldest") return new Date(a.start) - new Date(b.start);
-  //       return 0;
-  //     });
-  // }, [campaigns, query, status, sortBy]);
-
   function openChat(campaignId) {
     // navigate to your chat route (replace with your route)
     navigate(`/chat/${campaignId}`);
   }
   if (loading) return <Loader />;
+
   return (
     <div className="min-h-screen py-6">
       <div className="max-w-7xl mx-auto px-4">
@@ -227,7 +210,7 @@ export default function InfluencerDashboard() {
                 <NavLink to="/influencer/proposals" className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-gray-50">
                   My Proposals
                 </NavLink>
-                <NavLink to="/influencer/analytics" className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-gray-50">
+                {/* <NavLink to="/influencer/analytics" className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-gray-50">
                   Analytics
                 </NavLink>
                 <NavLink to="/influencer/messages" className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-gray-50">
@@ -238,7 +221,7 @@ export default function InfluencerDashboard() {
                 </NavLink>
                 <NavLink to="/influencer/settings" className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-gray-50">
                   Settings
-                </NavLink>
+                </NavLink> */}
               </nav>
             </div>
 
@@ -275,18 +258,18 @@ export default function InfluencerDashboard() {
               </div>
 
               <div className="flex items-center gap-3">
-                <button
+                {/* <button
                   onClick={() => navigate("/influencer/new-proposal")}
                   className="px-4 py-2 text-sm rounded-lg bg-white border border-gray-200 hover:bg-gray-50"
                 >
                   Create Proposal
-                </button>
-                <button
+                </button> */}
+                {/* <button
                   onClick={() => alert("Open filters modal")}
                   className="px-4 py-2 text-sm rounded-lg bg-gradient-to-r from-indigo-600 to-violet-500 text-white shadow-sm"
                 >
                   Filters
-                </button>
+                </button> */}
               </div>
             </div>
 
@@ -310,17 +293,17 @@ export default function InfluencerDashboard() {
                 <option>Active</option>
                 <option>Pending</option>
                 <option>Completed</option>
-                <option>Draft</option>
+                {/* <option>Draft</option> */}
               </select>
 
-              <select
+              {/* <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="px-4 py-3 border border-gray-200 rounded-xl bg-white"
               >
                 <option value="latest">Latest</option>
                 <option value="oldest">Oldest</option>
-              </select>
+              </select> */}
             </div>
 
             {/* Campaign grid */}
@@ -334,7 +317,15 @@ export default function InfluencerDashboard() {
               ) : (
                 filteredCampaigns.map((c) => (
 
-                  <CampaignCard key={c.id} campaign={c} onOpenChat={openChat} />
+                  // <CampaignCard key={c.id} campaign={c} onOpenChat={openChat} />
+
+                  <CampaignCard
+                    key={c.id}
+                    campaign={c}
+                    onOpenChat={openChat}
+                    onOpenProposal={openProposalModal}
+                  />
+
                 ))
               )}
             </div>
@@ -344,13 +335,22 @@ export default function InfluencerDashboard() {
               <div>Showing {filteredCampaigns.length} of {campaigns.length}
               </div>
               <div className="space-x-2">
-                <button className="px-3 py-1 rounded-md border border-gray-200">Prev</button>
-                <button className="px-3 py-1 rounded-md border border-gray-200">Next</button>
+                {/* <button className="px-3 py-1 rounded-md border border-gray-200">Prev</button>
+                <button className="px-3 py-1 rounded-md border border-gray-200">Next</button> */}
               </div>
             </div>
           </section>
         </div>
       </div>
+      {openProposal && (
+        <ProposalModal
+          isOpen={openProposal}
+          onClose={() => setOpenProposal(false)}
+          campaign={selectedCampaign}
+        />
+      )}
+
     </div>
   );
 }
+

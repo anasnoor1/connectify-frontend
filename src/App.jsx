@@ -23,6 +23,10 @@ import InstagramProfile from "./components/profile/ProfileComponents/InstagramPr
 import DashboardRouter from "./components/dashboard/DashboardRouter";
 import CampaignList from "./components/dashboard/campaign/CampaignList";
 import CreateCampaign from "./components/dashboard/campaign/CreateCampaign";
+import MyProposals from "./components/dashboard/influencerDashboardComponents/myProposals";
+import InfluencerDashboard from "./components/dashboard/InfluencerDashboard";
+
+
 
 // In your main render function:
 
@@ -58,6 +62,8 @@ export default function App() {
           <Route path="/dashboard" element={<PrivateRoute><DashboardRouter /></PrivateRoute>} />
           <Route path="/campaigns" element={<PrivateRoute><CampaignList /></PrivateRoute>} />
           <Route path="/campaigns/create" element={<PrivateRoute><CreateCampaign /></PrivateRoute>} />
+          <Route path="/influencer/proposals" element={<PrivateRoute><MyProposals /></PrivateRoute>} />
+          <Route path="/influencer/dashboard" element={<PrivateRoute><InfluencerDashboard /></PrivateRoute>} />
         </Route>
 
         {/* Auth routes without Navbar layout */}

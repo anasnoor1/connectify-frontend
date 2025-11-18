@@ -12,19 +12,19 @@ const Footer = () => {
 
           {/* Links */}
           <div className="flex flex-wrap justify-center gap-4 text-sm">
-            <Link to="#" className="hover:text-white">
+            <Link to="/#" className="hover:text-white">
               Home
             </Link>
-            <Link to="/#" className="hover:text-white">
+            <Link to="/about" className="hover:text-white">
               About Us
             </Link>
-            <Link to="#" className="hover:text-white">
+            {/* <Link to="#" className="hover:text-white">
               Our Services
             </Link>
             <Link to="#" className="hover:text-white">
               Our Talents
-            </Link>
-            <Link to="#" className="hover:text-white">
+            </Link> */}
+            <Link to="/contact"  className="hover:text-white">
               Contact Us
             </Link>
           </div>
@@ -126,6 +126,11 @@ const Footer = () => {
           </div>
         </div>
         <div className="border-t border-gray-700"></div>
+
+        {/* Bottom Section */}
+        <div className="text-center text-sm text-gray-400">
+          <p>Connectify © 2025 All Rights Reserved by Connectify Team .</p>
+        </div>
       </div>
     </footer>
   );

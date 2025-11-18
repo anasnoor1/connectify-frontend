@@ -116,7 +116,7 @@ export default function InfluencerDashboard() {
       } finally {
         setLoading(false);
       }
-    };
+    };   
 
     fetchCampaigns();
   }, []);

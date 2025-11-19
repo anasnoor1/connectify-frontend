@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../../utills/privateIntercept';
-
-import { LayoutDashboard, Zap, Clock, CheckCircle, AlertCircle, TrendingUp, Users, Calendar, ArrowUpRight } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { LayoutDashboard, Zap, Clock, CheckCircle, AlertCircle, TrendingUp, Users, Calendar, ArrowUpRight, Edit2, User } from 'lucide-react';
+import ProfileEditor from './ProfileEditor';
 
 const BrandDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editingProfile, setEditingProfile] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -69,6 +71,18 @@ const BrandDashboard = () => {
 
   const { counts, recentCampaigns, performanceData, brandInfo } = dashboardData;
 
+  const handleProfileUpdate = (updatedProfile) => {
+    setDashboardData(prev => ({
+      ...prev,
+      brandInfo: {
+        ...prev.brandInfo,
+        ...updatedProfile
+      }
+    }));
+    setEditingProfile(false);
+    toast.success('Profile updated successfully');
+  };
+
   const formattedCreatedDate = brandInfo?.createdAt
     ? new Date(brandInfo.createdAt).toLocaleDateString()
     : null;
@@ -81,22 +95,50 @@ const BrandDashboard = () => {
     { label: 'Created', value: formattedCreatedDate }
   ];
 
+  if (editingProfile) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
+          <button
+            onClick={() => setEditingProfile(false)}
+            className="mb-6 flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Dashboard
+          </button>
+          <ProfileEditor 
+            userRole="brand" 
+            onCancel={() => setEditingProfile(false)}
+            onSave={handleProfileUpdate}
+            brandInfo={brandInfo}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-white py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-gray-400">Brand dashboard</p>
-            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Welcome back, {brandInfo?.name || 'Brand'}
-            </h1>
+          <div className="flex-1">
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-sm uppercase tracking-[0.3em] text-gray-400">Brand dashboard</p>
+                <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Welcome back, {brandInfo?.name || 'Brand'}
+                </h1>
+              </div>
+            </div>
             <p className="text-gray-600 mt-2 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               Here's the latest snapshot of your campaign performance
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
             <Link
               to="/campaigns/create"
               className="inline-flex items-center justify-center px-5 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg shadow-indigo-200 hover:opacity-90 transition"
@@ -111,6 +153,13 @@ const BrandDashboard = () => {
               Manage Campaigns
               <ArrowUpRight className="h-4 w-4 ml-2" />
             </Link>
+            <button
+              onClick={() => setEditingProfile(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors shadow-sm"
+            >
+              <Edit2 className="h-4 w-4" />
+              Edit Profile
+            </button>
           </div>
         </div>
 
@@ -174,20 +223,20 @@ const BrandDashboard = () => {
             </div>
             <div className="space-y-3 text-sm text-gray-600">
               {snapshotFields.map((field) => (
-                <div key={field.label} className="flex items-center justify-between gap-4">
-                  <span className="font-semibold text-gray-900">{field.label}:</span>
+                <div key={field.label} className="flex flex-col gap-1">
+                  <span className="font-semibold text-gray-900">{field.label}</span>
                   {field.value ? (
                     field.isLink ? (
                       <a
                         href={field.value}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-indigo-600 hover:text-indigo-800 truncate"
+                        className="text-indigo-600 hover:text-indigo-800 break-all"
                       >
                         {field.value}
                       </a>
                     ) : (
-                      <span className="text-gray-700 truncate max-w-[160px] text-right">{field.value}</span>
+                      <span className="text-gray-700 break-all">{field.value}</span>
                     )
                   ) : (
                     <span className="text-gray-400">Not provided</span>

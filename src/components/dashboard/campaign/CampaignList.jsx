@@ -7,6 +7,9 @@ const CampaignList = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [confirmingId, setConfirmingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+
   const [filters, setFilters] = useState({
     status: 'all',
     page: 1,
@@ -36,15 +39,16 @@ const CampaignList = () => {
   };
 
   const deleteCampaign = async (campaignId) => {
-    if (!window.confirm('Are you sure you want to delete this campaign?')) {
-      return;
-    }
-
     try {
+      setDeletingId(campaignId);
       await axios.delete(`/api/campaigns/${campaignId}`);
+      setConfirmingId(null);
       fetchCampaigns(); // Refresh list
     } catch (err) {
-      alert('Failed to delete campaign');
+      console.error('Failed to delete campaign:', err);
+      setError('Failed to delete campaign');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -129,8 +133,12 @@ const CampaignList = () => {
               <CampaignCard 
                 key={campaign._id} 
                 campaign={campaign} 
-                onDelete={deleteCampaign}
                 getStatusColor={getStatusColor}
+                isConfirming={confirmingId === campaign._id}
+                isDeleting={deletingId === campaign._id}
+                onRequestDelete={() => setConfirmingId(campaign._id)}
+                onCancelDelete={() => setConfirmingId(null)}
+                onConfirmDelete={() => deleteCampaign(campaign._id)}
               />
             ))}
           </div>
@@ -175,7 +183,15 @@ const CampaignList = () => {
   );
 };
 
-const CampaignCard = ({ campaign, onDelete, getStatusColor }) => {
+const CampaignCard = ({
+  campaign,
+  getStatusColor,
+  isConfirming,
+  isDeleting,
+  onRequestDelete,
+  onCancelDelete,
+  onConfirmDelete,
+}) => {
   return (
     <div className="bg-white/80 backdrop-blur rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
       <div className="p-6 space-y-5">
@@ -217,12 +233,33 @@ const CampaignCard = ({ campaign, onDelete, getStatusColor }) => {
           >
             <Edit2 className="h-4 w-4" /> Edit
           </Link>
-          <button
-            onClick={() => onDelete(campaign._id)}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 text-red-600 font-semibold hover:bg-red-100"
-          >
-            <Trash2 className="h-4 w-4" /> Delete
-          </button>
+          {!isConfirming ? (
+            <button
+              type="button"
+              onClick={onRequestDelete}
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 text-red-600 font-semibold hover:bg-red-100"
+            >
+              <Trash2 className="h-4 w-4" /> Delete
+            </button>
+          ) : (
+            <div className="flex-1 flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={onCancelDelete}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-gray-700 font-semibold hover:border-slate-300 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={onConfirmDelete}
+                disabled={isDeleting}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 disabled:opacity-70 disabled:cursor-not-allowed text-sm"
+              >
+                {isDeleting ? 'Deleting…' : 'Sure'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

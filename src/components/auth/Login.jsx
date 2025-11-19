@@ -68,7 +68,7 @@ const LoginSchema = Yup.object({
 
 });
 
-const Login = () => {
+const Login = ({ onClose, onSwitch }) => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const googleBtnRef = useRef(null);
@@ -77,32 +77,148 @@ const Login = () => {
   const [pendingIdToken, setPendingIdToken] = useState("");
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
 
+   const checkUserExists = async (email) => {
+    try {
+      const response = await axios.post('/api/auth/check-email', { email });
+      return response.data.exists;
+    } catch (error) {
+      console.error('Error checking user:', error);
+      return false;
+    }
+  };
+
   if (getToken()) return <Navigate to="/" replace />;
 
   const particlesInit = async (engine) => await loadSlim(engine);
 
+  const handleGoogleResponse = async (response) => {
+    try {
+      console.log("Google callback received:", response);
+      const idToken = response?.credential;
+      if (!idToken) {
+        toast.error("Google sign-in failed - no token received");
+        return;
+      }
+
+      const payload = JSON.parse(atob(idToken.split('.')[1]));
+      const email = payload.email?.toLowerCase();
+
+      if (!email) {
+        toast.error("Could not retrieve email from Google");
+        return;
+      }
+
+      const userExists = await checkUserExists(email);
+      console.log('User exists:', userExists);
+
+      if (userExists) {
+        await handleGoogleLogin(idToken, 'influencer');
+      } else {
+        setPendingIdToken(idToken);
+        setRoleModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Google response error:', error);
+      toast.error(error.response?.data?.message || 'Error processing Google sign-in');
+    }
+  };
+
+  const handleGoogleLogin = async (idToken, role = 'influencer') => {
+    try {
+      setGoogleSubmitting(true);
+      
+      const res = await axios.post("/api/auth/google", {
+        idToken,
+        role
+      });
+
+      const { token, user } = res.data || {};
+      if (token) {
+        setToken(token);
+        if (user) {
+          localStorage.setItem("user", JSON.stringify(user));
+        }
+        toast.success("Logged in with Google");
+        setRoleModalOpen(false);
+        setPendingIdToken("");
+        navigate("/");
+      } else {
+        console.error('No token in response');
+        toast.error("Login failed - no token received");
+      }
+    } catch (e) {
+      console.error('Google auth error:', e);
+      if (e?.response?.status === 403) {
+        toast.error(e?.response?.data?.message || "Account is blocked");
+      } else if (e?.response?.status === 409) {
+        toast.error(e?.response?.data?.message || "Account already exists. Please login.");
+      } else if (e?.response?.status === 401) {
+        toast.error(e?.response?.data?.message || "Invalid Google token");
+      } else if (e?.response?.status === 400) {
+        toast.error(e?.response?.data?.message || "Bad request - missing information");
+      } else if (e?.response?.data?.message) {
+        toast.error(e.response.data.message);
+      } else if (e?.request) {
+        toast.error("Network error - cannot connect to server");
+      } else {
+        toast.error("Google authentication failed. Please try again.");
+      }
+    } finally {
+      setGoogleSubmitting(false);
+    }
+  };
+
+  // useEffect(() => {
+  //   if (typeof window === "undefined") return;
+  //   const google = window.google;
+  //   if (!google || !google.accounts || !google.accounts.id) {
+  //     console.log("Google API not loaded");
+  //     return;
+  //   }
+  //   try {
+  //     google.accounts.id.initialize({
+  //       client_id: "720475734209-do0bg2s9kce36tp0hvc6dlfvh9qhtvnf.apps.googleusercontent.com",
+  //       callback: (response) => {
+  //         console.log("Google callback received:", response);
+  //         const idToken = response?.credential;
+  //         if (!idToken) {
+  //           toast.error("Google sign-in failed - no token received");
+  //           return;
+  //         }
+  //         console.log("Google ID token received, length:", idToken.length);
+  //         setPendingIdToken(idToken);
+  //         setRoleModalOpen(true);
+  //       },
+  //     });
+  //     if (googleBtnRef.current) {
+  //       google.accounts.id.renderButton(googleBtnRef.current, {
+  //         theme: "outline",
+  //         size: "large",
+  //         text: "continue_with",
+  //         shape: "rectangular",
+  //         width: 320,
+  //       });
+  //       console.log("Google button rendered");
+  //     }
+  //   } catch (error) {
+  //     console.error("Google Sign-In initialization error:", error);
+  //   }
+  // }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const google = window.google;
-    if (!google || !google.accounts || !google.accounts.id) {
+    if (!google?.accounts?.id) {
       console.log("Google API not loaded");
       return;
     }
+    
     try {
       google.accounts.id.initialize({
         client_id: "720475734209-do0bg2s9kce36tp0hvc6dlfvh9qhtvnf.apps.googleusercontent.com",
-        callback: (response) => {
-          console.log("Google callback received:", response);
-          const idToken = response?.credential;
-          if (!idToken) {
-            toast.error("Google sign-in failed - no token received");
-            return;
-          }
-          console.log("Google ID token received, length:", idToken.length);
-          setPendingIdToken(idToken);
-          setRoleModalOpen(true);
-        },
+        callback: handleGoogleResponse,
       });
+      
       if (googleBtnRef.current) {
         google.accounts.id.renderButton(googleBtnRef.current, {
           theme: "outline",
@@ -335,7 +451,8 @@ const Login = () => {
       </div>
 
       {/* Role Selection Modal */}
-      {roleModalOpen && (
+
+      {/* {roleModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-xl font-semibold mb-4 text-gray-800">Select Your Role</h3>
@@ -379,8 +496,98 @@ const Login = () => {
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </div> */}
+        {/* Role Selection Modal */}
+{roleModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-xl p-6 w-full max-w-md">
+      <h2 className="text-2xl font-bold mb-4 text-gray-900">Select Your Role</h2>
+      <p className="text-gray-600 mb-6">
+        Please select how you'd like to use Connectify:
+      </p>
+      
+      <div className="space-y-4 mb-6">
+        <button
+          onClick={() => setSelectedRole('influencer')}
+          className={`w-full p-4 rounded-lg border-2 transition-all ${
+            selectedRole === 'influencer'
+              ? 'border-indigo-500 bg-indigo-50'
+              : 'border-gray-200 hover:border-indigo-300'
+          }`}
+        >
+          <div className="flex items-center">
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mr-3 ${
+              selectedRole === 'influencer' 
+                ? 'border-indigo-500 bg-indigo-500' 
+                : 'border-gray-300'
+            }`}>
+              {selectedRole === 'influencer' && (
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <div className="text-left">
+              <h3 className="font-medium text-gray-900">I'm an Influencer</h3>
+              <p className="text-sm text-gray-500">I want to collaborate with brands</p>
+            </div>
+          </div>
+        </button>
+
+        <button
+          onClick={() => setSelectedRole('brand')}
+          className={`w-full p-4 rounded-lg border-2 transition-all ${
+            selectedRole === 'brand'
+              ? 'border-indigo-500 bg-indigo-50'
+              : 'border-gray-200 hover:border-indigo-300'
+          }`}
+        >
+          <div className="flex items-center">
+            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mr-3 ${
+              selectedRole === 'brand' 
+                ? 'border-indigo-500 bg-indigo-500' 
+                : 'border-gray-300'
+            }`}>
+              {selectedRole === 'brand' && (
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <div className="text-left">
+              <h3 className="font-medium text-gray-900">I'm a Brand</h3>
+              <p className="text-sm text-gray-500">I want to collaborate with influencers</p>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <div className="flex justify-end space-x-3">
+        <button
+          onClick={() => {
+            setRoleModalOpen(false);
+            setPendingIdToken('');
+          }}
+          className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition"
+          disabled={googleSubmitting}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleConfirmGoogleRole}
+          disabled={googleSubmitting}
+          className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition ${
+            googleSubmitting 
+              ? 'bg-indigo-400' 
+              : 'bg-indigo-600 hover:bg-indigo-700'
+          }`}
+        >
+          {googleSubmitting ? 'Continuing...' : 'Continue'}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };

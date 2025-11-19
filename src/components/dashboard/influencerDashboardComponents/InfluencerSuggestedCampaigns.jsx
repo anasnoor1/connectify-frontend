@@ -1,10 +1,26 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../../utills/privateIntercept";
 import CampaignCard from "./CampaignCard";
+import ProposalModal from "./proposalModal";
+
+
 
 export default function InfluencerSuggestedCampaigns() {
     const [campaigns, setCampaigns] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const [isProposalOpen, setIsProposalOpen] = useState(false);
+    const [selectedCampaign, setSelectedCampaign] = useState(null);
+
+    const openProposal = (campaign) => {
+        setSelectedCampaign(campaign);
+        setIsProposalOpen(true);
+    };
+
+    const closeProposal = () => {
+        setSelectedCampaign(null);
+        setIsProposalOpen(false);
+    };
 
     useEffect(() => {
         const fetchSuggestions = async () => {
@@ -30,21 +46,25 @@ export default function InfluencerSuggestedCampaigns() {
             {campaigns.length === 0 ? (
                 <div className="text-gray-500">No suggested campaigns.</div>
             ) : (
-                // <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-                //   {campaigns.map((c) => (
-                //     <CampaignCard key={c._id} campaign={c} />
-                //   ))}
-                // </div>
+
                 <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                     {campaigns.map((c) => (
                         <CampaignCard
                             key={c._id}
                             campaign={c}
-                            onOpenProposal={() => console.log("Open proposal for:", c)}
+                            // onOpenProposal={() => console.log("Open proposal for:", c)}
+                            onOpenProposal={() => openProposal(c)}
                         />
                     ))}
                 </div>
 
+            )}
+            {isProposalOpen && selectedCampaign && (
+                <ProposalModal
+                    isOpen={isProposalOpen}
+                    onClose={closeProposal}
+                    campaign={selectedCampaign}
+                />
             )}
         </div>
     );

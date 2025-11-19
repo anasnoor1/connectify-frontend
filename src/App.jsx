@@ -18,6 +18,7 @@ import PrivateRoute from "./utills/privateRoute"
 import Profile from "./components/profile/Profile"
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import InstagramProfile from "./components/profile/ProfileComponents/InstagramProfile";
+import InfluencerDashboard from "./components/dashboard/InfluencersDashboard"
 
 // In your main render function:
 
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="/instagram" element={<InstagramProfile/>} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          {/* <Route path="/conta" element={<InfluencerDashboard />} /> */}
           
         </Route>
 

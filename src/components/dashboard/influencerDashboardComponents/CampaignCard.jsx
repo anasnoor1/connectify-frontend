@@ -2,7 +2,7 @@ import StatusBadge from "./StatusBadge";
 
 export default function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
   const brandName = campaign.brand_id?.name || campaign.brand || "Unknown Brand";
-  const budgetDisplay = campaign.budget ? `₨ ${campaign.budget.toLocaleString()}` : "-";
+  const budgetDisplay = campaign.budget ? `$ ${campaign.budget.toLocaleString()}` : "-";
 
   return (
     <div className="bg-white shadow-md rounded-2xl overflow-hidden border border-gray-100">

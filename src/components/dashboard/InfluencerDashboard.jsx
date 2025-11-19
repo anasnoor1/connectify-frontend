@@ -268,6 +268,9 @@ export default function InfluencerDashboard() {
                 <NavLink to="/influencer/proposals" className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-gray-50">
                   My Proposals
                 </NavLink>
+                <NavLink to="/influencer/suggestion" className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-gray-50">
+                  Suggested Compaigns
+                </NavLink>
                 {/* <NavLink to="/influencer/analytics" className="block px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-gray-50">
                   Analytics
                 </NavLink>

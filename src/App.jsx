@@ -18,6 +18,9 @@ import PrivateRoute from "./utills/privateRoute"
 import Profile from "./components/profile/Profile"
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import InstagramProfile from "./components/profile/ProfileComponents/InstagramProfile";
+import InfluencerDashboard from "./components/dashboard/InfluencerDashboard";
+
+
 
 // Import new dashboard and campaign components
 import DashboardRouter from "./components/dashboard/DashboardRouter";
@@ -25,8 +28,8 @@ import CampaignList from "./components/dashboard/campaign/CampaignList";
 import CampaignDetail from "./components/dashboard/campaign/CampaignDetail";
 import CreateCampaign from "./components/dashboard/campaign/CreateCampaign";
 import MyProposals from "./components/dashboard/influencerDashboardComponents/myProposals";
-import InfluencerDashboard from "./components/dashboard/InfluencerDashboard";
 import EditCampaign from "./components/dashboard/campaign/EditCampaign";
+import InfluencerSuggestedCampaigns from "./components/dashboard/influencerDashboardComponents/InfluencerSuggestedCampaigns";
 
 // In your main render function:
 
@@ -54,6 +57,9 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/brandpartnership" element={<PrivateRoute><BrandPartnership /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/influencer/dashboard" element={<PrivateRoute><InfluencerDashboard /></PrivateRoute>} />
+          {/* <Route path="/chat/:campaignId" element={<PrivateRoute><ChatPage /></PrivateRoute>} /> */}
+          <Route path="/campaigns/create" element={<PrivateRoute><CreateCampaign /></PrivateRoute>} />
           <Route path="/instagram" element={<InstagramProfile/>} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
@@ -66,6 +72,7 @@ export default function App() {
           <Route path="/campaigns/:id/edit" element={<PrivateRoute><EditCampaign /></PrivateRoute>} />
           <Route path="/influencer/proposals" element={<PrivateRoute><MyProposals /></PrivateRoute>} />
           <Route path="/influencer/dashboard" element={<PrivateRoute><InfluencerDashboard /></PrivateRoute>} />
+          <Route path="/influencer/suggestion" element={<PrivateRoute><InfluencerSuggestedCampaigns /></PrivateRoute>} />
         </Route>
 
         {/* Auth routes without Navbar layout */}

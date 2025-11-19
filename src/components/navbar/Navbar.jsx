@@ -14,8 +14,8 @@ function IconProfile() {
           <stop offset="1" stopColor="#60a5fa" />
         </linearGradient>
       </defs>
-      <circle cx="12" cy="8" r="3.2" stroke="url(#grad-prof)" strokeWidth="1.7"/>
-      <path d="M5 19.5c1.6-3.5 5-4.8 7-4.8s5.4 1.3 7 4.8" stroke="url(#grad-prof)" strokeWidth="1.7" strokeLinecap="round"/>
+      <circle cx="12" cy="8" r="3.2" stroke="url(#grad-prof)" strokeWidth="1.7" />
+      <path d="M5 19.5c1.6-3.5 5-4.8 7-4.8s5.4 1.3 7 4.8" stroke="url(#grad-prof)" strokeWidth="1.7" strokeLinecap="round" />
     </svg>
   );
 }
@@ -29,9 +29,9 @@ function IconLogout() {
           <stop offset="1" stopColor="#60a5fa" />
         </linearGradient>
       </defs>
-      <path d="M14 7V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2h5a2 2 0 002-2v-2" stroke="url(#grad-logout)" strokeWidth="1.7" strokeLinecap="round"/>
-      <path d="M10 12h9" stroke="url(#grad-logout)" strokeWidth="1.7" strokeLinecap="round"/>
-      <path d="M16 9l3 3-3 3" stroke="url(#grad-logout)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M14 7V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2h5a2 2 0 002-2v-2" stroke="url(#grad-logout)" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M10 12h9" stroke="url(#grad-logout)" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M16 9l3 3-3 3" stroke="url(#grad-logout)" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -47,7 +47,7 @@ function IconUserCircle() {
       </defs>
       <circle cx="12" cy="12" r="9" stroke="url(#grad-user)" strokeWidth="1.6" />
       <circle cx="12" cy="9" r="2.8" stroke="url(#grad-user)" strokeWidth="1.6" />
-      <path d="M6.5 17.5c1.5-3 4.2-4 5.5-4s4 1 5.5 4" stroke="url(#grad-user)" strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M6.5 17.5c1.5-3 4.2-4 5.5-4s4 1 5.5 4" stroke="url(#grad-user)" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }
@@ -146,21 +146,19 @@ export default function Navbar() {
 
             {/* Nav Links */}
             <ul
-              className={`flex flex-col md:flex-row md:items-center absolute md:static left-0 w-full md:w-auto bg-white md:bg-transparent transition-all duration-300 ease-in-out ${
-                menuOpen
+              className={`flex flex-col md:flex-row md:items-center absolute md:static left-0 w-full md:w-auto bg-white md:bg-transparent transition-all duration-300 ease-in-out ${menuOpen
                   ? "top-16 opacity-100"
                   : "top-[-400px] opacity-0 md:opacity-100"
-              }`}
+                }`}
             >
               <li>
                 <NavLink
                   to="/"
                   end
                   className={({ isActive }) =>
-                    `block px-6 py-2 transition-colors ${
-                      isActive
-                        ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
-                        : "text-gray-700 hover:text-indigo-600"
+                    `block px-6 py-2 transition-colors ${isActive
+                      ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
+                      : "text-gray-700 hover:text-indigo-600"
                     }`
                   }
                   onClick={() => setMenuOpen(false)}
@@ -211,10 +209,9 @@ export default function Navbar() {
                 <NavLink
                   to="/brandpartnership"
                   className={({ isActive }) =>
-                    `block px-6 py-2 transition-colors ${
-                      isActive
-                        ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
-                        : "text-gray-700 hover:text-indigo-600"
+                    `block px-6 py-2 transition-colors ${isActive
+                      ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
+                      : "text-gray-700 hover:text-indigo-600"
                     }`
                   }
                   onClick={() => setMenuOpen(false)}
@@ -227,10 +224,9 @@ export default function Navbar() {
                 <NavLink
                   to="/about"
                   className={({ isActive }) =>
-                    `block px-6 py-2 transition-colors ${
-                      isActive
-                        ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
-                        : "text-gray-700 hover:text-indigo-600"
+                    `block px-6 py-2 transition-colors ${isActive
+                      ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
+                      : "text-gray-700 hover:text-indigo-600"
                     }`
                   }
                   onClick={() => setMenuOpen(false)}
@@ -243,10 +239,9 @@ export default function Navbar() {
                 <NavLink
                   to="/contact"
                   className={({ isActive }) =>
-                    `block px-6 py-2 transition-colors ${
-                      isActive
-                        ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
-                        : "text-gray-700 hover:text-indigo-600"
+                    `block px-6 py-2 transition-colors ${isActive
+                      ? "text-indigo-600 font-semibold md:border-b-2 md:border-indigo-600"
+                      : "text-gray-700 hover:text-indigo-600"
                     }`
                   }
                   onClick={() => setMenuOpen(false)}
@@ -319,7 +314,7 @@ export default function Navbar() {
                   >
                     <span className="inline-flex h-9 w-9 rounded-full overflow-hidden bg-indigo-600 text-white items-center justify-center">
                       {user.avatar ? (
-                        <img src={user.avatar} alt="avatar" className="h-full w-full object-cover" onError={(e)=>{e.currentTarget.style.display='none'}} />
+                        <img src={user.avatar} alt="avatar" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none' }} />
                       ) : (
                         <span className="text-sm font-semibold">
                           {(user.name || user.email || "U").charAt(0).toUpperCase()}
@@ -335,7 +330,7 @@ export default function Navbar() {
                       <div className="flex items-center gap-3">
                         <span className="inline-flex h-9 w-9 rounded-full overflow-hidden bg-indigo-600 text-white items-center justify-center">
                           {user.avatar ? (
-                            <img src={user.avatar} alt="avatar" className="h-full w-full object-cover" onError={(e)=>{e.currentTarget.style.display='none'}} />
+                            <img src={user.avatar} alt="avatar" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none' }} />
                           ) : (
                             <span className="text-sm font-semibold">
                               {(user.name || user.email || "U").charAt(0).toUpperCase()}
@@ -388,9 +383,8 @@ export default function Navbar() {
 
       {/* Main Content */}
       <main
-        className={`flex-grow ${
-          isAuthPage ? "auth-bg" : "py-5"
-        } transition-all duration-300`}
+        className={`flex-grow ${isAuthPage ? "auth-bg" : "py-5"
+          } transition-all duration-300`}
       >
         <div className={isAuthPage ? "container-fluid" : "max-w-7xl mx-auto"}>
           <Outlet />
@@ -399,7 +393,7 @@ export default function Navbar() {
 
       {/* Footer */}
       {!isAuthPage && (
-       <Footer />
+        <Footer />
       )}
     </div>
   );

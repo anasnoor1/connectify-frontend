@@ -68,7 +68,7 @@ const LoginSchema = Yup.object({
 
 });
 
-const Login = () => {
+const Login = ({ onClose, onSwitch }) => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const googleBtnRef = useRef(null);

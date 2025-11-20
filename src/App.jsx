@@ -26,10 +26,11 @@ import InfluencerDashboard from "./components/dashboard/InfluencerDashboard";
 import DashboardRouter from "./components/dashboard/DashboardRouter";
 import CampaignList from "./components/dashboard/campaign/CampaignList";
 import CampaignDetail from "./components/dashboard/campaign/CampaignDetail";
-import CreateCampaign from "./components/dashboard/campaign/CreateCampaign";
+import CampaignForm from "./components/dashboard/campaign/CreateCampaign";
 import MyProposals from "./components/dashboard/influencerDashboardComponents/myProposals";
 import EditCampaign from "./components/dashboard/campaign/EditCampaign";
 import InfluencerSuggestedCampaigns from "./components/dashboard/influencerDashboardComponents/InfluencerSuggestedCampaigns";
+import CreateCampaign from "./components/dashboard/campaign/CreateCampaign";
 
 // In your main render function:
 
@@ -69,6 +70,7 @@ export default function App() {
           <Route path="/campaigns" element={<PrivateRoute><CampaignList /></PrivateRoute>} />
           <Route path="/campaigns/create" element={<PrivateRoute><CreateCampaign /></PrivateRoute>} />
           <Route path="/campaigns/:id" element={<PrivateRoute><CampaignDetail /></PrivateRoute>} />
+          <Route path="/influencer/campaigns/:id" element={<PrivateRoute><CampaignDetail canEdit={false} /></PrivateRoute>} />
           <Route path="/campaigns/:id/edit" element={<PrivateRoute><EditCampaign /></PrivateRoute>} />
           <Route path="/influencer/proposals" element={<PrivateRoute><MyProposals /></PrivateRoute>} />
           <Route path="/influencer/dashboard" element={<PrivateRoute><InfluencerDashboard /></PrivateRoute>} />

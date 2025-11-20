@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
 import { Plus, Filter, RefreshCcw, Calendar, DollarSign, Tag, Trash2, Edit2, Eye } from 'lucide-react';
 
@@ -9,6 +9,8 @@ const CampaignList = () => {
   const [error, setError] = useState('');
   const [confirmingId, setConfirmingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [isInfluencer, setIsInfluencer] = useState(false);
+  const navigate = useNavigate();
 
   const [filters, setFilters] = useState({
     status: 'all',
@@ -18,7 +20,14 @@ const CampaignList = () => {
 
   useEffect(() => {
     fetchCampaigns();
+    fetchUserRole();
   }, [filters.status, filters.page]);
+
+  useEffect(() => {
+    if (isInfluencer) {
+      navigate('/influencer/dashboard', { replace: true });
+    }
+  }, [isInfluencer, navigate]);
 
   const fetchCampaigns = async () => {
     try {
@@ -35,6 +44,16 @@ const CampaignList = () => {
       console.error('Campaigns error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserRole = async () => {
+    try {
+      const res = await axios.get('/api/user/me');
+      const role = res.data?.user?.role || res.data?.role || res.data?.data?.user?.role || res.data?.data?.role;
+      setIsInfluencer(String(role).toLowerCase() === 'influencer');
+    } catch (e) {
+      // default stays false (brand/admin)
     }
   };
 
@@ -86,13 +105,15 @@ const CampaignList = () => {
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Manage your campaigns</h1>
             <p className="text-gray-500 mt-2">Monitor, edit and create campaigns with a modern workflow.</p>
           </div>
-          <Link
-            to="/campaigns/create"
-            className="inline-flex items-center justify-center px-6 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 shadow-md hover:opacity-90"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            New Campaign
-          </Link>
+          {!isInfluencer && (
+            <Link
+              to="/campaigns/create"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl text-white font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 shadow-md hover:opacity-90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Campaign
+            </Link>
+          )}
         </div>
 
         {/* Filters */}
@@ -139,6 +160,7 @@ const CampaignList = () => {
                 onRequestDelete={() => setConfirmingId(campaign._id)}
                 onCancelDelete={() => setConfirmingId(null)}
                 onConfirmDelete={() => deleteCampaign(campaign._id)}
+                isInfluencer={isInfluencer}
               />
             ))}
           </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate, NavLink, Link } from "react-router-dom";
 
 import { toast } from 'react-toastify';
 import { Edit2, User } from 'lucide-react';
@@ -28,6 +28,7 @@ function StatusBadge({ status }) {
 function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
   const brandName = campaign.brand_id?.name || campaign.brand || "Unknown Brand";
   const budgetDisplay = campaign.budget ? `₨ ${campaign.budget.toLocaleString()}` : "-";
+  const id = campaign._id || campaign.id;
 
   return (
     <div className="bg-white/90 rounded-2xl overflow-hidden border border-slate-100 shadow-sm backdrop-blur">
@@ -76,6 +77,12 @@ function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
             </div>
 
             <div className="flex items-center gap-2">
+              <Link
+                to={`/influencer/campaigns/${id}`}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition"
+              >
+                View
+              </Link>
               {/* <button
                 onClick={() => onOpenChat(campaign.id)}
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-500 text-white text-sm shadow-sm hover:scale-[1.01] transition"
@@ -168,8 +175,10 @@ export default function InfluencerDashboard() {
       setLoading(true);
 
       const res = await axiosInstance.get("/api/campaigns");
-      console.log("Compaigns : ",res.data.campaigns);
-      setCampaigns(res.data.data.campaigns || []);
+      const d = res?.data;
+      // Accept any of the common shapes
+      const list = d?.data?.campaigns || d?.campaigns || (Array.isArray(d?.data) ? d.data : []);
+      setCampaigns(Array.isArray(list) ? list : []);
     } catch (error) {
       console.error("Error fetching campaigns:", error);
     } finally {
@@ -460,7 +469,7 @@ export default function InfluencerDashboard() {
                   // <CampaignCard key={c.id} campaign={c} onOpenChat={openChat} />
 
                   <CampaignCard
-                    key={c.id}
+                    key={c._id || c.id}
                     campaign={c}
                     onOpenChat={openChat}
                     onOpenProposal={openProposalModal}

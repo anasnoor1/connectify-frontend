@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
 
-const CampaignDetail = () => {
+const CampaignDetail = ({ canEdit = true }) => {
   const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
-  const [campaign, setCampaign] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const preload = location.state?.campaign;
+  const [campaign, setCampaign] = useState(preload || null);
+  const [loading, setLoading] = useState(!preload);
   const [error, setError] = useState('');
+  const [role, setRole] = useState('');
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -23,8 +26,20 @@ const CampaignDetail = () => {
       }
     };
 
+    // Always attempt to refresh from server; if we had state, user already sees content
     fetchCampaign();
   }, [id]);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      try {
+        const res = await axios.get('/api/user/me');
+        const r = res.data?.user?.role || res.data?.role || res.data?.data?.user?.role || res.data?.data?.role || '';
+        setRole(String(r).toLowerCase());
+      } catch {}
+    };
+    fetchRole();
+  }, []);
 
   if (loading) {
     return (
@@ -37,7 +52,7 @@ const CampaignDetail = () => {
     );
   }
 
-  if (error || !campaign) {
+  if (!campaign) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="max-w-md bg-white rounded-2xl shadow p-8 text-center space-y-4">
@@ -79,14 +94,16 @@ const CampaignDetail = () => {
             <p className="text-gray-500 mt-2 max-w-2xl">{campaign.description}</p>
           </div>
           <div className="flex flex-wrap gap-3">
+            {(canEdit && role !== 'influencer') && (
+              <Link
+                to={`/campaigns/${campaign._id}/edit`}
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-gray-800 font-semibold hover:border-indigo-200"
+              >
+                Edit campaign
+              </Link>
+            )}
             <Link
-              to={`/campaigns/${campaign._id}/edit`}
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-gray-800 font-semibold hover:border-indigo-200"
-            >
-              Edit campaign
-            </Link>
-            <Link
-              to="/campaigns"
+              to={role === 'influencer' || !canEdit ? "/influencer/dashboard" : "/campaigns"}
               className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
             >
               Back to campaigns

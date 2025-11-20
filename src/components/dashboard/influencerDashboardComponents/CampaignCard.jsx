@@ -1,8 +1,10 @@
 import StatusBadge from "./StatusBadge";
+import { Link } from "react-router-dom";
 
 export default function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
   const brandName = campaign.brand_id?.name || campaign.brand || "Unknown Brand";
   const budgetDisplay = campaign.budget ? `$ ${campaign.budget.toLocaleString()}` : "-";
+  const id = campaign._id || campaign.id;
 
   return (
     <div className="bg-white shadow-md rounded-2xl overflow-hidden border border-gray-100">
@@ -51,6 +53,12 @@ export default function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
             </div>
 
             <div className="flex items-center gap-2">
+              <Link
+                to={`/influencer/campaigns/${id}`}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition"
+              >
+                View
+              </Link>
               {/* <button
                 onClick={() => onOpenChat(campaign.id)}
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-500 text-white text-sm shadow-sm hover:scale-[1.01] transition"

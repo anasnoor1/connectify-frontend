@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
 
@@ -31,7 +32,10 @@ const validateDescription = (v) => {
   if (hasLeadingOrTrailingSpace(raw)) return 'No leading or trailing spaces allowed.';
   const value = raw.trim();
   if (value.length < 2) return 'Description must be at least 2 letters.';
-  if (!lettersOnlyRegex.test(value)) return 'Description can only contain letters and spaces.';
+  const descriptionRegex = /^[A-Za-z\s]+$/;
+  if (!descriptionRegex.test(value)) {
+    return 'Description can only contain letters and spaces (no symbols like . , ! etc).';
+  }
   return '';
 };
 
@@ -139,31 +143,42 @@ const validateAll = (fields) => {
   return errors;
 };
 
-const CreateCampaign = () => {
+const defaultFormState = {
+  title: '',
+  description: '',
+  budget: '',
+  category: '',
+  target_audience: {
+    age_range: { min: '', max: '' },
+    gender: 'all',
+    location: '',
+    interests: ''
+  },
+  requirements: {
+    min_followers: '',
+    min_engagement: '',
+    content_type: '',
+    deadline: ''
+  },
+  social_media: [{ platform: '', requirements: '' }]
+};
+
+const CreateCampaign = ({ mode = 'create', initialData, campaignId }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    budget: '',
-    category: '',
-    target_audience: {
-      age_range: { min: '', max: '' },
-      gender: 'all',
-      location: '',
-      interests: ''
-    },
-    requirements: {
-      min_followers: '',
-      min_engagement: '',
-      content_type: '',
-      deadline: ''
-    },
-    social_media: [{ platform: '', requirements: '' }]
-  });
+  const [formData, setFormData] = useState(() => initialData || defaultFormState);
+
+  // When used in edit mode, sync incoming initialData into local form state
+  useEffect(() => {
+    if (mode === 'edit' && initialData) {
+      setFormData(initialData);
+      // Re-run validation so existing data shows errors state correctly
+      setErrors(validateAll(initialData));
+    }
+  }, [mode, initialData]);
 
   const runValidation = (data) => {
     const baseErrors = validateAll(data);
@@ -303,7 +318,11 @@ const CreateCampaign = () => {
         social_media: formData.social_media.filter(sm => sm.platform && sm.requirements)
       };
 
-      await axios.post('/api/campaigns', submitData);
+      if (mode === 'edit' && campaignId) {
+        await axios.put(`/api/campaigns/${campaignId}`, submitData);
+      } else {
+        await axios.post('/api/campaigns', submitData);
+      }
       navigate('/campaigns');
     } catch (err) {
       alert('Failed to create campaign');
@@ -317,7 +336,9 @@ const CreateCampaign = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Create New Campaign</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">
+            {mode === 'edit' ? 'Edit Campaign' : 'Create New Campaign'}
+          </h1>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
@@ -617,7 +638,13 @@ const CreateCampaign = () => {
                 disabled={loading}
                 className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
               >
-                {loading ? 'Creating...' : 'Create Campaign'}
+                {loading
+                  ? mode === 'edit'
+                    ? 'Saving...'
+                    : 'Creating...'
+                  : mode === 'edit'
+                    ? 'Save Changes'
+                    : 'Create Campaign'}
               </button>
               <button
                 type="button"

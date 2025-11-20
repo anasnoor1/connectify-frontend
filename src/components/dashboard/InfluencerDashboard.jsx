@@ -167,7 +167,6 @@ export default function InfluencerDashboard() {
       ...updatedProfile
     }));
     setEditingProfile(false);
-    toast.success('Profile updated successfully');
   };
 
   const fetchCampaigns = async () => {

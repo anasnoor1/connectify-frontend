@@ -81,7 +81,6 @@ const BrandDashboard = () => {
       }
     }));
     setEditingProfile(false);
-    toast.success('Profile updated successfully');
   };
 
   const formattedCreatedDate = brandInfo?.createdAt

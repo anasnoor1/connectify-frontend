@@ -25,24 +25,36 @@ function StatusBadge({ status }) {
   );
 }
 
-function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
+function CampaignCard({ campaign, onOpenChat, onOpenProposal, onOpenView, onOpenBrandProfile }) {
   const brandName = campaign.brand_id?.name || campaign.brand || "Unknown Brand";
   const budgetDisplay = campaign.budget ? `₨ ${campaign.budget.toLocaleString()}` : "-";
 
   return (
-    <div className="bg-white/90 rounded-2xl overflow-hidden border border-slate-100 shadow-sm backdrop-blur">
+    <div
+      className="bg-white/90 rounded-2xl overflow-hidden border border-slate-100 shadow-sm backdrop-blur cursor-pointer hover:shadow-md transition-shadow"
+      onClick={() => {
+        if (onOpenBrandProfile) {
+          onOpenBrandProfile(campaign);
+        }
+      }}
+    >
       <div className="md:flex">
         <div className="md:w-40 w-full h-36 md:h-auto overflow-hidden">
-          {/* image placeholder */}
           <div className="w-full h-full bg-gradient-to-r from-indigo-50 to-violet-50 flex items-center justify-center">
-            <img
-              src={campaign.image}
-              alt={campaign.name}
-              className="object-cover w-full h-full"
-              onError={(e) => {
-                e.currentTarget.src = "https://via.placeholder.com/400x300?text=Campaign";
-              }}
-            />
+            {campaign.brand_avatar_url ? (
+              <img
+                src={campaign.brand_avatar_url}
+                alt={brandName}
+                className="h-16 w-16 rounded-full object-cover border border-white shadow-sm"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="h-16 w-16 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-semibold text-indigo-600">
+                {brandName?.charAt(0)?.toUpperCase() || "B"}
+              </div>
+            )}
           </div>
         </div>
 
@@ -85,15 +97,26 @@ function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
 
               <button
                 className="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition"
-                // onClick={() => onOpenProposal(campaign)}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   console.log("SELECTED CAMPAIGN:", campaign);
                   onOpenProposal(campaign);
                 }}
-
               >
                 Propose
               </button>
+
+              {onOpenView && (campaign.status?.toLowerCase() === "active" || campaign.status?.toLowerCase() === "completed") && (
+                <button
+                  className="px-3 py-2 rounded-lg text-sm bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenView(campaign);
+                  }}
+                >
+                  View
+                </button>
+              )}
 
             </div>
           </div>
@@ -185,6 +208,26 @@ export default function InfluencerDashboard() {
     setSelectedCampaign(campaign);
     setIsModalOpen(true);
   }
+
+  const openCampaignView = (campaign) => {
+    if (!campaign) return;
+    const campaignId = campaign._id || campaign.id;
+    if (!campaignId) return;
+    navigate(`/campaigns/${campaignId}` , { state: { campaign } });
+  }
+
+  const openBrandProfile = (campaign) => {
+    if (!campaign) return;
+    const rawName = campaign.brand_id?.name || campaign.brand;
+    if (!rawName) return;
+
+    const slug = String(rawName)
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
+    navigate(`/profile/brand/${slug}`);
+  };
 
   const filteredCampaigns = useMemo(() => {
     return campaigns
@@ -447,24 +490,20 @@ export default function InfluencerDashboard() {
 
             {/* Campaign grid */}
             <div className="mt-6 grid gap-6 grid-cols-1 lg:grid-cols-2">
-              {/* {filtered.length === 0 ? ( */}
               {filteredCampaigns.length === 0 ? (
-
                 <div className="p-8 bg-white border border-gray-100 rounded-2xl text-center text-slate-500">
                   No campaigns found.
                 </div>
               ) : (
                 filteredCampaigns.map((c) => (
-
-                  // <CampaignCard key={c.id} campaign={c} onOpenChat={openChat} />
-
                   <CampaignCard
-                    key={c.id}
+                    key={c.id || c._id}
                     campaign={c}
                     onOpenChat={openChat}
                     onOpenProposal={openProposalModal}
+                    onOpenView={openCampaignView}
+                    onOpenBrandProfile={openBrandProfile}
                   />
-
                 ))
               )}
             </div>

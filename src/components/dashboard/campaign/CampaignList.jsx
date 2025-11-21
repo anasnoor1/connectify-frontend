@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
 import { Plus, Filter, RefreshCcw, Calendar, DollarSign, Tag, Trash2, Edit2, Eye } from 'lucide-react';
 
@@ -9,6 +9,7 @@ const CampaignList = () => {
   const [error, setError] = useState('');
   const [confirmingId, setConfirmingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [roleChecked, setRoleChecked] = useState(false);
 
   const [filters, setFilters] = useState({
     status: 'all',
@@ -16,9 +17,35 @@ const CampaignList = () => {
     limit: 10
   });
 
+  const navigate = useNavigate();
+
   useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const res = await axios.get('/api/user/me');
+        const u = res.data?.user || res.data || {};
+        const isBrand = u.role?.toLowerCase() === 'brand';
+
+        if (!isBrand) {
+          navigate('/influencer/dashboard', { replace: true });
+          return;
+        }
+      } catch (err) {
+        console.error('Failed to check user role for campaigns page:', err?.response || err);
+        navigate('/', { replace: true });
+        return;
+      } finally {
+        setRoleChecked(true);
+      }
+    };
+
+    checkRole();
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!roleChecked) return;
     fetchCampaigns();
-  }, [filters.status, filters.page]);
+  }, [filters.status, filters.page, roleChecked]);
 
   const fetchCampaigns = async () => {
     try {
@@ -62,7 +89,7 @@ const CampaignList = () => {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
-  if (loading) {
+  if (!roleChecked || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-lg px-10 py-8 text-center">
@@ -199,6 +226,11 @@ const CampaignCard = ({
           <div>
             <h3 className="text-xl font-semibold text-gray-900">{campaign.title}</h3>
             <p className="text-sm text-gray-500 mt-1 line-clamp-2">{campaign.description}</p>
+            {campaign.status === 'pending' && (
+              <p className="mt-2 inline-flex items-center px-2.5 py-1 rounded-full bg-yellow-50 text-xs font-medium text-yellow-800 border border-yellow-100">
+                Pending admin approval
+              </p>
+            )}
           </div>
           <span className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize ${getStatusColor(campaign.status)}`}>
             {campaign.status}

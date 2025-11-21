@@ -1,22 +1,53 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
 
 const CampaignDetail = () => {
   const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
-  const [campaign, setCampaign] = useState(null);
+  const [campaign, setCampaign] = useState(location.state?.campaign || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isBrand, setIsBrand] = useState(false);
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/campaigns');
+    }
+  };
 
   useEffect(() => {
+    // If campaign already provided via navigation state (e.g. from influencer dashboard),
+    // use it directly and skip extra API call.
+    if (location.state?.campaign) {
+      setCampaign(location.state.campaign);
+      setLoading(false);
+      setError('');
+      return;
+    }
+
     const fetchCampaign = async () => {
       try {
         const response = await axios.get(`/api/campaigns/${id}`);
-        setCampaign(response.data?.data || null);
+
+        // Log full response once for debugging across brand/influencer roles
+        console.log('Campaign detail response:', response.data);
+
+        // Support multiple possible response shapes safely
+        const raw = response.data;
+        const candidate =
+          raw?.data ||
+          raw?.campaign ||
+          raw?.campaigns ||
+          null;
+
+        setCampaign(candidate);
         setError('');
       } catch (err) {
-        console.error('Failed to fetch campaign detail:', err);
+        console.error('Failed to fetch campaign detail:', err?.response || err);
         setError('Failed to load campaign. It may have been removed.');
       } finally {
         setLoading(false);
@@ -24,7 +55,21 @@ const CampaignDetail = () => {
     };
 
     fetchCampaign();
-  }, [id]);
+  }, [id, location.state]);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      try {
+        const res = await axios.get('/api/user/me');
+        const u = res.data?.user || res.data || {};
+        setIsBrand(u.role?.toLowerCase() === 'brand');
+      } catch (err) {
+        console.error('Failed to determine user role:', err?.response || err);
+      }
+    };
+
+    fetchRole();
+  }, []);
 
   if (loading) {
     return (
@@ -44,10 +89,10 @@ const CampaignDetail = () => {
           <h2 className="text-2xl font-semibold text-gray-900">Campaign not available</h2>
           <p className="text-gray-500">{error || 'We could not find the campaign you were looking for.'}</p>
           <button
-            onClick={() => navigate('/campaigns')}
+            onClick={handleBack}
             className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
           >
-            Back to campaigns
+            Back
           </button>
         </div>
       </div>
@@ -79,20 +124,28 @@ const CampaignDetail = () => {
             <p className="text-gray-500 mt-2 max-w-2xl">{campaign.description}</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Link
-              to={`/campaigns/${campaign._id}/edit`}
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-gray-800 font-semibold hover:border-indigo-200"
-            >
-              Edit campaign
-            </Link>
-            <Link
-              to="/campaigns"
+            {isBrand && (
+              <Link
+                to={`/campaigns/${campaign._id}/edit`}
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-gray-800 font-semibold hover:border-indigo-200"
+              >
+                Edit campaign
+              </Link>
+            )}
+            <button
+              onClick={handleBack}
               className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
             >
-              Back to campaigns
-            </Link>
+              Back
+            </button>
           </div>
         </div>
+
+        {isBrand && campaign.status === 'pending' && (
+          <div className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+            This campaign is currently pending admin approval after your recent changes. Influencers will see it again once it is approved.
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl shadow p-6 border border-slate-100">

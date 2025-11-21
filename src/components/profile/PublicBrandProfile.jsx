@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "../../utills/privateIntercept";
 
 const PublicBrandProfile = () => {
@@ -7,6 +7,16 @@ const PublicBrandProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate("/influencer/dashboard");
+    }
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -61,6 +71,15 @@ const PublicBrandProfile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-white py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-8">
+        <div>
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex items-center px-4 py-2 text-sm rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 mb-4"
+          >
+            Back
+          </button>
+        </div>
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">

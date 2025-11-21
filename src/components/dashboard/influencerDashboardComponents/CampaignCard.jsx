@@ -1,6 +1,6 @@
 import StatusBadge from "./StatusBadge";
 
-export default function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
+export default function CampaignCard({ campaign, onOpenChat, onOpenProposal, onView }) {
   const brandName = campaign.brand_id?.name || campaign.brand || "Unknown Brand";
   const budgetDisplay = campaign.budget ? `$ ${campaign.budget.toLocaleString()}` : "-";
 
@@ -58,13 +58,21 @@ export default function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
                 Open Chat
               </button> */}
 
+              {onView && (
+                <button
+                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition"
+                  onClick={() => onView(campaign)}
+                >
+                  View
+                </button>
+              )}
+
               <button
                 className="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition"
                 onClick={() => {
                   console.log("SELECTED CAMPAIGN:", campaign);
                   onOpenProposal(campaign);
                 }}
-
               >
                 Propose
               </button>

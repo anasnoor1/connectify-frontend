@@ -84,7 +84,7 @@ const validateMinFollowers = (v) => {
   const value = safeTrim(v ?? '');
   if (value === '') return 'Minimum followers is required.';
   if (!digitsRegex.test(value)) return 'Minimum followers must contain only whole numbers.';
-  if (Number(value) < 0) return 'Minimum followers cannot be negative.';
+  if (Number(value) < 1000) return 'Minimum followers must be at least 1000.';
   return '';
 };
 

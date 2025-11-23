@@ -1,20 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
-import ProposalModal from '../influencerDashboardComponents/proposalModal';
 
-const CampaignDetail = ({ canEdit = true }) => {
+const CampaignDetail = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-<<<<<<< HEAD
-  const preload = location.state?.campaign;
-  const [campaign, setCampaign] = useState(preload || null);
-  const [loading, setLoading] = useState(!preload);
-  const [error, setError] = useState('');
-  const [role, setRole] = useState('');
-  const [isProposalOpen, setIsProposalOpen] = useState(false);
-=======
   const [campaign, setCampaign] = useState(location.state?.campaign || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,7 +18,6 @@ const CampaignDetail = ({ canEdit = true }) => {
       navigate('/campaigns');
     }
   };
->>>>>>> 925cb870be0d9454fac3c0cfe271679ffdfea91b
 
   useEffect(() => {
     // If campaign already provided via navigation state (e.g. from influencer dashboard),
@@ -64,7 +54,6 @@ const CampaignDetail = ({ canEdit = true }) => {
       }
     };
 
-    // Always attempt to refresh from server; if we had state, user already sees content
     fetchCampaign();
   }, [id, location.state]);
 
@@ -82,17 +71,6 @@ const CampaignDetail = ({ canEdit = true }) => {
     fetchRole();
   }, []);
 
-  useEffect(() => {
-    const fetchRole = async () => {
-      try {
-        const res = await axios.get('/api/user/me');
-        const r = res.data?.user?.role || res.data?.role || res.data?.data?.user?.role || res.data?.data?.role || '';
-        setRole(String(r).toLowerCase());
-      } catch {}
-    };
-    fetchRole();
-  }, []);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -104,7 +82,7 @@ const CampaignDetail = ({ canEdit = true }) => {
     );
   }
 
-  if (!campaign) {
+  if (error || !campaign) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="max-w-md bg-white rounded-2xl shadow p-8 text-center space-y-4">
@@ -146,11 +124,7 @@ const CampaignDetail = ({ canEdit = true }) => {
             <p className="text-gray-500 mt-2 max-w-2xl">{campaign.description}</p>
           </div>
           <div className="flex flex-wrap gap-3">
-<<<<<<< HEAD
-            {(canEdit && role !== 'influencer') && (
-=======
             {isBrand && (
->>>>>>> 925cb870be0d9454fac3c0cfe271679ffdfea91b
               <Link
                 to={`/campaigns/${campaign._id}/edit`}
                 className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-gray-800 font-semibold hover:border-indigo-200"
@@ -158,21 +132,8 @@ const CampaignDetail = ({ canEdit = true }) => {
                 Edit campaign
               </Link>
             )}
-<<<<<<< HEAD
-            {role === 'influencer' && (
-              <button
-                onClick={() => setIsProposalOpen(true)}
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-gray-800 font-semibold hover:border-indigo-200"
-              >
-                Propose
-              </button>
-            )}
-            <Link
-              to={role === 'influencer' || !canEdit ? "/influencer/dashboard" : "/campaigns"}
-=======
             <button
               onClick={handleBack}
->>>>>>> 925cb870be0d9454fac3c0cfe271679ffdfea91b
               className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700"
             >
               Back
@@ -272,13 +233,6 @@ const CampaignDetail = ({ canEdit = true }) => {
           </div>
         )}
       </div>
-      {isProposalOpen && campaign && (
-        <ProposalModal
-          isOpen={isProposalOpen}
-          onClose={() => setIsProposalOpen(false)}
-          campaign={campaign}
-        />
-      )}
     </div>
   );
 };

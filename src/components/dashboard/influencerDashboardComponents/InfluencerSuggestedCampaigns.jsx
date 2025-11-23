@@ -240,6 +240,14 @@ export default function InfluencerSuggestedCampaigns() {
   const handleViewBrandProfile = (campaign) => {
     if (!campaign) return;
 
+    const brandId = typeof campaign.brand_id === 'object' ? campaign.brand_id._id : campaign.brand_id;
+
+    if (brandId) {
+      navigate(`/profile/brand/id/${brandId}`);
+      return;
+    }
+
+    // Fallback to slug if ID is somehow missing
     const rawName =
       campaign.brand_id?.name ||
       campaign.brand ||

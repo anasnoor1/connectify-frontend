@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-
 import { useNavigate } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
 
@@ -39,11 +38,19 @@ const validateDescription = (v) => {
   return '';
 };
 
-const validateBudget = (v) => {
+const validateBudgetMin = (v) => {
   const value = safeTrim(v ?? '');
-  if (value === '') return 'Budget is required.';
+  if (value === '') return 'Min budget is required.';
   if (!digitsRegex.test(value)) return 'Budget must contain only integer numbers.';
-  if (Number(value) < 0) return 'Budget cannot be negative.';
+  if (Number(value) < 20) return 'Minimum budget must be at least $20.';
+  return '';
+};
+
+const validateBudgetMax = (v) => {
+  const value = safeTrim(v ?? '');
+  if (value === '') return 'Max budget is required.';
+  if (!digitsRegex.test(value)) return 'Budget must contain only integer numbers.';
+  if (Number(value) > 20000) return 'Maximum budget cannot exceed $20,000.';
   return '';
 };
 
@@ -123,7 +130,8 @@ const validateAll = (fields) => {
   const errors = {
     title: validateTitle(fields?.title),
     description: validateDescription(fields?.description),
-    budget: validateBudget(fields?.budget),
+    budgetMin: validateBudgetMin(fields?.budgetMin),
+    budgetMax: validateBudgetMax(fields?.budgetMax),
     age_min: validateAgeMin(aMin),
     age_max: validateAgeMax(aMax),
     location: validateLocation(fields?.target_audience?.location),
@@ -140,13 +148,20 @@ const validateAll = (fields) => {
     }
   }
 
+  if (!errors.budgetMin && !errors.budgetMax) {
+    if (Number(fields?.budgetMax) < Number(fields?.budgetMin)) {
+      errors.budgetMax = 'Max budget must be greater than or equal to Min budget.';
+    }
+  }
+
   return errors;
 };
 
 const defaultFormState = {
   title: '',
   description: '',
-  budget: '',
+  budgetMin: '',
+  budgetMax: '',
   category: '',
   target_audience: {
     age_range: { min: '', max: '' },
@@ -299,7 +314,8 @@ const CreateCampaign = ({ mode = 'create', initialData, campaignId }) => {
     try {
       const submitData = {
         ...formData,
-        budget: Number(formData.budget),
+        budgetMin: Number(formData.budgetMin),
+        budgetMax: Number(formData.budgetMax),
         target_audience: {
           ...formData.target_audience,
           age_range: {
@@ -380,44 +396,59 @@ const CreateCampaign = ({ mode = 'create', initialData, campaignId }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Budget ($) *
+                    Min Budget ($) *
                   </label>
                   <input
                     type="number"
-                    name="budget"
-                    value={formData.budget}
+                    name="budgetMin"
+                    value={formData.budgetMin}
                     onChange={handleChange}
                     required
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Enter budget"
+                    placeholder="Min $20"
                   />
-                  {renderError('budget')}
+                  {renderError('budgetMin')}
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category *
+                    Max Budget ($) *
                   </label>
-                  <select
-                    name="category"
-                    value={formData.category}
+                  <input
+                    type="number"
+                    name="budgetMax"
+                    value={formData.budgetMax}
                     onChange={handleChange}
                     required
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="">Select category</option>
-                    <option value="fashion">Fashion</option>
-                    <option value="beauty">Beauty</option>
-                    <option value="lifestyle">Lifestyle</option>
-                    <option value="fitness">Fitness</option>
-                    <option value="food">Food</option>
-                    <option value="travel">Travel</option>
-                    <option value="technology">Technology</option>
-                    <option value="gaming">Gaming</option>
-                    <option value="other">Other</option>
-                  </select>
-                  {renderError('category')}
+                    placeholder="Max $20,000"
+                  />
+                  {renderError('budgetMax')}
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category *
+                </label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  required
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Select category</option>
+                  <option value="fashion">Fashion</option>
+                  <option value="beauty">Beauty</option>
+                  <option value="lifestyle">Lifestyle</option>
+                  <option value="fitness">Fitness</option>
+                  <option value="food">Food</option>
+                  <option value="travel">Travel</option>
+                  <option value="technology">Technology</option>
+                  <option value="gaming">Gaming</option>
+                  <option value="other">Other</option>
+                </select>
+                {renderError('category')}
               </div>
             </div>
 

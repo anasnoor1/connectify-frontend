@@ -96,30 +96,50 @@ export default function ChatPage() {
 
   // Load logged-in user
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    const currentUser = storedUser?.user || storedUser || null;
-
-    setUser(currentUser);
+    const stored = localStorage.getItem("user");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        const currentUser = parsed.user || parsed || null;
+        setUser(currentUser);
+      } catch (e) {
+        console.error("Failed to parse user", e);
+        setLoading(false);
+      }
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   // Fetch chat info (influencer details)
   useEffect(() => {
     const fetchChatInfo = async () => {
       try {
-        const res = await axiosInstance.get(`/api/chat/room/${roomId}`);
-        const room = res.data.room;
+        // Use the correct endpoint for fetching a specific room by ID (or just use the room ID if the backend supports it)
+        // Since getChatRoom in backend expects query params, we might need a new endpoint or adapt.
+        // However, we are already in a room with roomId.
+        // Let's assume we can fetch room details by ID or we need to fetch all chats and find this one,
+        // OR we update the backend to get room by ID.
+        // Actually, the previous code used `/api/chat/room/${roomId}` which doesn't exist in the routes I saw.
+        // The routes are: /open, /chatroom (query), /my-chats.
+        // We should probably add a route to get room by ID or use my-chats and filter.
+        // For now, let's use my-chats and find the room.
 
-        // Determine who is the other person
-        if (user) {
-          const other =
-            room.influencerId._id === user._id
-              ? room.brandId
-              : room.influencerId;
+        const res = await axiosInstance.get(`/api/chat/my-chats`);
+        const room = res.data.data.find(r => r._id === roomId);
 
-          setChatUser(other);
+        if (room && user) {
+          // Determine who is the other person
+          // room.participants is array of { userId: { ... }, role: ... }
+          const otherParticipant = room.participants.find(p => p.userId._id !== user._id);
+          if (otherParticipant) {
+            setChatUser(otherParticipant.userId);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch chat info:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -164,8 +184,12 @@ export default function ChatPage() {
     });
   };
 
-  if (!user || loading) {
+  if (loading) {
     return <p>Loading chat...</p>;
+  }
+
+  if (!user) {
+    return <p>Please log in to view this chat.</p>;
   }
 
   return (

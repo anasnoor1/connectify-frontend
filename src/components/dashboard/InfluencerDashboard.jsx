@@ -54,10 +54,7 @@ export default function InfluencerDashboard() {
     }
   };
 
-  const openChat = async (campaignId) => {
-    const res = await axiosInstance.post("/api/chat/open", { campaignId });
-    navigate(`/chat/${res.data.room._id}`);
-  };
+
 
   const openProposalModal = (campaign) => {
     setSelectedCampaign(campaign);
@@ -238,7 +235,6 @@ export default function InfluencerDashboard() {
                 <CampaignCard
                   key={c.id || c._id}
                   campaign={c}
-                  onOpenChat={openChat}
                   onOpenProposal={openProposalModal}
                   onOpenView={openCampaignView}
                   onOpenBrandProfile={openBrandProfile}

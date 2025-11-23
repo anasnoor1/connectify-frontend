@@ -6,7 +6,8 @@ import CreateCampaign from './CreateCampaign';
 const defaultFormState = {
   title: '',
   description: '',
-  budget: '',
+  budgetMin: '',
+  budgetMax: '',
   category: '',
   target_audience: {
     age_range: { min: '', max: '' },
@@ -41,7 +42,8 @@ const EditCampaign = () => {
         const mapped = {
           title: campaign.title || '',
           description: campaign.description || '',
-          budget: campaign.budget?.toString() || '',
+          budgetMin: campaign.budgetMin?.toString() || '',
+          budgetMax: campaign.budgetMax?.toString() || '',
           category: campaign.category || '',
           target_audience: {
             age_range: {
@@ -66,9 +68,9 @@ const EditCampaign = () => {
           },
           social_media: campaign.social_media?.length
             ? campaign.social_media.map((sm) => ({
-                platform: sm.platform || '',
-                requirements: sm.requirements || ''
-              }))
+              platform: sm.platform || '',
+              requirements: sm.requirements || ''
+            }))
             : [{ platform: '', requirements: '' }]
         };
 

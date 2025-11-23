@@ -20,21 +20,32 @@
 // }
 /////////////////////////////////
 
+import { useNavigate } from "react-router-dom";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 
 export default function ChatWindow({ messages, onSend, userId, chatUser }) {
+  const navigate = useNavigate();
+
   return (
     <div className="h-screen flex flex-col bg-gray-100">
 
       {/* WhatsApp-style Header */}
-      <div className="flex items-center gap-3 p-3 bg-green-600 text-white shadow">
+      <div
+        className="flex items-center gap-3 p-3 bg-green-600 text-white shadow cursor-pointer hover:bg-green-700 transition-colors"
+        onClick={() => {
+          if (chatUser?.role && chatUser?._id) {
+            navigate(`/profile/${chatUser.role}/id/${chatUser._id}`);
+          }
+        }}
+        title="View Profile"
+      >
         <div className="w-10 h-10 rounded-full bg-white text-green-700 flex items-center justify-center font-semibold">
           {chatUser?.name?.charAt(0).toUpperCase()}
         </div>
 
         <div>
-          <div className="font-semibold text-lg">{chatUser?.name || "Chat"}</div>
+          <div className="font-semibold text-lg hover:underline">{chatUser?.name || "Chat"}</div>
           <div className="text-sm text-white/80">online</div>
         </div>
       </div>

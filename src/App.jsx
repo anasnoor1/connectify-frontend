@@ -30,6 +30,9 @@ import CreateCampaign from "./components/dashboard/campaign/CreateCampaign";
 import MyProposals from "./components/dashboard/influencerDashboardComponents/myProposals";
 import EditCampaign from "./components/dashboard/campaign/EditCampaign";
 import InfluencerSuggestedCampaigns from "./components/dashboard/influencerDashboardComponents/InfluencerSuggestedCampaigns";
+import ChatPage from "./pages/ChatPage";
+import BrandChats from "./components/dashboard/brandDashboardComponents/chatList";
+
 
 // In your main render function:
 
@@ -60,7 +63,6 @@ export default function App() {
           <Route path="/profile/i/:slug" element={<PublicInfluencerProfile />} />
           <Route path="/profile/brand/:slug" element={<PublicBrandProfile />} />
           <Route path="/influencer/dashboard" element={<PrivateRoute><InfluencerDashboard /></PrivateRoute>} />
-          {/* <Route path="/chat/:campaignId" element={<PrivateRoute><ChatPage /></PrivateRoute>} /> */}
           <Route path="/campaigns/create" element={<PrivateRoute><CreateCampaign /></PrivateRoute>} />
           <Route path="/instagram" element={<InstagramProfile/>} />
           <Route path="/about" element={<About />} />
@@ -75,6 +77,16 @@ export default function App() {
           <Route path="/influencer/proposals" element={<PrivateRoute><MyProposals /></PrivateRoute>} />
           <Route path="/influencer/dashboard" element={<PrivateRoute><InfluencerDashboard /></PrivateRoute>} />
           <Route path="/influencer/suggestion" element={<PrivateRoute><InfluencerSuggestedCampaigns /></PrivateRoute>} />
+          <Route path="/brand/chats" element={<PrivateRoute><BrandChats /></PrivateRoute>} />
+          <Route 
+                path="/chat/:campaignId" 
+                element={
+                    <PrivateRoute>
+                        <ChatPage />
+                    </PrivateRoute>
+                } 
+          />
+
         </Route>
 
         {/* Auth routes without Navbar layout */}

@@ -48,13 +48,8 @@ const BrandDashboard = () => {
   if (error) return <ErrorScreen message={error} retry={fetchDashboardData} />;
   if (!dashboardData) return null;
 
-  const brandSlug = ((brandInfo?.company_name || brandInfo?.name || '')
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')) || 'brand';
-
+  const { counts, recentCampaigns, performanceData, brandInfo } = dashboardData;
+  const formattedCreatedDate = brandInfo?.createdAt ? new Date(brandInfo.createdAt).toLocaleDateString() : null;
   const snapshotFields = [
     { label: 'Industry', value: brandInfo?.industry },
     { label: 'Email', value: brandInfo?.email },
@@ -101,19 +96,11 @@ const BrandDashboard = () => {
             <Link to="/campaigns" className="inline-flex items-center px-5 py-3 rounded-xl border border-indigo-100 bg-white text-indigo-600 hover:border-indigo-300">
               Manage Campaigns <ArrowUpRight className="h-4 w-4 ml-2" />
             </Link>
-            <Link
-              to={`/brand/${brandSlug}`}
-              className="inline-flex items-center justify-center px-5 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold hover:border-indigo-200 transition"
-            >
-              View Public Profile
-              <ArrowUpRight className="h-4 w-4 ml-2" />
-            </Link>
-            <button
-              onClick={() => setEditingProfile(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors shadow-sm"
-            >
-              <Edit2 className="h-4 w-4" />
-              Edit Profile
+            <button onClick={handleChatClick} className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-100">
+              <Users className="h-4 w-4" /> Chat
+            </button>
+            <button onClick={() => setEditingProfile(true)} className="flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50">
+              <Edit2 className="h-4 w-4" /> Edit Profile
             </button>
           </div>
         </div>

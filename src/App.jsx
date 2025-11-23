@@ -31,6 +31,9 @@ import MyProposals from "./components/dashboard/influencerDashboardComponents/my
 import EditCampaign from "./components/dashboard/campaign/EditCampaign";
 import InfluencerSuggestedCampaigns from "./components/dashboard/influencerDashboardComponents/InfluencerSuggestedCampaigns";
 import CreateCampaign from "./components/dashboard/campaign/CreateCampaign";
+import BrandPublicProfile from "./components/public/BrandPublicProfile";
+import InfluencerPublicProfile from "./components/public/InfluencerPublicProfile";
+
 
 // In your main render function:
 
@@ -56,6 +59,9 @@ export default function App() {
         {/* Public home route with Navbar layout */}
         <Route element={<Navbar />}>
           <Route path="/" element={<Home />} />
+          {/* Public profile routes */}
+          <Route path="/brand/:slug" element={<BrandPublicProfile />} />
+          <Route path="/i/:handle" element={<InfluencerPublicProfile />} />
           <Route path="/brandpartnership" element={<PrivateRoute><BrandPartnership /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/influencer/dashboard" element={<PrivateRoute><InfluencerDashboard /></PrivateRoute>} />

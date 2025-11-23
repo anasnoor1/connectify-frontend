@@ -87,6 +87,13 @@ const BrandDashboard = () => {
     ? new Date(brandInfo.createdAt).toLocaleDateString()
     : null;
 
+  const brandSlug = ((brandInfo?.company_name || brandInfo?.name || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')) || 'brand';
+
   const snapshotFields = [
     { label: 'Industry', value: brandInfo?.industry },
     { label: 'Contact email', value: brandInfo?.email },
@@ -151,6 +158,13 @@ const BrandDashboard = () => {
               className="inline-flex items-center justify-center px-5 py-3 rounded-xl border border-indigo-100 bg-white text-indigo-600 font-semibold hover:border-indigo-300 transition"
             >
               Manage Campaigns
+              <ArrowUpRight className="h-4 w-4 ml-2" />
+            </Link>
+            <Link
+              to={`/brand/${brandSlug}`}
+              className="inline-flex items-center justify-center px-5 py-3 rounded-xl border border-slate-200 bg-white text-slate-700 font-semibold hover:border-indigo-200 transition"
+            >
+              View Public Profile
               <ArrowUpRight className="h-4 w-4 ml-2" />
             </Link>
             <button

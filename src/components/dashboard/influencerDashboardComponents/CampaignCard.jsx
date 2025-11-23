@@ -5,6 +5,12 @@ export default function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
   const brandName = campaign.brand_id?.name || campaign.brand || "Unknown Brand";
   const budgetDisplay = campaign.budget ? `$ ${campaign.budget.toLocaleString()}` : "-";
   const id = campaign._id || campaign.id;
+  const brandSlug = (String(brandName)
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')) || 'brand';
 
   return (
     <div className="bg-white shadow-md rounded-2xl overflow-hidden border border-gray-100">
@@ -27,7 +33,11 @@ export default function CampaignCard({ campaign, onOpenChat, onOpenProposal }) {
           <div className="flex items-start justify-between gap-3">
             <div>
               <h3 className="text-lg font-semibold text-slate-900">{campaign.title || campaign.name}</h3>
-              <p className="text-sm text-slate-500">{brandName}</p>
+              <p className="text-sm text-slate-500">
+                <Link to={`/brand/${brandSlug}`} className="text-indigo-600 hover:text-indigo-800">
+                  {brandName}
+                </Link>
+              </p>
 
               <p className="text-xs text-indigo-600 font-medium mt-1">
                 {campaign.category}

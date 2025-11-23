@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
+import ProposalModal from '../influencerDashboardComponents/proposalModal';
 
 const CampaignDetail = ({ canEdit = true }) => {
   const { id } = useParams();
@@ -11,6 +12,7 @@ const CampaignDetail = ({ canEdit = true }) => {
   const [loading, setLoading] = useState(!preload);
   const [error, setError] = useState('');
   const [role, setRole] = useState('');
+  const [isProposalOpen, setIsProposalOpen] = useState(false);
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -101,6 +103,14 @@ const CampaignDetail = ({ canEdit = true }) => {
               >
                 Edit campaign
               </Link>
+            )}
+            {role === 'influencer' && (
+              <button
+                onClick={() => setIsProposalOpen(true)}
+                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-gray-800 font-semibold hover:border-indigo-200"
+              >
+                Propose
+              </button>
             )}
             <Link
               to={role === 'influencer' || !canEdit ? "/influencer/dashboard" : "/campaigns"}
@@ -197,6 +207,13 @@ const CampaignDetail = ({ canEdit = true }) => {
           </div>
         )}
       </div>
+      {isProposalOpen && campaign && (
+        <ProposalModal
+          isOpen={isProposalOpen}
+          onClose={() => setIsProposalOpen(false)}
+          campaign={campaign}
+        />
+      )}
     </div>
   );
 };

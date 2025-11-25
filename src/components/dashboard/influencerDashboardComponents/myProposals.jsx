@@ -71,7 +71,7 @@ export default function MyProposals() {
               )}
               <p className="text-sm text-slate-500 mb-2 line-clamp-2">{p.message}</p>
               <div className="text-sm text-slate-600 space-y-1">
-                <div><strong>Amount:</strong> ₨ {p.amount}</div>
+                <div><strong>Amount:</strong> $ {p.amount}</div>
                 <div><strong>Delivery:</strong> {p.deliveryTime}</div>
                 <div><strong>Submitted:</strong> {new Date(p.createdAt).toLocaleDateString()}</div>
               </div>

@@ -3,7 +3,12 @@ import StatusBadge from "./StatusBadge";
 
 export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onOpenBrandProfile }) {
   const brandName = campaign.brand_id?.name || campaign.brand || "Unknown Brand";
-  const budgetDisplay = campaign.budget ? `₨ ${campaign.budget.toLocaleString()}` : "-";
+  let budgetDisplay = "-";
+  if (campaign.budget) {
+    budgetDisplay = `$ ${campaign.budget.toLocaleString()}`;
+  } else if (campaign.budgetMin !== undefined && campaign.budgetMax !== undefined) {
+    budgetDisplay = `$ ${campaign.budgetMin.toLocaleString()} - $ ${campaign.budgetMax.toLocaleString()}`;
+  }
   const brandInitial = brandName?.charAt(0)?.toUpperCase() || "B";
 
   return (

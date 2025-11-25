@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
-import { Plus, Filter, RefreshCcw, Calendar, DollarSign, Tag, Trash2, Edit2, Eye } from 'lucide-react';
+import { Plus, Filter, RefreshCcw, Calendar, DollarSign, Trash2, Edit2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const CampaignList = () => {
   const [campaigns, setCampaigns] = useState([]);
@@ -10,11 +10,13 @@ const CampaignList = () => {
   const [confirmingId, setConfirmingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [roleChecked, setRoleChecked] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const [filters, setFilters] = useState({
     status: 'all',
     page: 1,
-    limit: 10
+    limit: 5  // 5 campaigns per page
   });
 
   const navigate = useNavigate();
@@ -56,7 +58,10 @@ const CampaignList = () => {
       params.append('limit', filters.limit);
 
       const response = await axios.get(`/api/campaigns?${params}`);
-      setCampaigns(response.data.data);
+      const data = response.data?.data || {};
+      setCampaigns(data.campaigns || []);
+      setTotalPages(data.totalPages || 1);
+      setTotal(data.total || 0);
     } catch (err) {
       setError('Failed to load campaigns');
       console.error('Campaigns error:', err);
@@ -70,7 +75,7 @@ const CampaignList = () => {
       setDeletingId(campaignId);
       await axios.delete(`/api/campaigns/${campaignId}`);
       setConfirmingId(null);
-      fetchCampaigns(); // Refresh list
+      fetchCampaigns();
     } catch (err) {
       console.error('Failed to delete campaign:', err);
       setError('Failed to delete campaign');
@@ -87,6 +92,13 @@ const CampaignList = () => {
       cancelled: 'bg-red-100 text-red-800'
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setFilters({ ...filters, page: newPage });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   if (!roleChecked || loading) {
@@ -139,7 +151,7 @@ const CampaignList = () => {
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <span className="text-sm text-gray-400">Showing {campaigns.campaigns?.length || 0} campaigns</span>
+            <span className="text-sm text-gray-400">Showing {campaigns.length} of {total} campaigns</span>
           </div>
         </div>
 
@@ -154,9 +166,9 @@ const CampaignList = () => {
               Retry
             </button>
           </div>
-        ) : campaigns.campaigns && campaigns.campaigns.length > 0 ? (
+        ) : campaigns && campaigns.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {campaigns.campaigns.map((campaign) => (
+            {campaigns.map((campaign) => (
               <CampaignCard
                 key={campaign._id}
                 campaign={campaign}
@@ -186,24 +198,60 @@ const CampaignList = () => {
         )}
 
         {/* Pagination */}
-        {campaigns.totalPages > 1 && (
-          <div className="flex justify-center mt-8">
-            <div className="flex space-x-2">
-              {Array.from({ length: campaigns.totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setFilters({ ...filters, page })}
-                  className={`px-4 py-2 rounded-xl ${filters.page === page
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                    }`}
-                >
-                  {page}
-                </button>
-              ))}
+        <div className="mt-8">
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2">
+              <button
+                onClick={() => handlePageChange(filters.page - 1)}
+                disabled={filters.page === 1}
+                className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </button>
+
+              <div className="flex items-center gap-2">
+                {[...Array(totalPages)].map((_, i) => {
+                  const pageNum = i + 1;
+                  if (
+                    pageNum === 1 ||
+                    pageNum === totalPages ||
+                    (pageNum >= filters.page - 1 && pageNum <= filters.page + 1)
+                  ) {
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`px-4 py-2 rounded-lg border ${filters.page === pageNum
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                          }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  } else if (pageNum === filters.page - 2 || pageNum === filters.page + 2) {
+                    return <span key={pageNum} className="px-2 text-gray-400">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(filters.page + 1)}
+                disabled={filters.page === totalPages}
+                className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
+          )}
+
+          <div className="text-center mt-4 text-sm text-gray-500">
+            Page {filters.page} of {totalPages} • Showing {campaigns.length} of {total} campaigns
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -218,19 +266,16 @@ const CampaignCard = ({
   onCancelDelete,
   onConfirmDelete,
 }) => {
-  // Brand info (using campaign.brand_id if populated, or defaults)
   const brandName = campaign.brand_id?.name || campaign.brand_id?.company_name || "My Brand";
   const brandAvatar = campaign.brand_id?.avatar_url || campaign.brand_avatar_url;
   const brandInitial = brandName?.charAt(0)?.toUpperCase() || "B";
 
-  // Budget display
   const budgetDisplay = campaign.budgetMin && campaign.budgetMax
     ? `$${campaign.budgetMin.toLocaleString()} - $${campaign.budgetMax.toLocaleString()}`
     : campaign.budget ? `$${campaign.budget.toLocaleString()}` : "-";
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300">
-      {/* Header with Status Badge */}
       <div className="bg-gradient-to-r from-indigo-50 to-violet-50 px-6 py-4 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
@@ -241,14 +286,11 @@ const CampaignCard = ({
         </span>
       </div>
 
-      {/* Main Content */}
       <div className="p-6">
-        {/* Campaign Title */}
         <h3 className="text-xl font-bold text-slate-900 mb-4 line-clamp-2">
           {campaign.title}
         </h3>
 
-        {/* Brand Info (Self) */}
         <div className="flex items-center gap-3 mb-4 p-3 bg-slate-50 rounded-xl">
           <div className="flex-shrink-0">
             {brandAvatar ? (
@@ -274,14 +316,11 @@ const CampaignCard = ({
           </div>
         </div>
 
-        {/* Campaign Description */}
         <p className="text-sm text-slate-600 line-clamp-2 mb-4">
           {campaign.description}
         </p>
 
-        {/* Important Details Grid */}
         <div className="grid grid-cols-2 gap-3 mb-5">
-          {/* Budget */}
           <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100">
             <div className="flex items-center gap-2 mb-1">
               <DollarSign className="w-4 h-4 text-emerald-600" />
@@ -290,7 +329,6 @@ const CampaignCard = ({
             <p className="text-sm font-bold text-emerald-900 truncate">{budgetDisplay}</p>
           </div>
 
-          {/* Created Date (Duration placeholder) */}
           <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
             <div className="flex items-center gap-2 mb-1">
               <Calendar className="w-4 h-4 text-blue-600" />
@@ -302,7 +340,6 @@ const CampaignCard = ({
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-slate-100">
           <Link
             to={`/campaigns/${campaign._id}`}

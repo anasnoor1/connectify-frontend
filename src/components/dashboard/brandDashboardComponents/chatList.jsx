@@ -26,13 +26,23 @@ const ChatList = () => {
     if (loading) return <p className="p-6">Loading chats...</p>;
 
     const openChat = (roomId) => {
-
-       navigate(`/chats/${roomId}`);
+        navigate(`/chats/${roomId}`);
     };
 
     // Determine the "other participant" dynamically
     const getParticipant = (chat) => {
-        const userId = window.localStorage.getItem("userId"); // replace with auth context if available
+        let userId = null;
+        try {
+            const stored = localStorage.getItem("user");
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                // Handle both structures: { user: { _id: ... } } or { _id: ... }
+                userId = parsed.user?._id || parsed._id;
+            }
+        } catch (e) {
+            console.error("Failed to parse user from localStorage", e);
+        }
+
         if (!userId) return {};
 
         const other = chat.participants.find(p => p.userId._id !== userId);
@@ -59,13 +69,30 @@ const ChatList = () => {
                                 className="flex items-center gap-4 p-4 hover:bg-gray-100 cursor-pointer"
                             >
                                 {/* Avatar */}
-                                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-lg font-semibold text-white">
+                                <div
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (participant?.role && participant?._id) {
+                                            navigate(`/profile/${participant.role}/id/${participant._id}`);
+                                        }
+                                    }}
+                                    className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-lg font-semibold text-white hover:opacity-80 transition-opacity"
+                                    title="View Profile"
+                                >
                                     {participant?.name?.charAt(0)?.toUpperCase() || "U"}
                                 </div>
 
                                 {/* User info */}
                                 <div className="flex-1">
-                                    <div className="font-semibold text-gray-900 truncate">
+                                    <div
+                                        className="font-semibold text-gray-900 truncate hover:underline"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (participant?.role && participant?._id) {
+                                                navigate(`/profile/${participant.role}/id/${participant._id}`);
+                                            }
+                                        }}
+                                    >
                                         {participant?.name || "Unknown"}
                                     </div>
                                     <div className="text-gray-600 text-sm truncate max-w-[220px]">

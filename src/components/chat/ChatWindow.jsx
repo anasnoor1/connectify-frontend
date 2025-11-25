@@ -1,24 +1,3 @@
-// import ChatMessage from "./ChatMessage";
-// import ChatInput from "./ChatInput";
-
-// export default function ChatWindow({ messages, onSend, userId }) {
-//   return (
-//     <div className="h-screen flex flex-col bg-gray-100">
-//       <div className="flex-1 overflow-y-auto p-4">
-//         {messages.map((msg) => (
-//           <ChatMessage
-//             key={msg._id}
-//             msg={msg}
-//             isOwn={msg.senderId === userId}
-//           />
-//         ))}
-//       </div>
-
-//       <ChatInput onSend={onSend} />
-//     </div>
-//   );
-// }
-/////////////////////////////////
 
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";

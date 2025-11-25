@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
 import { toast } from 'react-toastify';
-import { Edit2, User } from 'lucide-react';
+import { Edit2, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import axiosInstance from "../../utills/privateIntercept";
 import Loader from "../../utills/loader";
 import ProposalModal from "./influencerDashboardComponents/proposalModal";
@@ -17,13 +17,20 @@ export default function InfluencerDashboard() {
   const [influencerData, setInfluencerData] = useState(null);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
+  const [page, setPage] = useState(1);
+  const [limit] = useState(5);  // 5 campaigns per page
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchInfluencerData();
-    fetchCampaigns();
   }, []);
+
+  useEffect(() => {
+    fetchCampaigns();
+  }, [page, status]);
 
   const fetchInfluencerData = async () => {
     try {
@@ -44,20 +51,21 @@ export default function InfluencerDashboard() {
   const fetchCampaigns = async () => {
     try {
       setLoading(true);
-      const res = await axiosInstance.get("/api/campaigns");
-      setCampaigns(res.data.data.campaigns || []);
+      const params = { page, limit };
+      if (status !== "All") {
+        params.status = status.toLowerCase();
+      }
+      const res = await axiosInstance.get("/api/campaigns", { params });
+      const data = res.data?.data || {};
+      setCampaigns(data.campaigns || []);
+      setTotalPages(data.totalPages || 1);
+      setTotal(data.total || 0);
     } catch (error) {
       console.error("Error fetching campaigns:", error);
       toast.error("Failed to load campaigns");
     } finally {
       setLoading(false);
     }
-  };
-
-  const openChat = async (campaignId) => {
-    const res = await axiosInstance.post("/api/chat/open", { campaignId });
-    console.log("Chat open response:", res.data);
-    navigate(`/chats/${res.data.room._id}`);
   };
 
   const openProposalModal = (campaign) => {
@@ -80,18 +88,17 @@ export default function InfluencerDashboard() {
     navigate(`/profile/brand/${slug}`);
   };
 
-  const filteredCampaigns = useMemo(() => {
-    return campaigns
-      .filter(c => {
-        const matchQuery =
-          c.title?.toLowerCase().includes(query.toLowerCase()) ||
-          c.description?.toLowerCase().includes(query.toLowerCase()) ||
-          c.category?.toLowerCase().includes(query.toLowerCase()) ||
-          c.brand_id?.name?.toLowerCase().includes(query.toLowerCase());
-        const matchStatus = status === "All" || c.status?.toLowerCase() === status.toLowerCase();
-        return matchQuery && matchStatus;
-      });
-  }, [campaigns, query, status]);
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleStatusChange = (newStatus) => {
+    setStatus(newStatus);
+    setPage(1); // Reset to first page when filter changes
+  };
 
   if (loading) {
     return (
@@ -163,7 +170,6 @@ export default function InfluencerDashboard() {
               >
                 My Chats
               </NavLink>
-
             </nav>
           </div>
 
@@ -203,7 +209,7 @@ export default function InfluencerDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-slate-900">Campaigns</h2>
-              <p className="text-sm text-slate-500 mt-1">Explore and apply to brand opportunities</p>
+              <p className="text-sm text-slate-500 mt-1">Explore and apply to brand opportunities ({total} total)</p>
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -220,48 +226,110 @@ export default function InfluencerDashboard() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search campaigns or brands..."
-              className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              placeholder="Search campaigns..."
+              className="flex-1 px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="px-4 py-3 border border-gray-200 rounded-xl bg-white"
+              onChange={(e) => handleStatusChange(e.target.value)}
+              className="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
-              <option>All</option>
-              <option>Active</option>
-              <option>Pending</option>
-              <option>Completed</option>
+              <option value="All">All Campaigns</option>
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
             </select>
           </div>
 
-          {/* Campaign Grid */}
-          <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
-            {filteredCampaigns.length === 0 ? (
-              <div className="p-8 bg-white border border-gray-100 rounded-2xl text-center text-slate-500">
-                No campaigns found.
+          {/* Campaigns Grid */}
+          {campaigns.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {campaigns
+                .filter((c) => !query || c.title?.toLowerCase().includes(query.toLowerCase()))
+                .map((campaign) => (
+                  <CampaignCard
+                    key={campaign._id}
+                    campaign={campaign}
+                    onApply={() => openProposalModal(campaign)}
+                    onView={() => openCampaignView(campaign)}
+                    onBrandClick={() => openBrandProfile(campaign)}
+                  />
+                ))}
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-12 text-center">
+              <p className="text-slate-500">No campaigns found</p>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-8">
+              <button
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+                className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </button>
+
+              <div className="flex items-center gap-2">
+                {[...Array(totalPages)].map((_, i) => {
+                  const pageNum = i + 1;
+                  if (
+                    pageNum === 1 ||
+                    pageNum === totalPages ||
+                    (pageNum >= page - 1 && pageNum <= page + 1)
+                  ) {
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`px-4 py-2 rounded-lg border ${page === pageNum
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                          }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  } else if (pageNum === page - 2 || pageNum === page + 2) {
+                    return <span key={pageNum} className="px-2 text-gray-400">...</span>;
+                  }
+                  return null;
+                })}
               </div>
-            ) : (
-              filteredCampaigns.map((c) => (
-                <CampaignCard
-                  key={c.id || c._id}
-                  campaign={c}
-                  onOpenChat={openChat}
-                  onOpenProposal={openProposalModal}
-                  onOpenView={openCampaignView}
-                  onOpenBrandProfile={openBrandProfile}
-                />
-              ))
-            )}
+
+              <button
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+                className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+
+          <div className="text-center mt-4 text-sm text-gray-500">
+            Page {page} of {totalPages} • Showing {campaigns.length} of {total} campaigns
           </div>
         </section>
       </div>
 
-      {isModalOpen && (
+      {/* Proposal Modal */}
+      {isModalOpen && selectedCampaign && (
         <ProposalModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
           campaign={selectedCampaign}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedCampaign(null);
+          }}
+          onSuccess={() => {
+            setIsModalOpen(false);
+            setSelectedCampaign(null);
+            fetchCampaigns();
+          }}
         />
       )}
     </div>

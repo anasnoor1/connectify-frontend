@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../utills/privateIntercept';
-import { LayoutDashboard, Zap, Clock, CheckCircle, AlertCircle, TrendingUp, Users, Calendar, ArrowUpRight, Edit2 } from 'lucide-react';
+import { LayoutDashboard, Zap, Clock, CheckCircle, AlertCircle, TrendingUp, Users, Calendar, ArrowUpRight, Edit2, FileText } from 'lucide-react';
 import ProfileEditor from './ProfileEditor';
 
 const BrandDashboard = () => {
@@ -63,7 +63,7 @@ const BrandDashboard = () => {
       <div className="min-h-screen bg-gray-50 py-8 px-4">
         <div className="max-w-5xl mx-auto">
           <button onClick={() => setEditingProfile(false)} className="mb-6 flex items-center text-gray-600 hover:text-gray-900">
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Back to Dashboard
           </button>
           <ProfileEditor userRole="brand" onCancel={() => setEditingProfile(false)} onSave={handleProfileUpdate} brandInfo={brandInfo} />
@@ -89,12 +89,15 @@ const BrandDashboard = () => {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-wrap">
             <Link to="/campaigns/create" className="inline-flex items-center px-5 py-3 rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg hover:opacity-90">
               <Zap className="h-4 w-4 mr-2" /> Launch Campaign
             </Link>
             <Link to="/campaigns" className="inline-flex items-center px-5 py-3 rounded-xl border border-indigo-100 bg-white text-indigo-600 hover:border-indigo-300">
               Manage Campaigns <ArrowUpRight className="h-4 w-4 ml-2" />
+            </Link>
+            <Link to="/brand/proposals" className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors">
+              <FileText className="h-4 w-4" /> Proposals
             </Link>
             <button onClick={handleChatClick} className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-100">
               <Users className="h-4 w-4" /> Chat
@@ -132,7 +135,7 @@ const BrandDashboard = () => {
                 <span className="font-semibold text-gray-900">{f.label}</span>
                 {f.value ? (
                   f.isLink ? <a href={f.value} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 break-all">{f.value}</a>
-                  : <span className="text-gray-700 break-all">{f.value}</span>
+                    : <span className="text-gray-700 break-all">{f.value}</span>
                 ) : <span className="text-gray-400">Not provided</span>}
               </div>
             ))}
@@ -153,6 +156,9 @@ const BrandDashboard = () => {
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
             <Link to="/campaigns/create" className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:opacity-90">
               <Zap className="h-5 w-5" /> Launch a campaign
+            </Link>
+            <Link to="/brand/proposals" className="flex items-center gap-3 p-4 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-700">
+              <FileText className="h-5 w-5 text-purple-600" /> Review proposals
             </Link>
             <Link to="/campaigns" className="flex items-center gap-3 p-4 rounded-xl border border-slate-200 hover:border-indigo-200">
               <Calendar className="h-5 w-5 text-indigo-500" /> Review timelines
@@ -204,7 +210,7 @@ const PerformanceChart = ({ data }) => {
       {data.map((item, i) => (
         <div key={i} className="flex flex-col items-center flex-1">
           <div className="w-full bg-slate-100 rounded-2xl p-1">
-            <div className="w-full rounded-xl bg-gradient-to-t from-indigo-600 to-purple-500 transition-all" style={{ height: `${(item.campaigns/max)*100}%`, minHeight: '14px' }}></div>
+            <div className="w-full rounded-xl bg-gradient-to-t from-indigo-600 to-purple-500 transition-all" style={{ height: `${(item.campaigns / max) * 100}%`, minHeight: '14px' }}></div>
           </div>
           <span className="text-xs text-gray-500 mt-3 uppercase">{new Date(item.month).toLocaleString('default', { month: 'short' })}</span>
         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
-import { Plus, Filter, RefreshCcw, Calendar, DollarSign, Tag, Trash2, Edit2, Eye } from 'lucide-react';
+import { Plus, Filter, RefreshCcw, Calendar, DollarSign, Trash2, Edit2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const CampaignList = () => {
   const [campaigns, setCampaigns] = useState([]);
@@ -10,11 +10,13 @@ const CampaignList = () => {
   const [confirmingId, setConfirmingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [roleChecked, setRoleChecked] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const [filters, setFilters] = useState({
     status: 'all',
     page: 1,
-    limit: 10
+    limit: 5  // 5 campaigns per page
   });
 
   const navigate = useNavigate();
@@ -56,7 +58,10 @@ const CampaignList = () => {
       params.append('limit', filters.limit);
 
       const response = await axios.get(`/api/campaigns?${params}`);
-      setCampaigns(response.data.data);
+      const data = response.data?.data || {};
+      setCampaigns(data.campaigns || []);
+      setTotalPages(data.totalPages || 1);
+      setTotal(data.total || 0);
     } catch (err) {
       setError('Failed to load campaigns');
       console.error('Campaigns error:', err);
@@ -70,7 +75,7 @@ const CampaignList = () => {
       setDeletingId(campaignId);
       await axios.delete(`/api/campaigns/${campaignId}`);
       setConfirmingId(null);
-      fetchCampaigns(); // Refresh list
+      fetchCampaigns();
     } catch (err) {
       console.error('Failed to delete campaign:', err);
       setError('Failed to delete campaign');
@@ -87,6 +92,13 @@ const CampaignList = () => {
       cancelled: 'bg-red-100 text-red-800'
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setFilters({ ...filters, page: newPage });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   if (!roleChecked || loading) {
@@ -139,7 +151,7 @@ const CampaignList = () => {
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <span className="text-sm text-gray-400">Showing {campaigns.campaigns?.length || 0} campaigns</span>
+            <span className="text-sm text-gray-400">Showing {campaigns.length} of {total} campaigns</span>
           </div>
         </div>
 
@@ -147,19 +159,19 @@ const CampaignList = () => {
         {error ? (
           <div className="bg-white rounded-2xl border border-red-100 shadow p-10 text-center">
             <p className="text-red-500 font-medium">{error}</p>
-            <button 
+            <button
               onClick={fetchCampaigns}
               className="mt-4 inline-flex items-center px-5 py-2.5 rounded-xl bg-red-500 text-white text-sm font-semibold hover:bg-red-600"
             >
               Retry
             </button>
           </div>
-        ) : campaigns.campaigns && campaigns.campaigns.length > 0 ? (
+        ) : campaigns && campaigns.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {campaigns.campaigns.map((campaign) => (
-              <CampaignCard 
-                key={campaign._id} 
-                campaign={campaign} 
+            {campaigns.map((campaign) => (
+              <CampaignCard
+                key={campaign._id}
+                campaign={campaign}
                 getStatusColor={getStatusColor}
                 isConfirming={confirmingId === campaign._id}
                 isDeleting={deletingId === campaign._id}
@@ -186,25 +198,60 @@ const CampaignList = () => {
         )}
 
         {/* Pagination */}
-        {campaigns.totalPages > 1 && (
-          <div className="flex justify-center mt-8">
-            <div className="flex space-x-2">
-              {Array.from({ length: campaigns.totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setFilters({ ...filters, page })}
-                  className={`px-4 py-2 rounded-xl ${
-                    filters.page === page
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+        <div className="mt-8">
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2">
+              <button
+                onClick={() => handlePageChange(filters.page - 1)}
+                disabled={filters.page === 1}
+                className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </button>
+
+              <div className="flex items-center gap-2">
+                {[...Array(totalPages)].map((_, i) => {
+                  const pageNum = i + 1;
+                  if (
+                    pageNum === 1 ||
+                    pageNum === totalPages ||
+                    (pageNum >= filters.page - 1 && pageNum <= filters.page + 1)
+                  ) {
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        className={`px-4 py-2 rounded-lg border ${filters.page === pageNum
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                          }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  } else if (pageNum === filters.page - 2 || pageNum === filters.page + 2) {
+                    return <span key={pageNum} className="px-2 text-gray-400">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+
+              <button
+                onClick={() => handlePageChange(filters.page + 1)}
+                disabled={filters.page === totalPages}
+                className="px-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
+          )}
+
+          <div className="text-center mt-4 text-sm text-gray-500">
+            Page {filters.page} of {totalPages} • Showing {campaigns.length} of {total} campaigns
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -219,49 +266,90 @@ const CampaignCard = ({
   onCancelDelete,
   onConfirmDelete,
 }) => {
+  const brandName = campaign.brand_id?.name || campaign.brand_id?.company_name || "My Brand";
+  const brandAvatar = campaign.brand_id?.avatar_url || campaign.brand_avatar_url;
+  const brandInitial = brandName?.charAt(0)?.toUpperCase() || "B";
+
+  const budgetDisplay = campaign.budgetMin && campaign.budgetMax
+    ? `$${campaign.budgetMin.toLocaleString()} - $${campaign.budgetMax.toLocaleString()}`
+    : campaign.budget ? `$${campaign.budget.toLocaleString()}` : "-";
+
   return (
-    <div className="bg-white/80 backdrop-blur rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
-      <div className="p-6 space-y-5">
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="text-xl font-semibold text-gray-900">{campaign.title}</h3>
-            <p className="text-sm text-gray-500 mt-1 line-clamp-2">{campaign.description}</p>
-            {campaign.status === 'pending' && (
-              <p className="mt-2 inline-flex items-center px-2.5 py-1 rounded-full bg-yellow-50 text-xs font-medium text-yellow-800 border border-yellow-100">
-                Pending admin approval
-              </p>
-            )}
+    <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300">
+      <div className="bg-gradient-to-r from-indigo-50 to-violet-50 px-6 py-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
+          <span className="text-sm font-medium text-indigo-900">{campaign.category || 'Campaign'}</span>
+        </div>
+        <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(campaign.status)}`}>
+          {campaign.status}
+        </span>
+      </div>
+
+      <div className="p-6">
+        <h3 className="text-xl font-bold text-slate-900 mb-4 line-clamp-2">
+          {campaign.title}
+        </h3>
+
+        <div className="flex items-center gap-3 mb-4 p-3 bg-slate-50 rounded-xl">
+          <div className="flex-shrink-0">
+            {brandAvatar ? (
+              <img
+                src={brandAvatar}
+                alt={brandName}
+                className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  e.currentTarget.nextElementSibling.style.display = "flex";
+                }}
+              />
+            ) : null}
+            <div
+              className={`w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white font-bold text-lg shadow-md ${brandAvatar ? 'hidden' : 'flex'}`}
+            >
+              {brandInitial}
+            </div>
           </div>
-          <span className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize ${getStatusColor(campaign.status)}`}>
-            {campaign.status}
-          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-slate-500 uppercase tracking-wide">Brand</p>
+            <p className="text-sm font-semibold text-slate-900 truncate">{brandName}</p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 text-sm text-gray-600">
-          <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-2"><DollarSign className="h-4 w-4 text-indigo-500" /> Budget</span>
-            <span className="font-semibold text-gray-900">${campaign.budget}</span>
+        <p className="text-sm text-slate-600 line-clamp-2 mb-4">
+          {campaign.description}
+        </p>
+
+        <div className="grid grid-cols-2 gap-3 mb-5">
+          <div className="bg-emerald-50 rounded-xl p-3 border border-emerald-100">
+            <div className="flex items-center gap-2 mb-1">
+              <DollarSign className="w-4 h-4 text-emerald-600" />
+              <span className="text-xs font-medium text-emerald-700">Budget</span>
+            </div>
+            <p className="text-sm font-bold text-emerald-900 truncate">{budgetDisplay}</p>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-2"><Tag className="h-4 w-4 text-indigo-500" /> Category</span>
-            <span className="font-semibold text-gray-900">{campaign.category}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-2"><Calendar className="h-4 w-4 text-indigo-500" /> Created</span>
-            <span className="font-semibold text-gray-900">{new Date(campaign.created_at).toLocaleDateString()}</span>
+
+          <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
+            <div className="flex items-center gap-2 mb-1">
+              <Calendar className="w-4 h-4 text-blue-600" />
+              <span className="text-xs font-medium text-blue-700">Created</span>
+            </div>
+            <p className="text-sm font-bold text-blue-900">
+              {new Date(campaign.created_at).toLocaleDateString()}
+            </p>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
+        <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-slate-100">
           <Link
             to={`/campaigns/${campaign._id}`}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 font-semibold hover:bg-indigo-100"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 font-semibold hover:bg-indigo-100 text-sm transition-colors"
           >
             <Eye className="h-4 w-4" /> View
           </Link>
           <Link
             to={`/campaigns/${campaign._id}/edit`}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-gray-700 font-semibold hover:border-indigo-200"
+            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-gray-700 font-semibold hover:border-indigo-200 text-sm transition-colors"
           >
             <Edit2 className="h-4 w-4" /> Edit
           </Link>
@@ -269,16 +357,16 @@ const CampaignCard = ({
             <button
               type="button"
               onClick={onRequestDelete}
-              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 text-red-600 font-semibold hover:bg-red-100"
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 text-red-600 font-semibold hover:bg-red-100 text-sm transition-colors"
             >
               <Trash2 className="h-4 w-4" /> Delete
             </button>
           ) : (
-            <div className="flex-1 flex flex-col sm:flex-row gap-2">
+            <div className="flex-1 flex gap-2">
               <button
                 type="button"
                 onClick={onCancelDelete}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-gray-700 font-semibold hover:border-slate-300 text-sm"
+                className="flex-1 px-3 py-2.5 rounded-xl bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200 text-xs"
               >
                 Cancel
               </button>
@@ -286,9 +374,9 @@ const CampaignCard = ({
                 type="button"
                 onClick={onConfirmDelete}
                 disabled={isDeleting}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 disabled:opacity-70 disabled:cursor-not-allowed text-sm"
+                className="flex-1 px-3 py-2.5 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-70 text-xs"
               >
-                {isDeleting ? 'Deleting…' : 'Sure'}
+                {isDeleting ? '...' : 'Confirm'}
               </button>
             </div>
           )}

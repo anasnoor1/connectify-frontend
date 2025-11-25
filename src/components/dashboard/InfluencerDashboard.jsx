@@ -18,7 +18,7 @@ export default function InfluencerDashboard() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [page, setPage] = useState(1);
-  const [limit] = useState(5);  // 5 campaigns per page
+  const [limit] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
@@ -69,6 +69,7 @@ export default function InfluencerDashboard() {
   };
 
   const openProposalModal = (campaign) => {
+    console.log('Opening proposal modal for campaign:', campaign);
     setSelectedCampaign(campaign);
     setIsModalOpen(true);
   };
@@ -97,7 +98,7 @@ export default function InfluencerDashboard() {
 
   const handleStatusChange = (newStatus) => {
     setStatus(newStatus);
-    setPage(1); // Reset to first page when filter changes
+    setPage(1);
   };
 
   if (loading) {
@@ -137,7 +138,6 @@ export default function InfluencerDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-white py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-6 grid md:grid-cols-4 gap-6">
-        {/* Sidebar */}
         <aside className="md:col-span-1 space-y-6">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
@@ -173,7 +173,6 @@ export default function InfluencerDashboard() {
             </nav>
           </div>
 
-          {/* Influencer Snapshot */}
           {influencerData && (
             <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 space-y-4">
               <div className="flex items-center gap-3">
@@ -204,7 +203,6 @@ export default function InfluencerDashboard() {
           )}
         </aside>
 
-        {/* Main Section */}
         <section className="md:col-span-3 space-y-6">
           <div className="flex items-center justify-between">
             <div>
@@ -221,7 +219,6 @@ export default function InfluencerDashboard() {
             </div>
           </div>
 
-          {/* Filters */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
             <input
               value={query}
@@ -240,7 +237,6 @@ export default function InfluencerDashboard() {
             </select>
           </div>
 
-          {/* Campaigns Grid */}
           {campaigns.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {campaigns
@@ -249,9 +245,9 @@ export default function InfluencerDashboard() {
                   <CampaignCard
                     key={campaign._id}
                     campaign={campaign}
-                    onApply={() => openProposalModal(campaign)}
-                    onView={() => openCampaignView(campaign)}
-                    onBrandClick={() => openBrandProfile(campaign)}
+                    onOpenProposal={() => openProposalModal(campaign)}
+                    onOpenView={() => openCampaignView(campaign)}
+                    onOpenBrandProfile={() => openBrandProfile(campaign)}
                   />
                 ))}
             </div>
@@ -261,7 +257,6 @@ export default function InfluencerDashboard() {
             </div>
           )}
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-8">
               <button
@@ -317,18 +312,13 @@ export default function InfluencerDashboard() {
         </section>
       </div>
 
-      {/* Proposal Modal */}
       {isModalOpen && selectedCampaign && (
         <ProposalModal
+          isOpen={isModalOpen}
           campaign={selectedCampaign}
           onClose={() => {
             setIsModalOpen(false);
             setSelectedCampaign(null);
-          }}
-          onSuccess={() => {
-            setIsModalOpen(false);
-            setSelectedCampaign(null);
-            fetchCampaigns();
           }}
         />
       )}

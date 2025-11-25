@@ -31,7 +31,9 @@ import MyProposals from "./components/dashboard/influencerDashboardComponents/my
 import EditCampaign from "./components/dashboard/campaign/EditCampaign";
 import InfluencerSuggestedCampaigns from "./components/dashboard/influencerDashboardComponents/InfluencerSuggestedCampaigns";
 import ChatPage from "./pages/ChatPage";
-import BrandChats from "./components/dashboard/brandDashboardComponents/chatList";
+import Chats from "./components/dashboard/brandDashboardComponents/chatList";
+import ChatLayout from "./pages/chatLayout";
+
 
 
 // In your main render function:
@@ -77,15 +79,19 @@ export default function App() {
           <Route path="/influencer/proposals" element={<PrivateRoute><MyProposals /></PrivateRoute>} />
           <Route path="/influencer/dashboard" element={<PrivateRoute><InfluencerDashboard /></PrivateRoute>} />
           <Route path="/influencer/suggestion" element={<PrivateRoute><InfluencerSuggestedCampaigns /></PrivateRoute>} />
-          <Route path="/brand/chats" element={<PrivateRoute><BrandChats /></PrivateRoute>} />
-          <Route 
+          {/* <Route path="/brand/chats" element={<PrivateRoute><Chats /></PrivateRoute>} /> */}
+
+          <Route path="/chats" element={<PrivateRoute><ChatLayout /></PrivateRoute>} />
+          <Route path="/chats/:roomId" element={<PrivateRoute><ChatLayout /></PrivateRoute>} />
+
+          {/* <Route 
                 path="/chat/:campaignId" 
                 element={
                     <PrivateRoute>
                         <ChatPage />
                     </PrivateRoute>
                 } 
-          />
+          /> */}
 
         </Route>
 

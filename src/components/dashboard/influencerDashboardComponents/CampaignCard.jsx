@@ -93,15 +93,31 @@ export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onO
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
-          <button
-            className="flex-1 px-4 py-2.5 border-2 border-indigo-600 text-indigo-600 rounded-xl text-sm font-semibold hover:bg-indigo-600 hover:text-white transition-all duration-200"
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenProposal(campaign);
-            }}
-          >
-            Submit Proposal
-          </button>
+          {campaign.proposal_status === 'accepted' ? (
+            <button
+              className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-semibold cursor-default"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Accepted
+            </button>
+          ) : campaign.proposal_status === 'pending' ? (
+            <button
+              className="flex-1 px-4 py-2.5 bg-yellow-500 text-white rounded-xl text-sm font-semibold cursor-default"
+              onClick={(e) => e.stopPropagation()}
+            >
+              Pending
+            </button>
+          ) : (
+            <button
+              className="flex-1 px-4 py-2.5 border-2 border-indigo-600 text-indigo-600 rounded-xl text-sm font-semibold hover:bg-indigo-600 hover:text-white transition-all duration-200"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenProposal(campaign);
+              }}
+            >
+              Submit Proposal
+            </button>
+          )}
 
           {onOpenView && (campaign.status?.toLowerCase() === "active" || campaign.status?.toLowerCase() === "completed") && (
             <button

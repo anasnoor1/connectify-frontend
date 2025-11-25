@@ -30,7 +30,7 @@ const BrandDashboard = () => {
   };
 
   const handleChatClick = () => {
-    navigate('/brand/chats');
+    navigate('/chats');
   };
 
   const handleProfileUpdate = (updatedProfile) => {

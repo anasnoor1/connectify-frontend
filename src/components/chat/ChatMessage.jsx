@@ -1,14 +1,3 @@
-// export default function ChatMessage({ msg, isOwn }) {
-//   return (
-//     <div className={`flex mb-2 ${isOwn ? "justify-end" : "justify-start"}`}>
-//       <div className={`px-3 py-2 rounded-lg text-sm shadow 
-//         ${isOwn ? "bg-indigo-600 text-white" : "bg-white"}`}>
-//         {msg.message}
-//       </div>
-//     </div>
-//   );
-// }
-///////////////////////////
 export default function ChatMessage({ msg, isOwn }) {
   const time = new Date(msg.createdAt).toLocaleTimeString([], {
     hour: '2-digit',

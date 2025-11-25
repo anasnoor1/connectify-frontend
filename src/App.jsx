@@ -31,6 +31,10 @@ import InfluencerSuggestedCampaigns from "./components/dashboard/influencerDashb
 import ChatPage from "./pages/ChatPage";
 import BrandChats from "./components/dashboard/brandDashboardComponents/chatList";
 import BrandProposals from "./components/dashboard/brandDashboardComponents/BrandProposals";
+import Chats from "./components/dashboard/brandDashboardComponents/chatList";
+import ChatLayout from "./pages/chatLayout";
+
+
 
 export default function App() {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -72,12 +76,15 @@ export default function App() {
           <Route path="/influencer/proposals" element={<PrivateRoute><MyProposals /></PrivateRoute>} />
           <Route path="/influencer/suggestion" element={<PrivateRoute><InfluencerSuggestedCampaigns /></PrivateRoute>} />
 
+          <Route path="/chats" element={<PrivateRoute><ChatLayout /></PrivateRoute>} />
+          <Route path="/chats/:roomId" element={<PrivateRoute><ChatLayout /></PrivateRoute>} />
+
           {/* Brand Routes */}
           <Route path="/brand/chats" element={<PrivateRoute><BrandChats /></PrivateRoute>} />
           <Route path="/brand/proposals" element={<PrivateRoute><BrandProposals /></PrivateRoute>} />
 
           {/* Chat Route */}
-          <Route path="/chat/:campaignId" element={<PrivateRoute><ChatPage /></PrivateRoute>} />
+          {/* <Route path="/chat/:campaignId" element={<PrivateRoute><ChatPage /></PrivateRoute>} /> */}
         </Route>
 
         {/* Auth routes without Navbar layout */}

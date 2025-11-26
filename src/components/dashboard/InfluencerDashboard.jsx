@@ -89,6 +89,21 @@ export default function InfluencerDashboard() {
     navigate(`/profile/brand/${slug}`);
   };
 
+  const handleChatNow = async (campaign) => {
+    try {
+      const res = await axiosInstance.post("/api/chats/open", {
+        campaignId: campaign._id
+      });
+      if (res.data.success && res.data.room) {
+        navigate(`/chats/${res.data.room._id}`);
+      }
+    } catch (error) {
+      console.error("Error opening chat:", error);
+      const msg = error?.response?.data?.error || error?.message || "Failed to open chat";
+      toast.error(msg);
+    }
+  };
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
@@ -248,6 +263,7 @@ export default function InfluencerDashboard() {
                     onOpenProposal={() => openProposalModal(campaign)}
                     onOpenView={() => openCampaignView(campaign)}
                     onOpenBrandProfile={() => openBrandProfile(campaign)}
+                    onChatNow={() => handleChatNow(campaign)}
                   />
                 ))}
             </div>
@@ -281,8 +297,8 @@ export default function InfluencerDashboard() {
                         key={pageNum}
                         onClick={() => handlePageChange(pageNum)}
                         className={`px-4 py-2 rounded-lg border ${page === pageNum
-                            ? 'bg-indigo-600 text-white border-indigo-600'
-                            : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                           }`}
                       >
                         {pageNum}

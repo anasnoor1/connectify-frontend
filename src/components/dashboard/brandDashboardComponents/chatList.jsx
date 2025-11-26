@@ -33,30 +33,30 @@ const ChatList = () => {
 
     const getParticipant = (chat) => {
         const stored = localStorage.getItem("user");
-        console.log("chat : ", chat);
-
         if (!stored) return {};
 
-        let user = null;
-
+        let userData = null;
         try {
-            user = JSON.parse(stored);   // ✔ convert string → object
+            userData = JSON.parse(stored);
         } catch (e) {
             console.error("Invalid user in storage:", stored);
             return {};
         }
 
-        const role = user.role;
-        console.log(role);
-        if (!role) return {};
+        const currentUser = userData?.user || userData || {};
+        const currentUserId = (currentUser._id || currentUser.id || "").toString();
 
-        // influencer logged in → show brand (index 1)
-        if (role === "influencer") {
-            return chat.participants[1]?.userId || {};
-        }
+        if (!currentUserId || !Array.isArray(chat.participants)) return {};
 
-        // brand logged in → show influencer (index 0)
-        return chat.participants[0]?.userId || {};
+        // Find the participant that is NOT the current user (normalize to strings)
+        const otherParticipant = chat.participants.find((p) => {
+            const raw = p?.userId?._id || p?.userId;
+            if (!raw) return false;
+            const pId = raw.toString();
+            return pId !== currentUserId;
+        });
+
+        return otherParticipant?.userId || {};
     };
 
 

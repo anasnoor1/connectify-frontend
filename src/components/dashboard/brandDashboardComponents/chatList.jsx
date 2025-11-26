@@ -42,14 +42,16 @@ const ChatList = () => {
             return {};
         }
 
-        const currentUser = userData.user || userData;
-        const currentUserId = currentUser._id || currentUser.id;
+        const currentUser = userData?.user || userData || {};
+        const currentUserId = (currentUser._id || currentUser.id || "").toString();
 
-        if (!currentUserId || !chat.participants) return {};
+        if (!currentUserId || !Array.isArray(chat.participants)) return {};
 
-        // Find the participant that is NOT the current user
-        const otherParticipant = chat.participants.find(p => {
-            const pId = p.userId?._id || p.userId;
+        // Find the participant that is NOT the current user (normalize to strings)
+        const otherParticipant = chat.participants.find((p) => {
+            const raw = p?.userId?._id || p?.userId;
+            if (!raw) return false;
+            const pId = raw.toString();
             return pId !== currentUserId;
         });
 

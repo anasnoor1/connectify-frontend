@@ -94,12 +94,14 @@ export default function InfluencerDashboard() {
       const res = await axiosInstance.post("/api/chat/open", {
         campaignId: campaign._id
       });
+
       if (res.data.success && res.data.room) {
         navigate(`/chats/${res.data.room._id}`);
       }
     } catch (error) {
       console.error("Error opening chat:", error);
-      toast.error("Failed to open chat");
+      const msg = error?.response?.data?.error || error?.message || "Failed to open chat";
+      toast.error(msg);
     }
   };
 

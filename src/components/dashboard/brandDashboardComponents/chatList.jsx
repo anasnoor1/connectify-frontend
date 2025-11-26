@@ -30,25 +30,39 @@ const ChatList = () => {
     };
 
     // Determine the "other participant" dynamically
+
     const getParticipant = (chat) => {
-        let userId = null;
+        const stored = localStorage.getItem("user");
+        console.log("chat : ", chat);
+
+        if (!stored) return {};
+
+        let user = null;
+
         try {
-            const stored = localStorage.getItem("user");
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                // Handle both structures: { user: { _id: ... } } or { _id: ... }
-                userId = parsed.user?._id || parsed._id;
-            }
+            user = JSON.parse(stored);   // ✔ convert string → object
         } catch (e) {
-            console.error("Failed to parse user from localStorage", e);
+            console.error("Invalid user in storage:", stored);
+            return {};
         }
 
-        if (!userId) return {};
+        const role = user.role;
+        console.log(role);
+        if (!role) return {};
 
-        const other = chat.participants.find(p => p.userId._id !== userId);
-        console.log("other : ", other);
-        return other?.userId || {};
+        // influencer logged in → show brand (index 1)
+        if (role === "influencer") {
+            return chat.participants[1]?.userId || {};
+        }
+
+        // brand logged in → show influencer (index 0)
+        return chat.participants[0]?.userId || {};
     };
+
+
+
+
+
 
     return (
         <div className="max-w-lg mx-auto bg-white h-screen border-x">

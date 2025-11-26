@@ -294,6 +294,7 @@ const Login = ({ onClose, onSwitch }) => {
     try {
       const res = await axios.post("/api/auth/login", values);
       toast.success("Login successful");
+      localStorage.setItem("user", JSON.stringify(res.data.user));
       setToken(res.data.token);
       navigate("/");
     } catch (err) {

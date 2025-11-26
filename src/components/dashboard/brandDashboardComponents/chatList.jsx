@@ -31,22 +31,29 @@ const ChatList = () => {
 
     // Determine the "other participant" dynamically
     const getParticipant = (chat) => {
-        let userId = null;
+        const stored = localStorage.getItem("user");
+        if (!stored) return {};
+
+        let userData = null;
         try {
-            const stored = localStorage.getItem("user");
-            if (stored) {
-                const parsed = JSON.parse(stored);
-                // Handle both structures: { user: { _id: ... } } or { _id: ... }
-                userId = parsed.user?._id || parsed._id;
-            }
+            userData = JSON.parse(stored);
         } catch (e) {
-            console.error("Failed to parse user from localStorage", e);
+            console.error("Invalid user in storage:", stored);
+            return {};
         }
 
-        if (!userId) return {};
+        const currentUser = userData.user || userData;
+        const currentUserId = currentUser._id || currentUser.id;
 
-        const other = chat.participants.find(p => p.userId._id !== userId);
-        return other?.userId || {};
+        if (!currentUserId || !chat.participants) return {};
+
+        // Find the participant that is NOT the current user
+        const otherParticipant = chat.participants.find(p => {
+            const pId = p.userId?._id || p.userId;
+            return pId !== currentUserId;
+        });
+
+        return otherParticipant?.userId || {};
     };
 
     return (

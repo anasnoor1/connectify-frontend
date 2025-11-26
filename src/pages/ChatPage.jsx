@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import axiosInstance from "../utills/privateIntercept";
 import { socket } from "../socket";
@@ -16,11 +17,6 @@ export default function ChatPage() {
     // Load logged-in user
     useEffect(() => {
         const storedUser = JSON.parse(localStorage.getItem("user"));
-        // const currentUser = storedUser?.user || storedUser || null;
-
-        // if (currentUser) {
-        //     setUser(currentUser);
-        // }
         const currentUser = (storedUser?.user || storedUser || {});
         const normalizedUser = {
             _id: currentUser._id || currentUser.id,
@@ -42,21 +38,9 @@ export default function ChatPage() {
                 console.log("room : ", room);
                 console.log("user : ", user);
 
-                // Determine who is the other person
-                // if (user) {
-                //   const other =
-                //     room.influencerId._id === user._id
-                //       ? room.brandId
-                //       : room.influencerId;
-
-                //   console.log("room.influencerId._id : " , room.influencerId._id )
-                //   console.log("user._id : ",user._id )
-                //   setChatUser(other);
-                // }
-
                 if (user && room.participants) {
                     const other = room.participants.find(
-                        (p) => p._id !== user._id
+                        (p) => p.userId._id !== user._id
                     );
 
                     setChatUser(other || null);

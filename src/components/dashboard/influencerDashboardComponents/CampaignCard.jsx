@@ -1,7 +1,7 @@
 
 import StatusBadge from "./StatusBadge";
 
-export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onOpenBrandProfile }) {
+export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onOpenBrandProfile, onChatNow }) {
   const brandName = campaign.brand_id?.name || campaign.brand || "Unknown Brand";
   let budgetDisplay = "-";
   if (campaign.budget) {
@@ -100,10 +100,16 @@ export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onO
         <div className="flex items-center gap-2">
           {campaign.proposal_status === 'accepted' ? (
             <button
-              className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-semibold cursor-default"
-              onClick={(e) => e.stopPropagation()}
+              className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-semibold hover:bg-green-700 transition-all duration-200 flex items-center justify-center gap-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                onChatNow && onChatNow(campaign);
+              }}
             >
-              Accepted
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              Chat Now
             </button>
           ) : campaign.proposal_status === 'pending' ? (
             <button

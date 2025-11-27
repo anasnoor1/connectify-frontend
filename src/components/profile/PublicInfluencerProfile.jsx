@@ -22,7 +22,7 @@ const PublicInfluencerProfile = () => {
       }
     };
 
-    fetchProfile();
+    fetchProfile();      
   }, [slug]);
 
   if (loading) {

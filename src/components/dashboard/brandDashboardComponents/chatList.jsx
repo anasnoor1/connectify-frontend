@@ -5,7 +5,23 @@ import { useNavigate } from "react-router-dom";
 const ChatList = () => {
     const [chats, setChats] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentUserId, setCurrentUserId] = useState(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                const res = await axios.get('/api/user/me');
+                const raw = res.data?.user || res.data?.data?.user || res.data || {};
+                const id = (raw._id || raw.id || "").toString();
+                setCurrentUserId(id || null);
+            } catch (err) {
+                console.error('Error fetching current user for chats', err);
+            }
+        };
+
+        fetchCurrentUser();
+    }, []);
 
     useEffect(() => {
         const fetchChats = async () => {
@@ -31,20 +47,6 @@ const ChatList = () => {
 
     // Determine the "other participant" dynamically
     const getParticipant = (chat) => {
-        const stored = localStorage.getItem("user");
-        if (!stored) return {};
-
-        let userData = null;
-        try {
-            userData = JSON.parse(stored);
-        } catch (e) {
-            console.error("Invalid user in storage:", stored);
-            return {};
-        }
-
-        const currentUser = userData?.user || userData || {};
-        const currentUserId = (currentUser._id || currentUser.id || "").toString();
-
         if (!currentUserId || !Array.isArray(chat.participants)) return {};
 
         // Find the participant that is NOT the current user (normalize to strings)
@@ -69,7 +71,17 @@ const ChatList = () => {
             ) : (
                 <div className="divide-y">
                     {chats.map(chat => {
-                        const participant = getParticipant(chat);
+                        const isGroup = chat.isGroup;
+                        const participant = isGroup ? null : getParticipant(chat);
+
+                        const displayName = isGroup
+                            ? (chat.groupName || "Group Chat")
+                            : (participant?.name || "Unknown");
+
+                        const avatarLetter = isGroup
+                            ? (chat.groupName?.charAt(0)?.toUpperCase() || "G")
+                            : (participant?.name?.charAt(0)?.toUpperCase() || "U");
+
                         return (
                             <div
                                 key={chat._id}
@@ -80,28 +92,29 @@ const ChatList = () => {
                                 <div
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        if (participant?.role && participant?._id) {
+                                        if (!isGroup && participant?.role && participant?._id) {
                                             navigate(`/profile/${participant.role}/id/${participant._id}`);
                                         }
                                     }}
                                     className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-lg font-semibold text-white hover:opacity-80 transition-opacity"
-                                    title="View Profile"
+                                    title={isGroup ? undefined : "View Profile"}
                                 >
-                                    {participant?.name?.charAt(0)?.toUpperCase() || "U"}
+                                    {avatarLetter}
                                 </div>
 
-                                {/* User info */}
+                                {/* Chat info */}
                                 <div className="flex-1">
                                     <div
-                                        className="font-semibold text-gray-900 truncate hover:underline"
+                                        className={`font-semibold text-gray-900 truncate ${isGroup ? '' : 'hover:underline'}`}
                                         onClick={(e) => {
+                                            if (isGroup) return;
                                             e.stopPropagation();
                                             if (participant?.role && participant?._id) {
                                                 navigate(`/profile/${participant.role}/id/${participant._id}`);
                                             }
                                         }}
                                     >
-                                        {participant?.name || "Unknown"}
+                                        {displayName}
                                     </div>
                                     <div className="text-gray-600 text-sm truncate max-w-[220px]">
                                         {chat.lastMessage?.text || "No messages yet"}

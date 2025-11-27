@@ -7,6 +7,9 @@ const PublicBrandProfile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [collaborations, setCollaborations] = useState([]);
+  const [collabLoading, setCollabLoading] = useState(false);
+  const [collabError, setCollabError] = useState("");
 
   const navigate = useNavigate();
 
@@ -34,6 +37,26 @@ const PublicBrandProfile = () => {
 
     fetchProfile();
   }, [slug]);
+
+  useEffect(() => {
+    if (!profile || !profile.id) return;
+
+    const fetchCollaborations = async () => {
+      try {
+        setCollabLoading(true);
+        const res = await axios.get(`/api/profile/public/brand/id/${profile.id}/collaborations`);
+        setCollaborations(res.data?.data?.collaborations || []);
+        setCollabError("");
+      } catch (err) {
+        console.error("Public brand collaborations error:", err?.response || err);
+        setCollabError("Unable to load collaborations.");
+      } finally {
+        setCollabLoading(false);
+      }
+    };
+
+    fetchCollaborations();
+  }, [profile]);
 
   if (loading) {
     return (
@@ -143,6 +166,50 @@ const PublicBrandProfile = () => {
             </div>
           </dl>
         </section>
+
+        {(collabLoading || collabError || collaborations.length > 0) && (
+          <section className="bg-white rounded-2xl shadow p-6 border border-slate-100">
+            <h2 className="text-base font-semibold text-gray-900 mb-3">Influencer collaborations</h2>
+            {collabLoading && (
+              <p className="text-sm text-gray-500">Loading collaborations...</p>
+            )}
+            {!collabLoading && collabError && (
+              <p className="text-sm text-red-500">{collabError}</p>
+            )}
+            {!collabLoading && !collabError && collaborations.length === 0 && (
+              <p className="text-sm text-gray-500">No public collaborations yet.</p>
+            )}
+            {!collabLoading && !collabError && collaborations.length > 0 && (
+              <div className="mt-2 space-y-3">
+                {collaborations.map((item) => (
+                  <div
+                    key={item.proposal_id}
+                    className="flex items-start justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {item.influencer?.name || "Influencer"}
+                      </p>
+                      {item.influencer?.instagram_username && (
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Instagram: <span className="font-medium">@{item.influencer.instagram_username.replace(/^@/, "")}</span>
+                        </p>
+                      )}
+                      {item.campaign?.title && (
+                        <p className="text-xs text-indigo-600 mt-0.5">
+                          Campaign: {item.campaign.title}
+                        </p>
+                      )}
+                    </div>
+                    <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                      {item.status === "accepted" ? "Completed" : item.status || "Active"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </div>
     </div>
   );

@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../../utills/privateIntercept';
 import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 import { CheckCircle, XCircle, Clock, User, DollarSign, Calendar, ExternalLink } from 'lucide-react';
 
 export default function BrandProposals() {
     const [proposals, setProposals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchProposals();
@@ -24,11 +27,29 @@ export default function BrandProposals() {
         }
     };
 
-    const handleStatusUpdate = async (proposalId, status) => {
+    const handleStatusUpdate = async (proposal, status) => {
         try {
-            await axiosInstance.patch(`/api/proposals/${proposalId}/status`, { status });
+            await axiosInstance.patch(`/api/proposals/${proposal._id}/status`, { status });
             toast.success(`Proposal ${status} successfully!`);
             fetchProposals();
+
+            if (status === 'accepted') {
+                const campaignId = proposal.campaignId?._id || proposal.campaignId;
+                const influencerId = proposal.influencerId?._id || proposal.influencerId;
+                if (campaignId && influencerId) {
+                    try {
+                        const res = await axiosInstance.post('/api/chat/open', {
+                            campaignId,
+                            influencerId,
+                        });
+                        if (res.data?.success && res.data.room?._id) {
+                            navigate(`/chats/${res.data.room._id}`);
+                        }
+                    } catch (err) {
+                        console.error('Failed to open chat after accepting proposal:', err?.response || err);
+                    }
+                }
+            }
         } catch (error) {
             const errorMsg = error.response?.data?.msg || 'Failed to update proposal';
             toast.error(errorMsg);
@@ -58,6 +79,11 @@ export default function BrandProposals() {
             default:
                 return <Clock className="w-4 h-4" />;
         }
+    };
+
+    const buildInfluencerSlug = (name) => {
+        if (!name) return '';
+        return name.toString().trim().toLowerCase().replace(/\s+/g, '-');
     };
 
     if (loading) {
@@ -161,6 +187,19 @@ export default function BrandProposals() {
                                     </div>
 
                                     <div className="flex flex-col gap-2 lg:w-40">
+                                        {/* View Influencer Profile Button */}
+                                        {proposal.influencerId?.name && (
+                                            <a
+                                                href={`/profile/i/${buildInfluencerSlug(proposal.influencerId.name)}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+                                            >
+                                                <ExternalLink className="w-4 h-4" />
+                                                View Profile
+                                            </a>
+                                        )}
+
                                         {/* View Campaign Button */}
                                         <a
                                             href={`/campaigns/${proposal.campaignId?._id}`}
@@ -172,18 +211,18 @@ export default function BrandProposals() {
                                             View Campaign
                                         </a>
 
-                                        {/* Accept/Reject Buttons for Pending */}
+                                            {/* Accept/Reject Buttons for Pending */}
                                         {proposal.status === 'pending' && (
                                             <>
                                                 <button
-                                                    onClick={() => handleStatusUpdate(proposal._id, 'accepted')}
+                                                    onClick={() => handleStatusUpdate(proposal, 'accepted')}
                                                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm flex items-center justify-center gap-2"
                                                 >
                                                     <CheckCircle className="w-4 h-4" />
                                                     Accept
                                                 </button>
                                                 <button
-                                                    onClick={() => handleStatusUpdate(proposal._id, 'rejected')}
+                                                    onClick={() => handleStatusUpdate(proposal, 'rejected')}
                                                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm flex items-center justify-center gap-2"
                                                 >
                                                     <XCircle className="w-4 h-4" />

@@ -31,6 +31,19 @@ export default function MyProposals() {
     }
   };
 
+  const handleOpenChat = async (p) => {
+    if (!p?.campaignId?._id && !p?.campaignId) return;
+    const campaignId = p.campaignId._id || p.campaignId;
+    try {
+      const res = await axiosInstance.post('/api/chat/open', { campaignId });
+      if (res.data?.success && res.data.room?._id) {
+        navigate(`/chats/${res.data.room._id}`);
+      }
+    } catch (err) {
+      console.error('Failed to open chat from proposal:', err?.response || err);
+    }
+  };
+
   if (loading) return <Loader />;
 
   return (
@@ -79,7 +92,7 @@ export default function MyProposals() {
               {/* Open Chat Button - Only for Accepted Proposals */}
               {p.status === 'accepted' && (
                 <button
-                  onClick={() => navigate(`/chats/${p.campaignId._id}`)}
+                  onClick={() => handleOpenChat(p)}
                   className="mt-4 w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm flex items-center justify-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

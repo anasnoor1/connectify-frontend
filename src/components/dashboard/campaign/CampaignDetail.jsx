@@ -233,6 +233,11 @@ const CampaignDetail = () => {
               <dd className="text-lg font-semibold text-gray-900">{campaign.requirements?.min_engagement || 'Not specified'}%</dd>
             </div>
             <div>
+              <dt className="text-sm">Number of Influencers</dt>
+              <dd className="text-lg font-semibold text-gray-900">{campaign.requirements?.
+max_influencers || 'Not specified'}</dd>
+            </div>
+            <div>
               <dt className="text-sm">Content types</dt>
               <dd className="font-semibold text-gray-900">{formatList(campaign.requirements?.content_type)}</dd>
             </div>

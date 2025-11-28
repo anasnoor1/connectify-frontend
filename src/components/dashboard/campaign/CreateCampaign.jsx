@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
 
@@ -31,15 +31,26 @@ const validateDescription = (v) => {
   if (hasLeadingOrTrailingSpace(raw)) return 'No leading or trailing spaces allowed.';
   const value = raw.trim();
   if (value.length < 2) return 'Description must be at least 2 letters.';
-  if (!lettersOnlyRegex.test(value)) return 'Description can only contain letters and spaces.';
+  const descriptionRegex = /^[A-Za-z\s]+$/;
+  if (!descriptionRegex.test(value)) {
+    return 'Description can only contain letters and spaces (no symbols like . , ! etc).';
+  }
   return '';
 };
 
-const validateBudget = (v) => {
+const validateBudgetMin = (v) => {
   const value = safeTrim(v ?? '');
-  if (value === '') return 'Budget is required.';
+  if (value === '') return 'Min budget is required.';
   if (!digitsRegex.test(value)) return 'Budget must contain only integer numbers.';
-  if (Number(value) < 0) return 'Budget cannot be negative.';
+  if (Number(value) < 20) return 'Minimum budget must be at least $20.';
+  return '';
+};
+
+const validateBudgetMax = (v) => {
+  const value = safeTrim(v ?? '');
+  if (value === '') return 'Max budget is required.';
+  if (!digitsRegex.test(value)) return 'Budget must contain only integer numbers.';
+  if (Number(value) > 20000) return 'Maximum budget cannot exceed $20,000.';
   return '';
 };
 
@@ -80,7 +91,7 @@ const validateMinFollowers = (v) => {
   const value = safeTrim(v ?? '');
   if (value === '') return 'Minimum followers is required.';
   if (!digitsRegex.test(value)) return 'Minimum followers must contain only whole numbers.';
-  if (Number(value) < 0) return 'Minimum followers cannot be negative.';
+  if (Number(value) < 1000) return 'Minimum followers must be at least 1000.';
   return '';
 };
 
@@ -119,7 +130,8 @@ const validateAll = (fields) => {
   const errors = {
     title: validateTitle(fields?.title),
     description: validateDescription(fields?.description),
-    budget: validateBudget(fields?.budget),
+    budgetMin: validateBudgetMin(fields?.budgetMin),
+    budgetMax: validateBudgetMax(fields?.budgetMax),
     age_min: validateAgeMin(aMin),
     age_max: validateAgeMax(aMax),
     location: validateLocation(fields?.target_audience?.location),
@@ -136,34 +148,52 @@ const validateAll = (fields) => {
     }
   }
 
+  if (!errors.budgetMin && !errors.budgetMax) {
+    if (Number(fields?.budgetMax) < Number(fields?.budgetMin)) {
+      errors.budgetMax = 'Max budget must be greater than or equal to Min budget.';
+    }
+  }
+
   return errors;
 };
 
-const CreateCampaign = () => {
+const defaultFormState = {
+  title: '',
+  description: '',
+  budgetMin: '',
+  budgetMax: '',
+  category: '',
+  target_audience: {
+    age_range: { min: '', max: '' },
+    gender: 'all',
+    location: '',
+    interests: ''
+  },
+  requirements: {
+    min_followers: '',
+    min_engagement: '',
+    content_type: '',
+    deadline: ''
+  },
+  social_media: [{ platform: '', requirements: '' }]
+};
+
+const CreateCampaign = ({ mode = 'create', initialData, campaignId }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    budget: '',
-    category: '',
-    target_audience: {
-      age_range: { min: '', max: '' },
-      gender: 'all',
-      location: '',
-      interests: ''
-    },
-    requirements: {
-      min_followers: '',
-      min_engagement: '',
-      content_type: '',
-      deadline: ''
-    },
-    social_media: [{ platform: '', requirements: '' }]
-  });
+  const [formData, setFormData] = useState(() => initialData || defaultFormState);
+
+  // When used in edit mode, sync incoming initialData into local form state
+  useEffect(() => {
+    if (mode === 'edit' && initialData) {
+      setFormData(initialData);
+      // Re-run validation so existing data shows errors state correctly
+      setErrors(validateAll(initialData));
+    }
+  }, [mode, initialData]);
 
   const runValidation = (data) => {
     const baseErrors = validateAll(data);
@@ -284,7 +314,8 @@ const CreateCampaign = () => {
     try {
       const submitData = {
         ...formData,
-        budget: Number(formData.budget),
+        budgetMin: Number(formData.budgetMin),
+        budgetMax: Number(formData.budgetMax),
         target_audience: {
           ...formData.target_audience,
           age_range: {
@@ -303,7 +334,11 @@ const CreateCampaign = () => {
         social_media: formData.social_media.filter(sm => sm.platform && sm.requirements)
       };
 
-      await axios.post('/api/campaigns', submitData);
+      if (mode === 'edit' && campaignId) {
+        await axios.put(`/api/campaigns/${campaignId}`, submitData);
+      } else {
+        await axios.post('/api/campaigns', submitData);
+      }
       navigate('/campaigns');
     } catch (err) {
       alert('Failed to create campaign');
@@ -317,7 +352,9 @@ const CreateCampaign = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Create New Campaign</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">
+            {mode === 'edit' ? 'Edit Campaign' : 'Create New Campaign'}
+          </h1>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
@@ -359,44 +396,59 @@ const CreateCampaign = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Budget ($) *
+                    Min Budget ($) *
                   </label>
                   <input
                     type="number"
-                    name="budget"
-                    value={formData.budget}
+                    name="budgetMin"
+                    value={formData.budgetMin}
                     onChange={handleChange}
                     required
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    placeholder="Enter budget"
+                    placeholder="Min $20"
                   />
-                  {renderError('budget')}
+                  {renderError('budgetMin')}
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category *
+                    Max Budget ($) *
                   </label>
-                  <select
-                    name="category"
-                    value={formData.category}
+                  <input
+                    type="number"
+                    name="budgetMax"
+                    value={formData.budgetMax}
                     onChange={handleChange}
                     required
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  >
-                    <option value="">Select category</option>
-                    <option value="fashion">Fashion</option>
-                    <option value="beauty">Beauty</option>
-                    <option value="lifestyle">Lifestyle</option>
-                    <option value="fitness">Fitness</option>
-                    <option value="food">Food</option>
-                    <option value="travel">Travel</option>
-                    <option value="technology">Technology</option>
-                    <option value="gaming">Gaming</option>
-                    <option value="other">Other</option>
-                  </select>
-                  {renderError('category')}
+                    placeholder="Max $20,000"
+                  />
+                  {renderError('budgetMax')}
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category *
+                </label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  required
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Select category</option>
+                  <option value="fashion">Fashion</option>
+                  <option value="beauty">Beauty</option>
+                  <option value="lifestyle">Lifestyle</option>
+                  <option value="fitness">Fitness</option>
+                  <option value="food">Food</option>
+                  <option value="travel">Travel</option>
+                  <option value="technology">Technology</option>
+                  <option value="gaming">Gaming</option>
+                  <option value="other">Other</option>
+                </select>
+                {renderError('category')}
               </div>
             </div>
 
@@ -617,7 +669,13 @@ const CreateCampaign = () => {
                 disabled={loading}
                 className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
               >
-                {loading ? 'Creating...' : 'Create Campaign'}
+                {loading
+                  ? mode === 'edit'
+                    ? 'Saving...'
+                    : 'Creating...'
+                  : mode === 'edit'
+                    ? 'Save Changes'
+                    : 'Create Campaign'}
               </button>
               <button
                 type="button"

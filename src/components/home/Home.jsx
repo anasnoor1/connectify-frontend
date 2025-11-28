@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchLandingCounts } from "../../features/home/landingSlice";
 import { Link } from "react-router-dom";
 
 import hero from "../../assets/hero-1.webp";
@@ -174,13 +176,14 @@ function LogoLyra() {
 }
 
 const Home = () => {
-  const [stats, setStats] = useState({ totalBrands: 0, totalInfluencers: 0 });
-useEffect(() => {
-    fetch("http://localhost:5000/api/auth/counts") // adjust URL if needed
-      .then((res) => res.json())
-      .then((data) => setStats(data))
-      .catch((err) => console.error("Error fetching counts:", err));
-  }, []);
+  const dispatch = useDispatch();
+  const stats = useSelector((state) => ({
+    totalBrands: state.landing.totalBrands,
+    totalInfluencers: state.landing.totalInfluencers,
+  }));
+  useEffect(() => {
+    dispatch(fetchLandingCounts());
+  }, [dispatch]);
   
   const partners = [
     LogoAurora,

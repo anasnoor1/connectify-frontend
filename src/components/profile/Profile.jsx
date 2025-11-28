@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import axios from "../../utills/privateIntercept";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Shield, Users } from "lucide-react";
+import { Mail, Shield, Users, Share2 } from "lucide-react";
 
 const InfoCard = ({ label, value }) => (
   <div className="space-y-1">
@@ -137,6 +137,49 @@ export default function Profile() {
   const isBrand = data.user.role === "brand";
   const profile = data.profile || {};
 
+  const publicProfileUrl = useMemo(() => {
+    try {
+      const origin = window.location.origin;
+      const baseName = isBrand
+        ? (profile.company_name || data.user.name)
+        : data.user.name;
+
+      if (!origin || !baseName) return null;
+
+      const slug = String(baseName)
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-");
+
+      const path = isBrand
+        ? `/profile/brand/${slug}`
+        : `/profile/i/${slug}`;
+
+      return `${origin}${path}`;
+    } catch (e) {
+      return null;
+    }
+  }, [isBrand, profile.company_name, data.user.name]);
+
+  const handleShareProfile = async () => {
+    if (!publicProfileUrl) {
+      toast.error("Complete your profile name/company to get public link");
+      return;
+    }
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(publicProfileUrl);
+        toast.success("Public profile link copied to clipboard");
+      } else {
+        throw new Error("Clipboard not available");
+      }
+    } catch (err) {
+      console.error("Share profile copy failed:", err);
+      toast.success(`Public profile URL: ${publicProfileUrl}`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -205,6 +248,16 @@ export default function Profile() {
                     <Shield className="h-3.5 w-3.5" /> {data.user.role}
                   </span>
                 )}
+              </div>
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={handleShareProfile}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-[11px] sm:text-xs text-white hover:bg-white/15"
+                >
+                  <Share2 className="h-3.5 w-3.5" />
+                  <span>Share public profile</span>
+                </button>
               </div>
             </div>
           </div>

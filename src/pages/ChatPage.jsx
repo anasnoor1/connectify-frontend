@@ -6,26 +6,33 @@ import ChatWindow from "../components/chat/ChatWindow";
 import { useParams } from "react-router-dom";
 
 export default function ChatPage() {
-    const { roomId } = useParams();  // cleaner than split pathname
+    const { roomId } = useParams();
 
-    console.log("roomId : ", roomId)
     const [messages, setMessages] = useState([]);
-    const [chatUser, setChatUser] = useState(null); // influencer or brand user
+    const [chatUser, setChatUser] = useState(null); // "other" user for 1-1 chats
+    const [room, setRoom] = useState(null);        // full room meta (for group name etc.)
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Load logged-in user
+    // Load logged-in user from API so _id is always correct
     useEffect(() => {
-        const storedUser = JSON.parse(localStorage.getItem("user"));
-        const currentUser = (storedUser?.user || storedUser || {});
-        const normalizedUser = {
-            _id: currentUser._id || currentUser.id,
-            ...currentUser
+        const fetchMe = async () => {
+            try {
+                const res = await axiosInstance.get("/api/user/me");
+                const raw = res.data?.user || res.data?.data?.user || res.data || {};
+                const normalizedUser = {
+                    _id: raw._id || raw.id,
+                    ...raw,
+                };
+                setUser(normalizedUser);
+            } catch (err) {
+                console.error("Failed to load current user for chat:", err?.response || err);
+            } finally {
+                setLoading(false);
+            }
         };
-        setUser(normalizedUser);
 
-        setLoading(false);
-
+        fetchMe();
     }, []);
 
     // Fetch chat info (influencer details)
@@ -34,16 +41,24 @@ export default function ChatPage() {
             try {
                 console.log("roomid12 : ", roomId)
                 const res = await axiosInstance.get(`/api/chat/chatroom/${roomId}`);
-                const room = res.data.room;
-                console.log("room : ", room);
+                const roomData = res.data.room;
+                console.log("room : ", roomData);
                 console.log("user : ", user);
 
-                if (user && room.participants) {
-                    const other = room.participants.find(
-                        (p) => p.userId._id !== user._id
-                    );
+                setRoom(roomData);
+
+                if (user && roomData.participants && !roomData.isGroup) {
+                    const myId = String(user._id || "");
+
+                    const other = roomData.participants.find((p) => {
+                        const raw = p?.userId?._id || p?.userId;
+                        if (!raw) return false;
+                        return String(raw) !== myId;
+                    });
 
                     setChatUser(other || null);
+                } else {
+                    setChatUser(null);
                 }
 
             } catch (err) {
@@ -101,7 +116,8 @@ export default function ChatPage() {
             messages={messages}
             onSend={sendMessage}
             userId={user._id}
-            chatUser={chatUser}  // 👈 for header info
+            chatUser={chatUser}
+            room={room}
         />
     );
 }

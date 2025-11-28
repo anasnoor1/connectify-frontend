@@ -91,9 +91,10 @@ export default function InfluencerDashboard() {
 
   const handleChatNow = async (campaign) => {
     try {
-      const res = await axiosInstance.post("/api/chats/open", {
+      const res = await axiosInstance.post("/api/chat/open", {
         campaignId: campaign._id
       });
+
       if (res.data.success && res.data.room) {
         navigate(`/chats/${res.data.room._id}`);
       }

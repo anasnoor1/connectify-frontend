@@ -103,6 +103,16 @@ const validateMinEngagement = (v) => {
   return '';
 };
 
+const validateMaxInfluencers = (v) => {
+  const value = safeTrim(v ?? '');
+  if (value === '') return 'Number of influencers is required.';
+  if (!digitsRegex.test(value)) return 'Number of influencers must be a whole number.';
+  const num = Number(value);
+  if (num < 1) return 'There must be at least 1 influencer.';
+  if (num > 100) return 'Number of influencers cannot exceed 100.';
+  return '';
+};
+
 const validateContentType = (v) => {
   const raw = String(v ?? '');
   if (!safeTrim(raw)) return 'Content type is required.';
@@ -138,6 +148,7 @@ const validateAll = (fields) => {
     interests: validateInterests(fields?.target_audience?.interests),
     req_min_followers: validateMinFollowers(fields?.requirements?.min_followers),
     req_min_engagement: validateMinEngagement(fields?.requirements?.min_engagement),
+    req_max_influencers: validateMaxInfluencers(fields?.requirements?.max_influencers),
     req_content_type: validateContentType(fields?.requirements?.content_type),
     req_deadline: validateDeadline(fields?.requirements?.deadline)
   };
@@ -172,6 +183,7 @@ const defaultFormState = {
   requirements: {
     min_followers: '',
     min_engagement: '',
+    max_influencers: '1',
     content_type: '',
     deadline: ''
   },
@@ -230,6 +242,7 @@ const CreateCampaign = ({ mode = 'create', initialData, campaignId }) => {
     if (name === 'target_audience.interests') return 'interests';
     if (name === 'requirements.min_followers') return 'req_min_followers';
     if (name === 'requirements.min_engagement') return 'req_min_engagement';
+    if (name === 'requirements.max_influencers') return 'req_max_influencers';
     if (name === 'requirements.content_type') return 'req_content_type';
     if (name === 'requirements.deadline') return 'req_deadline';
     return name;
@@ -328,6 +341,7 @@ const CreateCampaign = ({ mode = 'create', initialData, campaignId }) => {
           ...formData.requirements,
           min_followers: Number(formData.requirements.min_followers) || 0,
           min_engagement: Number(formData.requirements.min_engagement) || 0,
+          max_influencers: Number(formData.requirements.max_influencers) || 1,
           content_type: formData.requirements.content_type.split(',').map(i => i.trim()).filter(Boolean),
           deadline: formData.requirements.deadline || null
         },
@@ -570,6 +584,22 @@ const CreateCampaign = ({ mode = 'create', initialData, campaignId }) => {
                   />
                   {renderError('req_min_engagement')}
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Number of influencers
+                </label>
+                <input
+                  type="number"
+                  name="requirements.max_influencers"
+                  value={formData.requirements.max_influencers}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  min={1}
+                  placeholder="e.g., 1 for single, 3 for group"
+                />
+                {renderError('req_max_influencers')}
               </div>
 
               <div>

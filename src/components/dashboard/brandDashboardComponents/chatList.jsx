@@ -46,7 +46,6 @@ const ChatList = () => {
     };
 
     // Determine the "other participant" dynamically
-
     const getParticipant = (chat) => {
         if (!currentUserId || !Array.isArray(chat.participants)) return {};
 
@@ -60,11 +59,6 @@ const ChatList = () => {
 
         return otherParticipant?.userId || {};
     };
-
-
-
-
-
 
     return (
         <div className="max-w-lg mx-auto bg-white h-screen border-x">

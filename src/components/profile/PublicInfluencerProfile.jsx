@@ -25,7 +25,7 @@ const PublicInfluencerProfile = () => {
       }
     };
 
-    fetchProfile();      
+    fetchProfile();
   }, [slug]);
 
   useEffect(() => {

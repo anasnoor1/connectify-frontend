@@ -59,6 +59,7 @@ const validateAgeMin = (v) => {
   if (raw === '') return 'Minimum age is required.';
   if (!digitsRegex.test(raw)) return 'Minimum age must be a whole number.';
   if (Number(raw) < 18) return 'Minimum age must be 18 or older.';
+  if (Number(raw) > 70) return 'Minimum age must be less than 70.';
   return '';
 };
 
@@ -66,6 +67,7 @@ const validateAgeMax = (v) => {
   const raw = safeTrim(v ?? '');
   if (raw === '') return 'Maximum age is required.';
   if (!digitsRegex.test(raw)) return 'Maximum age must be a whole number.';
+  if (Number(raw) > 70) return 'Minimum age must be less than 70.';
   return '';
 };
 
@@ -109,7 +111,7 @@ const validateMaxInfluencers = (v) => {
   if (!digitsRegex.test(value)) return 'Number of influencers must be a whole number.';
   const num = Number(value);
   if (num < 1) return 'There must be at least 1 influencer.';
-  if (num > 100) return 'Number of influencers cannot exceed 100.';
+  if (num > 3) return 'Number of influencers cannot exceed 3.';
   return '';
 };
 

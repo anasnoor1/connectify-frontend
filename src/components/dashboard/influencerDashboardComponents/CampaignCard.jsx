@@ -1,3 +1,4 @@
+
 import StatusBadge from "./StatusBadge";
 
 export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onOpenBrandProfile, onChatNow }) {

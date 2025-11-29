@@ -10,6 +10,8 @@ const PublicInfluencerProfile = () => {
   const [collaborations, setCollaborations] = useState([]);
   const [collabLoading, setCollabLoading] = useState(false);
   const [collabError, setCollabError] = useState("");
+  const [rating, setRating] = useState(null);
+  const [ratingCount, setRatingCount] = useState(0);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -46,6 +48,23 @@ const PublicInfluencerProfile = () => {
     };
 
     fetchCollaborations();
+  }, [profile]);
+
+  useEffect(() => {
+    if (!profile || !profile.id) return;
+
+    const fetchRating = async () => {
+      try {
+        const res = await axios.get(`/api/reviews/user/${profile.id}`);
+        const data = res.data?.data || {};
+        setRating(typeof data.average_rating === 'number' ? data.average_rating : null);
+        setRatingCount(data.reviews_count || 0);
+      } catch (err) {
+        console.error("Public influencer rating error:", err?.response || err);
+      }
+    };
+
+    fetchRating();
   }, [profile]);
 
   if (loading) {
@@ -106,6 +125,14 @@ const PublicInfluencerProfile = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{name}</h1>
               {category && (
                 <p className="text-sm text-indigo-600 mt-1 capitalize">{category}</p>
+              )}
+              {rating !== null && (
+                <p className="text-sm text-yellow-600 mt-1">
+                  ⭐ {rating.toFixed(1)}
+                  {ratingCount > 0 && (
+                    <span className="text-xs text-gray-500 ml-1">({ratingCount} review{ratingCount > 1 ? 's' : ''})</span>
+                  )}
+                </p>
               )}
               {instagram_username && (
                 <p className="text-sm text-gray-500 mt-1">

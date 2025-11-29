@@ -1,5 +1,3 @@
-
-
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 
@@ -14,6 +12,8 @@ export default function ChatWindow({ messages, onSend, userId, chatUser, room })
     ? (room?.groupName?.charAt(0)?.toUpperCase() || "G")
     : (chatUser?.userId?.name?.charAt(0)?.toUpperCase() || "C");
 
+  const avatarUrl = !isGroup ? chatUser?.userId?.avatar_url : null;
+
   const isOwnMessage = (msg) => {
     const raw = msg?.senderId;
     if (!raw || !userId) return false;
@@ -26,8 +26,22 @@ export default function ChatWindow({ messages, onSend, userId, chatUser, room })
 
       {/* WhatsApp-style Header */}
       <div className="flex items-center gap-3 p-3 bg-green-600 text-white shadow">
-        <div className="w-10 h-10 rounded-full bg-white text-green-700 flex items-center justify-center font-semibold">
-          {initial}
+        <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center font-semibold text-green-50">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={title}
+              className="w-10 h-10 rounded-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+                const fallback = e.currentTarget.nextElementSibling;
+                if (fallback) fallback.style.display = "flex";
+              }}
+            />
+          ) : null}
+          <div className={`w-10 h-10 items-center justify-center ${avatarUrl ? "hidden" : "flex"}`}>
+            {initial}
+          </div>
         </div>
 
         <div>

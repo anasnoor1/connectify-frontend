@@ -117,6 +117,21 @@ export default function InfluencerDashboard() {
     setPage(1);
   };
 
+  const handleMarkComplete = async (campaign) => {
+    if (!campaign?._id) return;
+    try {
+      const res = await axiosInstance.post(`/api/campaigns/${campaign._id}/influencer-complete`);
+      const msg = res?.data?.message || 'Campaign marked as completed from your side';
+      toast.success(msg);
+      // Refresh campaigns list so status/flags update in UI
+      fetchCampaigns();
+    } catch (error) {
+      console.error('Error marking campaign complete as influencer:', error);
+      const msg = error?.response?.data?.message || error?.message || 'Failed to mark campaign as completed';
+      toast.error(msg);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -265,6 +280,7 @@ export default function InfluencerDashboard() {
                     onOpenView={() => openCampaignView(campaign)}
                     onOpenBrandProfile={() => openBrandProfile(campaign)}
                     onChatNow={() => handleChatNow(campaign)}
+                    onMarkComplete={() => handleMarkComplete(campaign)}
                   />
                 ))}
             </div>

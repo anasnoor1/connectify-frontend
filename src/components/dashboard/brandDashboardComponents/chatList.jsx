@@ -82,6 +82,8 @@ const ChatList = () => {
                             ? (chat.groupName?.charAt(0)?.toUpperCase() || "G")
                             : (participant?.name?.charAt(0)?.toUpperCase() || "U");
 
+                        const avatarUrl = isGroup ? null : participant?.avatar_url;
+
                         return (
                             <div
                                 key={chat._id}
@@ -96,10 +98,26 @@ const ChatList = () => {
                                             navigate(`/profile/${participant.role}/id/${participant._id}`);
                                         }
                                     }}
-                                    className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-lg font-semibold text-white hover:opacity-80 transition-opacity"
+                                    className="w-12 h-12 rounded-full relative cursor-pointer"
                                     title={isGroup ? undefined : "View Profile"}
                                 >
-                                    {avatarLetter}
+                                    {avatarUrl ? (
+                                        <img
+                                            src={avatarUrl}
+                                            alt={displayName}
+                                            className="w-12 h-12 rounded-full object-cover border border-green-100 shadow-sm"
+                                            onError={(e) => {
+                                                e.currentTarget.style.display = "none";
+                                                const fallback = e.currentTarget.nextElementSibling;
+                                                if (fallback) fallback.style.display = "flex";
+                                            }}
+                                        />
+                                    ) : null}
+                                    <div
+                                        className={`w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-lg font-semibold text-white hover:opacity-80 transition-opacity ${avatarUrl ? "hidden" : "flex"}`}
+                                    >
+                                        {avatarLetter}
+                                    </div>
                                 </div>
 
                                 {/* Chat info */}

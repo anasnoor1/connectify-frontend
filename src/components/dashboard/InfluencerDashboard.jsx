@@ -15,6 +15,7 @@ export default function InfluencerDashboard() {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [editingProfile, setEditingProfile] = useState(false);
   const [influencerData, setInfluencerData] = useState(null);
+  const [stats, setStats] = useState({ completedCampaigns: 0, totalEarned: 0 });
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [page, setPage] = useState(1);
@@ -26,6 +27,7 @@ export default function InfluencerDashboard() {
 
   useEffect(() => {
     fetchInfluencerData();
+    fetchInfluencerStats();
   }, []);
 
   useEffect(() => {
@@ -45,6 +47,19 @@ export default function InfluencerDashboard() {
     } catch (error) {
       console.error('Error fetching influencer data:', error);
       toast.error('Failed to load influencer data');
+    }
+  };
+
+  const fetchInfluencerStats = async () => {
+    try {
+      const res = await axiosInstance.get('/api/proposals/my/stats');
+      const data = res.data?.data || {};
+      setStats({
+        completedCampaigns: data.completedCampaigns || 0,
+        totalEarned: data.totalEarned || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching influencer stats:', error);
     }
   };
 
@@ -205,32 +220,52 @@ export default function InfluencerDashboard() {
           </div>
 
           {influencerData && (
-            <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center overflow-hidden">
-                  {influencerData.avatar_url ? (
-                    <img
-                      src={influencerData.avatar_url}
-                      alt={influencerData.name || "Influencer avatar"}
-                      className="w-full h-full object-cover"
-                      onError={(e) => { e.currentTarget.src = "https://via.placeholder.com/80?text=Profile"; }}
-                    />
-                  ) : <User className="h-5 w-5 text-indigo-500" />}
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500">Influencer snapshot</p>
-                  <h4 className="text-sm font-semibold text-slate-900">{influencerData.name || "Your profile"}</h4>
-                  {influencerData.category && <p className="text-xs text-slate-500">{influencerData.category}</p>}
+            <>
+              {/* Stats card on top */}
+              <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 space-y-2">
+                <p className="text-xs font-semibold text-slate-700">Performance</p>
+                <div className="mt-1 grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-slate-50 rounded-lg p-2">
+                    <p className="text-[11px] text-slate-500">Completed campaigns</p>
+                    <p className="text-sm font-semibold text-slate-900">{stats.completedCampaigns}</p>
+                  </div>
+                  <div className="bg-slate-50 rounded-lg p-2">
+                    <p className="text-[11px] text-slate-500">Total earned</p>
+                    <p className="text-sm font-semibold text-emerald-600">
+                      ${stats.totalEarned.toLocaleString()}
+                    </p>
+                  </div>
                 </div>
               </div>
-              <button
-                onClick={() => setEditingProfile(true)}
-                className="w-full mt-1 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs rounded-lg border border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition"
-              >
-                <Edit2 className="h-3 w-3" />
-                Update profile
-              </button>
-            </div>
+
+              {/* Original profile snapshot card below */}
+              <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center overflow-hidden">
+                    {influencerData.avatar_url ? (
+                      <img
+                        src={influencerData.avatar_url}
+                        alt={influencerData.name || "Influencer avatar"}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.currentTarget.src = "https://via.placeholder.com/80?text=Profile"; }}
+                      />
+                    ) : <User className="h-5 w-5 text-indigo-500" />}
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Influencer snapshot</p>
+                    <h4 className="text-sm font-semibold text-slate-900">{influencerData.name || "Your profile"}</h4>
+                    {influencerData.category && <p className="text-xs text-slate-500">{influencerData.category}</p>}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setEditingProfile(true)}
+                  className="w-full mt-1 inline-flex items-center justify-center gap-2 px-3 py-2 text-xs rounded-lg border border-indigo-100 text-indigo-600 hover:bg-indigo-50 transition"
+                >
+                  <Edit2 className="h-3 w-3" />
+                  Update profile
+                </button>
+              </div>
+            </>
           )}
         </aside>
 

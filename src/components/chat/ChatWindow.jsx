@@ -65,7 +65,7 @@ export default function ChatWindow({ messages, onSend, userId, chatUser, room })
       </div>
 
       {/* Input */}
-      <ChatInput onSend={onSend} />
+      <ChatInput onSend={onSend} isReadOnly={room?.isReadOnly} />
     </div>
   );
 }

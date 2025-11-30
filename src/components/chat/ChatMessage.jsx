@@ -4,6 +4,17 @@ export default function ChatMessage({ msg, isOwn, isGroup }) {
     minute: '2-digit',
   });
 
+  // System messages: center aligned, no avatar, no sender name
+  if (msg?.isSystem) {
+    return (
+      <div className="flex justify-center my-2">
+        <div className="px-3 py-1.5 rounded-full bg-gray-200 text-gray-700 text-xs">
+          {msg.message}
+        </div>
+      </div>
+    );
+  }
+
   const roleRaw = msg?.senderId?.role || '';
 
   const roleLabel = roleRaw

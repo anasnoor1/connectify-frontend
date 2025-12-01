@@ -10,6 +10,8 @@ const PublicInfluencerProfile = () => {
   const [collaborations, setCollaborations] = useState([]);
   const [collabLoading, setCollabLoading] = useState(false);
   const [collabError, setCollabError] = useState("");
+  const [rating, setRating] = useState(null);
+  const [ratingCount, setRatingCount] = useState(0);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -25,7 +27,7 @@ const PublicInfluencerProfile = () => {
       }
     };
 
-    fetchProfile();      
+    fetchProfile();
   }, [slug]);
 
   useEffect(() => {
@@ -46,6 +48,23 @@ const PublicInfluencerProfile = () => {
     };
 
     fetchCollaborations();
+  }, [profile]);
+
+  useEffect(() => {
+    if (!profile || !profile.id) return;
+
+    const fetchRating = async () => {
+      try {
+        const res = await axios.get(`/api/reviews/user/${profile.id}`);
+        const data = res.data?.data || {};
+        setRating(typeof data.average_rating === 'number' ? data.average_rating : null);
+        setRatingCount(data.reviews_count || 0);
+      } catch (err) {
+        console.error("Public influencer rating error:", err?.response || err);
+      }
+    };
+
+    fetchRating();
   }, [profile]);
 
   if (loading) {
@@ -107,6 +126,14 @@ const PublicInfluencerProfile = () => {
               {category && (
                 <p className="text-sm text-indigo-600 mt-1 capitalize">{category}</p>
               )}
+              {rating !== null && (
+                <p className="text-sm text-yellow-600 mt-1">
+                  ⭐ {rating.toFixed(1)}
+                  {ratingCount > 0 && (
+                    <span className="text-xs text-gray-500 ml-1">({ratingCount} review{ratingCount > 1 ? 's' : ''})</span>
+                  )}
+                </p>
+              )}
               {instagram_username && (
                 <p className="text-sm text-gray-500 mt-1">
                   Instagram: <span className="font-medium">@{instagram_username.replace(/^@/, "")}</span>
@@ -160,29 +187,35 @@ const PublicInfluencerProfile = () => {
             )}
             {!collabLoading && !collabError && collaborations.length > 0 && (
               <div className="mt-2 space-y-3">
-                {collaborations.map((item) => (
-                  <div
-                    key={item.proposal_id}
-                    className="flex items-start justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {item.campaign?.title || "Campaign"}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {item.brand?.name || item.brand?.company_name || "Brand"}
-                      </p>
-                      {item.campaign?.category && (
-                        <p className="text-xs text-indigo-600 mt-0.5 capitalize">
-                          {item.campaign.category}
+                {collaborations.map((item) => {
+                  const campaignStatus = item.campaign?.status;
+                  const isCompleted = campaignStatus === "completed";
+                  const label = isCompleted ? "Completed" : "Ongoing";
+
+                  return (
+                    <div
+                      key={item.proposal_id}
+                      className="flex items-start justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {item.campaign?.title || "Campaign"}
                         </p>
-                      )}
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {item.brand?.name || item.brand?.company_name || "Brand"}
+                        </p>
+                        {item.campaign?.category && (
+                          <p className="text-xs text-indigo-600 mt-0.5 capitalize">
+                            {item.campaign.category}
+                          </p>
+                        )}
+                      </div>
+                      <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                        {label}
+                      </span>
                     </div>
-                    <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
-                      {item.status === "accepted" ? "Completed" : item.status || "Active"}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>

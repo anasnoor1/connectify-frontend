@@ -1,6 +1,6 @@
 import StatusBadge from "./StatusBadge";
 
-export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onOpenBrandProfile, onChatNow }) {
+export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onOpenBrandProfile, onChatNow, onMarkComplete }) {
   const brandName = campaign.brand_id?.name || campaign.brand || "Unknown Brand";
   let budgetDisplay = "-";
   if (campaign.budget) {
@@ -96,7 +96,7 @@ export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onO
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {campaign.proposal_status === 'accepted' ? (
             // Accepted proposal → primary Chat Now
             <button
@@ -157,6 +157,24 @@ export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onO
             >
               View Details
             </button>
+          )}
+
+          {onMarkComplete && campaign.status?.toLowerCase() === "active" && !campaign.influencerCompleted && (
+            <button
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMarkComplete(campaign);
+              }}
+            >
+              Mark Complete
+            </button>
+          )}
+
+          {campaign.influencerCompleted && (
+            <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+              You marked this complete
+            </span>
           )}
         </div>
       </div>

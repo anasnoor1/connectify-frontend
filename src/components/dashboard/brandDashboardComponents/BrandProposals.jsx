@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../../utills/privateIntercept';
 import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, XCircle, Clock, User, DollarSign, Calendar, ExternalLink } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, User, DollarSign, Calendar, ExternalLink, Star } from 'lucide-react';
+import ReviewModal from "../../reviews/ReviewModal";
 
 export default function BrandProposals() {
     const [proposals, setProposals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
+    const [reviewTarget, setReviewTarget] = useState(null); // { proposal, campaignId, toUserId }
 
     const navigate = useNavigate();
 
@@ -24,6 +26,24 @@ export default function BrandProposals() {
             toast.error(`Failed to load proposals: ${error.response?.data?.msg || error.message}`);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const openReview = (proposal) => {
+        const campaignId = proposal.campaignId?._id || proposal.campaignId;
+        const toUserId = proposal.influencerId?._id || proposal.influencerId;
+        if (!campaignId || !toUserId) return;
+        setReviewTarget({
+            proposal,
+            campaignId,
+            toUserId,
+        });
+    };
+
+    const closeReview = (shouldRefresh) => {
+        setReviewTarget(null);
+        if (shouldRefresh) {
+            fetchProposals();
         }
     };
 
@@ -211,7 +231,7 @@ export default function BrandProposals() {
                                             View Campaign
                                         </a>
 
-                                            {/* Accept/Reject Buttons for Pending */}
+                                        {/* Accept/Reject Buttons for Pending */}
                                         {proposal.status === 'pending' && (
                                             <>
                                                 <button
@@ -230,11 +250,35 @@ export default function BrandProposals() {
                                                 </button>
                                             </>
                                         )}
+                                        {/* Review button - only when campaign is completed and reviews enabled */}
+                                        {proposal.status === 'accepted' &&
+                                          proposal.campaignId?.status === 'completed' &&
+                                          proposal.campaignId?.reviewEnabled && (
+                                            <button
+                                              type="button"
+                                              onClick={() => openReview(proposal)}
+                                              className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+                                            >
+                                              <Star className="w-4 h-4" />
+                                              Leave Review
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
+                )}
+
+                {reviewTarget && (
+                    <ReviewModal
+                        isOpen={true}
+                        onClose={closeReview}
+                        campaignId={reviewTarget.campaignId}
+                        toUserId={reviewTarget.toUserId}
+                        campaignTitle={reviewTarget.proposal?.campaignId?.title}
+                        targetName={reviewTarget.proposal?.influencerId?.name}
+                    />
                 )}
             </div>
         </div>

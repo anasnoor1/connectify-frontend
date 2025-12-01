@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../../utills/privateIntercept";
 import Loader from "../../../utills/loader";
+import { toast } from "react-toastify";
+import ReviewModal from "../../reviews/ReviewModal";
 
 export default function MyProposals() {
   const [proposals, setProposals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reviewTarget, setReviewTarget] = useState(null); // { proposal, campaignId, toUserId }
 
   const navigate = useNavigate();
 
@@ -22,6 +25,32 @@ export default function MyProposals() {
     };
     fetchProposals();
   }, []);
+
+  const openReview = (p) => {
+    const campaignId = p.campaignId?._id || p.campaignId;
+    const brand = p.campaignId?.brand_id;
+    const toUserId = brand?._id || brand;
+    if (!campaignId || !toUserId) {
+      toast.error("Unable to open review form");
+      return;
+    }
+    setReviewTarget({ proposal: p, campaignId, toUserId });
+  };
+
+  const closeReview = (shouldRefresh) => {
+    setReviewTarget(null);
+    if (shouldRefresh) {
+      // re-fetch proposals to reflect any review-dependent UI in future
+      (async () => {
+        try {
+          const res = await axiosInstance.get("/api/proposals/my");
+          setProposals(res.data.data.proposals || []);
+        } catch (err) {
+          console.error("Error refreshing proposals after review:", err);
+        }
+      })();
+    }
+  };
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -101,9 +130,32 @@ export default function MyProposals() {
                   Open Chat
                 </button>
               )}
+
+              {/* Leave Review button: only when campaign completed and reviewEnabled */}
+              {p.status === 'accepted' &&
+                p.campaignId?.status === 'completed' &&
+                p.campaignId?.reviewEnabled && (
+                  <button
+                    onClick={() => openReview(p)}
+                    className="mt-2 w-full px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium text-sm"
+                  >
+                    Leave Review
+                  </button>
+              )}
             </div>
           ))}
         </div>
+      )}
+
+      {reviewTarget && (
+        <ReviewModal
+          isOpen={true}
+          onClose={closeReview}
+          campaignId={reviewTarget.campaignId}
+          toUserId={reviewTarget.toUserId}
+          campaignTitle={reviewTarget.proposal?.campaignId?.title}
+          targetName={reviewTarget.proposal?.campaignId?.brand_id?.company_name || reviewTarget.proposal?.campaignId?.brand_id?.name}
+        />
       )}
     </div>
   );

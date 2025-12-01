@@ -101,9 +101,7 @@ const Login = ({ onClose, onSwitch }) => {
       }
 
       const payload = JSON.parse(atob(idToken.split('.')[1]));
-      console.log("payload------> (1)", payload);
       const email = payload.email?.toLowerCase();
-      console.log("email------> (1)", email);
 
       if (!email) {
         toast.error("Could not retrieve email from Google");
@@ -111,7 +109,7 @@ const Login = ({ onClose, onSwitch }) => {
       }
 
       const userExists = await checkUserExists(email);
-      console.log("userExists------> (1)", userExists);
+    
       console.log('User exists:', userExists);
 
       if (userExists) {

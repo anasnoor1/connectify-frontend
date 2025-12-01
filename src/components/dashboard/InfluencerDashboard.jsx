@@ -7,6 +7,7 @@ import Loader from "../../utills/loader";
 import ProposalModal from "./influencerDashboardComponents/proposalModal";
 import ProfileEditor from './ProfileEditor';
 import CampaignCard from "./influencerDashboardComponents/CampaignCard";
+import { socket } from "../../socket";
 
 export default function InfluencerDashboard() {
   const [campaigns, setCampaigns] = useState([]);
@@ -32,6 +33,19 @@ export default function InfluencerDashboard() {
 
   useEffect(() => {
     fetchCampaigns();
+  }, [page, status]);
+
+  useEffect(() => {
+    const handleCampaignsUpdated = () => {
+      fetchCampaigns();
+      fetchInfluencerStats();
+    };
+
+    socket.on("campaigns_updated", handleCampaignsUpdated);
+
+    return () => {
+      socket.off("campaigns_updated", handleCampaignsUpdated);
+    };
   }, [page, status]);
 
   const fetchInfluencerData = async () => {
@@ -140,6 +154,7 @@ export default function InfluencerDashboard() {
       toast.success(msg);
       // Refresh campaigns list so status/flags update in UI
       fetchCampaigns();
+      fetchInfluencerStats();
     } catch (error) {
       console.error('Error marking campaign complete as influencer:', error);
       const msg = error?.response?.data?.message || error?.message || 'Failed to mark campaign as completed';

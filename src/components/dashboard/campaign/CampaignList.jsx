@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
 import { Plus, Filter, RefreshCcw, Calendar, DollarSign, Trash2, Edit2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { socket } from '../../../socket';
 
 const CampaignList = () => {
   const [campaigns, setCampaigns] = useState([]);
@@ -48,6 +49,20 @@ const CampaignList = () => {
     if (!roleChecked) return;
     fetchCampaigns();
   }, [filters.status, filters.page, roleChecked]);
+
+  useEffect(() => {
+    if (!roleChecked) return;
+
+    const handleCampaignsUpdated = () => {
+      fetchCampaigns();
+    };
+
+    socket.on('campaigns_updated', handleCampaignsUpdated);
+
+    return () => {
+      socket.off('campaigns_updated', handleCampaignsUpdated);
+    };
+  }, [roleChecked, filters.status, filters.page]);
 
   const fetchCampaigns = async () => {
     try {

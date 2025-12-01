@@ -1,7 +1,16 @@
+import { useEffect, useRef } from "react";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 
 export default function ChatWindow({ messages, onSend, userId, chatUser, room }) {
+
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+  }, [messages?.length]);
 
   const isGroup = room?.isGroup;
   const title = isGroup
@@ -22,11 +31,11 @@ export default function ChatWindow({ messages, onSend, userId, chatUser, room })
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
+    <div className="h-screen flex flex-col bg-slate-100">
 
       {/* WhatsApp-style Header */}
-      <div className="flex items-center gap-3 p-3 bg-green-600 text-white shadow">
-        <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center font-semibold text-green-50">
+      <div className="flex items-center gap-3 px-4 py-3 bg-indigo-600 text-white shadow-md">
+        <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center font-semibold text-indigo-50">
           {avatarUrl ? (
             <img
               src={avatarUrl}
@@ -45,27 +54,28 @@ export default function ChatWindow({ messages, onSend, userId, chatUser, room })
         </div>
 
         <div>
-          <div className="font-semibold text-lg">{title}</div>
-          <div className="text-sm text-white/80">online</div>
+          <div className="font-semibold text-base md:text-lg leading-tight">{title}</div>
+          <div className="text-xs md:text-sm text-white/80">online</div>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
-
-        {messages.map((msg) => (
-          <ChatMessage
-            key={msg._id}
-            msg={msg}
-            isOwn={isOwnMessage(msg)}
-            isGroup={isGroup}
-          />
-        ))}
-
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="max-w-3xl mx-auto space-y-3">
+          {messages.map((msg) => (
+            <ChatMessage
+              key={msg._id}
+              msg={msg}
+              isOwn={isOwnMessage(msg)}
+              isGroup={isGroup}
+            />
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {/* Input */}
-      <ChatInput onSend={onSend} isReadOnly={room?.isReadOnly} />
+      <ChatInput onSend={onSend} isReadOnly={false} />
     </div>
   );
 }

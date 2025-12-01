@@ -188,9 +188,11 @@ const PublicInfluencerProfile = () => {
             {!collabLoading && !collabError && collaborations.length > 0 && (
               <div className="mt-2 space-y-3">
                 {collaborations.map((item) => {
-                  const campaignStatus = item.campaign?.status;
-                  const isCompleted = campaignStatus === "completed";
-                  const label = isCompleted ? "Completed" : "Ongoing";
+                  const isAdminApproved = Boolean(item.adminApprovedCompletion);
+                  const label = isAdminApproved ? "Completed" : "Ongoing";
+                  const badgeClasses = isAdminApproved
+                    ? "bg-green-50 text-green-700"
+                    : "bg-amber-50 text-amber-700";
 
                   return (
                     <div
@@ -210,7 +212,7 @@ const PublicInfluencerProfile = () => {
                           </p>
                         )}
                       </div>
-                      <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeClasses}`}>
                         {label}
                       </span>
                     </div>

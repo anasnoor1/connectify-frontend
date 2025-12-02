@@ -43,6 +43,7 @@ const validateBudgetMin = (v) => {
   if (value === '') return 'Min budget is required.';
   if (!digitsRegex.test(value)) return 'Budget must contain only integer numbers.';
   if (Number(value) < 20) return 'Minimum budget must be at least $20.';
+  if (Number(value) > 20000) return 'Minimum budget not exceed to $20000.';
   return '';
 };
 

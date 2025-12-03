@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
+
 import { useNavigate, NavLink } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { Edit2, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import axiosInstance from "../../utills/privateIntercept";
 import Loader from "../../utills/loader";
-import ProposalModal from "./influencerDashboardComponents/proposalModal";
-import ProfileEditor from './ProfileEditor';
 import CampaignCard from "./influencerDashboardComponents/CampaignCard";
+import ProposalModal from "./influencerDashboardComponents/proposalModal";
 import { socket } from "../../socket";
 
 export default function InfluencerDashboard() {
@@ -23,12 +23,14 @@ export default function InfluencerDashboard() {
   const [limit] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [stripeStatus, setStripeStatus] = useState({ loading: true, connected: false });
 
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchInfluencerData();
     fetchInfluencerStats();
+    fetchStripeStatus();
   }, []);
 
   useEffect(() => {
@@ -61,6 +63,36 @@ export default function InfluencerDashboard() {
     } catch (error) {
       console.error('Error fetching influencer data:', error);
       toast.error('Failed to load influencer data');
+    }
+  };
+
+  const fetchStripeStatus = async () => {
+    try {
+      const res = await axiosInstance.get('/api/payment/stripe/status');
+      const data = res.data?.data || {};
+      setStripeStatus({
+        loading: false,
+        connected: !!data.connected,
+      });
+    } catch (error) {
+      console.error('Error fetching Stripe status:', error);
+      setStripeStatus({ loading: false, connected: false });
+    }
+  };
+
+  const handleConnectStripe = async () => {
+    try {
+      const res = await axiosInstance.post('/api/payment/stripe/connect');
+      const url = res.data?.url;
+      if (!url) {
+        toast.error('Failed to start Stripe onboarding');
+        return;
+      }
+      window.location.href = url;
+    } catch (error) {
+      console.error('Error starting Stripe connect onboarding:', error);
+      const msg = error?.response?.data?.message || error?.message || 'Failed to start Stripe onboarding';
+      toast.error(msg);
     }
   };
 
@@ -251,6 +283,36 @@ export default function InfluencerDashboard() {
                     </p>
                   </div>
                 </div>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-700">Payouts</p>
+                    <p className="text-[11px] text-slate-500">Connect Stripe to receive earnings</p>
+                  </div>
+                  {stripeStatus.loading ? (
+                    <span className="text-[11px] text-slate-400">Checking...</span>
+                  ) : stripeStatus.connected ? (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-medium">Connected</span>
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-medium">Not connected</span>
+                  )}
+                </div>
+                {!stripeStatus.loading && !stripeStatus.connected && (
+                  <button
+                    type="button"
+                    onClick={handleConnectStripe}
+                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
+                  >
+                    Connect Stripe
+                  </button>
+                )}
+                {!stripeStatus.loading && stripeStatus.connected && (
+                  <p className="text-[11px] text-slate-500">
+                    Your payouts will be sent to your connected Stripe account after campaign approval.
+                  </p>
+                )}
               </div>
 
               {/* Original profile snapshot card below */}

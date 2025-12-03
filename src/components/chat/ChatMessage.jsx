@@ -54,7 +54,7 @@ export default function ChatMessage({ msg, isOwn, isGroup }) {
           max-w-sm md:max-w-md lg:max-w-lg px-3 py-2 rounded-2xl text-sm shadow-sm relative
           ${isOwn
             ? 'bg-indigo-600 text-white rounded-br-md'
-            : 'bg-white text-gray-900 border border-slate-200 rounded-bl-md'}
+            : 'bg-slate-50 text-gray-900 border border-slate-200 rounded-bl-md'}
         `}
       >
         {/* In group chats, show who sent the message (like WhatsApp group). In 1-1 DMs, no label. */}

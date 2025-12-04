@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { useNavigate, NavLink } from "react-router-dom";
+import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { Edit2, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import axiosInstance from "../../utills/privateIntercept";
@@ -26,6 +26,9 @@ export default function InfluencerDashboard() {
   const [stripeStatus, setStripeStatus] = useState({ loading: true, connected: false });
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showDisconnectModal, setShowDisconnectModal] = useState(false);
+  const [disconnectLoading, setDisconnectLoading] = useState(false);
 
   useEffect(() => {
     fetchInfluencerData();
@@ -80,6 +83,21 @@ export default function InfluencerDashboard() {
     }
   };
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const connect = params.get('connect');
+    if (connect) {
+      if (connect === 'success') {
+        toast.success('Stripe connected successfully');
+      } else if (connect === 'refresh') {
+        toast.info('Please finish Stripe onboarding to receive payouts');
+      }
+      fetchStripeStatus();
+      const cleanPath = location.pathname;
+      window.history.replaceState({}, '', cleanPath);
+    }
+  }, [location.search]);
+
   const handleConnectStripe = async () => {
     try {
       const res = await axiosInstance.post('/api/payment/stripe/connect');
@@ -94,6 +112,30 @@ export default function InfluencerDashboard() {
       const msg = error?.response?.data?.message || error?.message || 'Failed to start Stripe onboarding';
       toast.error(msg);
     }
+  };
+
+  const handleDisconnectStripe = () => {
+    setShowDisconnectModal(true);
+  };
+
+  const confirmDisconnect = async () => {
+    try {
+      setDisconnectLoading(true);
+      await axiosInstance.post('/api/payment/stripe/disconnect');
+      toast.success('Stripe disconnected successfully');
+      setStripeStatus({ loading: false, connected: false });
+    } catch (error) {
+      console.error('Error disconnecting Stripe:', error);
+      const msg = error?.response?.data?.message || error?.message || 'Failed to disconnect Stripe';
+      toast.error(msg);
+    } finally {
+      setDisconnectLoading(false);
+      setShowDisconnectModal(false);
+    }
+  };
+
+  const cancelDisconnect = () => {
+    setShowDisconnectModal(false);
   };
 
   const fetchInfluencerStats = async () => {
@@ -309,9 +351,18 @@ export default function InfluencerDashboard() {
                   </button>
                 )}
                 {!stripeStatus.loading && stripeStatus.connected && (
-                  <p className="text-[11px] text-slate-500">
-                    Your payouts will be sent to your connected Stripe account after campaign approval.
-                  </p>
+                  <div className="space-y-2">
+                    <p className="text-[11px] text-slate-500">
+                      Your payouts will be sent to your connected Stripe account after campaign approval.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleDisconnectStripe}
+                      className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs rounded-lg border border-red-100 text-red-600 hover:bg-red-50 transition"
+                    >
+                      Disconnect Stripe
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -466,6 +517,32 @@ export default function InfluencerDashboard() {
             setSelectedCampaign(null);
           }}
         />
+      )}
+
+      {showDisconnectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+            <h3 className="text-sm font-semibold text-slate-900">Disconnect Stripe?</h3>
+            <p className="mt-2 text-xs text-slate-600">You will not receive payouts until you connect again.</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={cancelDisconnect}
+                className="px-3 py-2 text-xs rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDisconnect}
+                disabled={disconnectLoading}
+                className="px-3 py-2 text-xs rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {disconnectLoading ? 'Disconnecting...' : 'Disconnect'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

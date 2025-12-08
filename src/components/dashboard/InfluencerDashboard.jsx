@@ -8,6 +8,7 @@ import Loader from "../../utills/loader";
 import CampaignCard from "./influencerDashboardComponents/CampaignCard";
 import ProposalModal from "./influencerDashboardComponents/proposalModal";
 import { socket } from "../../socket";
+import ProfileEditor from "./ProfileEditor"
 
 export default function InfluencerDashboard() {
   const [campaigns, setCampaigns] = useState([]);

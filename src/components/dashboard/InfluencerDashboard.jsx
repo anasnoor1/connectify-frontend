@@ -431,11 +431,13 @@ export default function InfluencerDashboard() {
             </select>
           </div>
 
-          {campaigns.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {campaigns
-                .filter((c) => !query || c.title?.toLowerCase().includes(query.toLowerCase()))
-                .map((campaign) => (
+          {(() => {
+            const filteredCampaigns = campaigns.filter(
+              (c) => !query || c.title?.toLowerCase().includes(query.toLowerCase())
+            );
+            return filteredCampaigns.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {filteredCampaigns.map((campaign) => (
                   <CampaignCard
                     key={campaign._id}
                     campaign={campaign}
@@ -446,12 +448,13 @@ export default function InfluencerDashboard() {
                     onMarkComplete={() => handleMarkComplete(campaign)}
                   />
                 ))}
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-12 text-center">
-              <p className="text-slate-500">No campaigns found</p>
-            </div>
-          )}
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-12 text-center">
+                <p className="text-slate-500">No campaigns found</p>
+              </div>
+            );
+          })()}
 
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-8">
@@ -503,7 +506,12 @@ export default function InfluencerDashboard() {
           )}
 
           <div className="text-center mt-4 text-sm text-gray-500">
-            Page {page} of {totalPages} • Showing {campaigns.length} of {total} campaigns
+            Page {page} of {totalPages} • Showing {(() => {
+              const filteredCampaigns = campaigns.filter(
+                (c) => !query || c.title?.toLowerCase().includes(query.toLowerCase())
+              );
+              return filteredCampaigns.length;
+            })()} of {total} campaigns
           </div>
         </section>
       </div>

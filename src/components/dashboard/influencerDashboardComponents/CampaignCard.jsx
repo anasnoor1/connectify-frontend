@@ -9,6 +9,22 @@ export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onO
     budgetDisplay = `$ ${campaign.budgetMin.toLocaleString()} - $ ${campaign.budgetMax.toLocaleString()}`;
   }
   const brandInitial = brandName?.charAt(0)?.toUpperCase() || "B";
+  const deadlineText = (() => {
+    const deadline = campaign.requirements?.deadline || campaign.deadline;
+    if (deadline) {
+      const deadlineDate = new Date(deadline);
+      if (!Number.isNaN(deadlineDate.getTime())) {
+        const today = new Date();
+        deadlineDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        const diffDays = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
+        if (diffDays < 0) return "Deadline passed";
+        if (diffDays === 0) return "Due today";
+        return `${diffDays} day${diffDays === 1 ? "" : "s"} left`;
+      }
+    }
+    return campaign.duration || campaign.timeline || "Not specified";
+  })();
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer">
@@ -81,16 +97,16 @@ export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onO
             <p className="text-base font-bold text-emerald-900">{budgetDisplay}</p>
           </div>
 
-          {/* Duration */}
+          {/* Deadline / Duration */}
           <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
             <div className="flex items-center gap-2 mb-1">
               <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-xs font-medium text-blue-700">Duration</span>
+              <span className="text-xs font-medium text-blue-700">Deadline</span>
             </div>
             <p className="text-base font-bold text-blue-900">
-              {campaign.duration || campaign.timeline || '30 days'}
+              {deadlineText}
             </p>
           </div>
         </div>

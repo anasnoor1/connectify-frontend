@@ -1,0 +1,51 @@
+/* Global interactive states for button-like elements across the app */
+button,
+.btn,
+[role="button"],
+a.button,
+input[type="submit"],
+input[type="button"] {
+  cursor: pointer;
+  transition: opacity 200ms ease, box-shadow 200ms ease, transform 150ms ease;
+}
+
+button:hover,
+.btn:hover,
+[role="button"]:hover,
+a.button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover {
+  opacity: .95;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+}
+
+button:active,
+.btn:active,
+[role="button"]:active,
+a.button:active,
+input[type="submit"]:active,
+input[type="button"]:active {
+  transform: scale(.98);
+}
+
+button:focus-visible,
+.btn:focus-visible,
+[role="button"]:focus-visible,
+a.button:focus-visible,
+input[type="submit"]:focus-visible,
+input[type="button"]:focus-visible {
+  outline: 2px solid rgba(124, 58, 237, 0.5); /* indigo-600 with alpha */
+  outline-offset: 2px;
+}
+
+button:disabled,
+.btn:disabled,
+[aria-disabled="true"],
+input[type="submit"][disabled],
+input[type="button"][disabled] {
+  opacity: .6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}

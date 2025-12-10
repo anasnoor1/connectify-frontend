@@ -9,7 +9,7 @@ export default function ChatLayout() {
     <div className="flex h-screen bg-white">
       
       {/* LEFT SIDEBAR — CHAT LIST */}
-      <div className="w-[26%] border-r">
+      <div className="w-[26%] border-r h-screen overflow-y-auto">
         <ChatList />
       </div>
 

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchLandingCounts } from "../../features/home/landingSlice";
 import { Link } from "react-router-dom";
+import { fetchLandingCounts, fetchHomeHighlights } from "../../features/home/landingSlice";
 
 import hero from "../../assets/hero-1.webp";
 import WhyChoose from './whyChoose'
@@ -180,9 +180,12 @@ const Home = () => {
   const stats = useSelector((state) => ({
     totalBrands: state.landing.totalBrands,
     totalInfluencers: state.landing.totalInfluencers,
+    topInfluencers: state.landing.topInfluencers,
+    topBrands: state.landing.topBrands,
   }));
   useEffect(() => {
     dispatch(fetchLandingCounts());
+    dispatch(fetchHomeHighlights());
   }, [dispatch]);
   
   const partners = [
@@ -287,6 +290,105 @@ const Home = () => {
                   <Logo />
                 </Link>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Top performers */}
+        <section className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
+              <div>
+                <h4 className="text-indigo-600 font-semibold">// Community leaders</h4>
+                <h2 className="text-3xl font-bold mt-2">Most hired talent & brands</h2>
+              </div>
+              <div className="text-sm text-gray-600">
+                Data updates live from completed collaborations.
+              </div>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-8">
+              <div className="bg-indigo-50 rounded-2xl p-6 shadow-sm border border-indigo-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold text-indigo-700">Top Influencers</h3>
+                  <span className="text-xs px-3 py-1 rounded-full bg-white text-indigo-700 border border-indigo-200">
+                    Most hired
+                  </span>
+                </div>
+                {stats.topInfluencers.length === 0 ? (
+                  <p className="text-gray-500">No hires yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {stats.topInfluencers.map((inf) => (
+                      <Link
+                        key={inf._id}
+                        to={`/profile/influencer/id/${inf._id}`}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-white hover:-translate-y-0.5 transition shadow-sm hover:shadow"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden text-indigo-700 font-semibold">
+                          {inf.avatar_url ? (
+                            <img
+                              src={inf.avatar_url}
+                              alt={inf.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => (e.currentTarget.style.display = "none")}
+                            />
+                          ) : (
+                            inf.name?.charAt(0)?.toUpperCase() || "I"
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">{inf.name}</div>
+                          <div className="text-sm text-gray-600">
+                            {inf.category || "Influencer"} • {inf.hires} hires
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-pink-50 rounded-2xl p-6 shadow-sm border border-pink-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold text-pink-700">Top Brands</h3>
+                  <span className="text-xs px-3 py-1 rounded-full bg-white text-pink-700 border border-pink-200">
+                    Most collaborations
+                  </span>
+                </div>
+                {stats.topBrands.length === 0 ? (
+                  <p className="text-gray-500">No brand hires yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {stats.topBrands.map((brand) => (
+                      <Link
+                        key={brand._id}
+                        to={`/profile/brand/id/${brand._id}`}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-white hover:-translate-y-0.5 transition shadow-sm hover:shadow"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center overflow-hidden text-pink-700 font-semibold">
+                          {brand.avatar_url ? (
+                            <img
+                              src={brand.avatar_url}
+                              alt={brand.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => (e.currentTarget.style.display = "none")}
+                            />
+                          ) : (
+                            brand.name?.charAt(0)?.toUpperCase() || "B"
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">{brand.name}</div>
+                          <div className="text-sm text-gray-600">
+                            {brand.industry || "Brand"} • {brand.hires} hires
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </section>

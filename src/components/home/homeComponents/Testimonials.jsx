@@ -14,7 +14,6 @@ const Testimonials = () => {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12">
           <div>
-            <h4 className="text-indigo-500 font-semibold">// Testimonial</h4>
             <h2 className="text-3xl md:text-4xl font-bold mt-2">
               Words From Those Who've <br /> Worked With Us
             </h2>

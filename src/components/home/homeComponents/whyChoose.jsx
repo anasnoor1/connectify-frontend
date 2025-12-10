@@ -13,7 +13,6 @@ const WhyWorkWithUs = () => {
         
         {/* Left - Reasons List */}
         <div>
-          <h4 className="text-indigo-400 font-semibold">// Why Work with Us</h4>
           <ul className="mt-8 space-y-6">
             <li className="flex items-start space-x-4">
               <FaThumbsUp className="text-indigo-400 text-2xl mt-1" />

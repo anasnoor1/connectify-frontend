@@ -40,7 +40,6 @@ const FAQSection = () => {
       <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10">
         {/* Left Tabs + Accordion */}
         <div className="md:col-span-2">
-          <p className="text-purple-500 font-medium mb-2">// FAQs</p>
           <h2 className="text-4xl font-bold mb-8">
             Common Questions About
             <br /> Our Agency & Services

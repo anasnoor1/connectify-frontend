@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { Edit2, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import axiosInstance from "../../utills/privateIntercept";
 import Loader from "../../utills/loader";
+import ProfileEditor from './ProfileEditor';
 import CampaignCard from "./influencerDashboardComponents/CampaignCard";
 import ProposalModal from "./influencerDashboardComponents/proposalModal";
 import { socket } from "../../socket";

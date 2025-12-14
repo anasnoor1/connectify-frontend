@@ -1,4 +1,5 @@
 import StatusBadge from "./StatusBadge";
+import { AlertCircle } from "lucide-react";
 
 export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onOpenBrandProfile, onChatNow, onMarkComplete }) {
   const brandName = campaign.brand_id?.name || campaign.brand || "Unknown Brand";
@@ -34,7 +35,15 @@ export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onO
           <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
           <span className="text-sm font-medium text-indigo-900">{campaign.category || 'Campaign'}</span>
         </div>
-        <StatusBadge status={campaign.status} />
+        <div className="flex flex-col items-end gap-1">
+          <StatusBadge status={campaign.status} />
+          {campaign.status?.toLowerCase() === "disputed" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 text-rose-700 text-[11px] px-2 py-0.5 border border-rose-100">
+              <AlertCircle className="w-3 h-3" />
+              Dispute open
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Main Content */}
@@ -163,7 +172,7 @@ export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onO
             </>
           )}
 
-          {onOpenView && (campaign.status?.toLowerCase() === "active" || campaign.status?.toLowerCase() === "completed") && (
+          {onOpenView && ["active", "completed", "disputed"].includes(campaign.status?.toLowerCase()) && (
             <button
               className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
               onClick={(e) => {

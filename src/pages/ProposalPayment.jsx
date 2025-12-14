@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import axiosInstance from "../utills/privateIntercept";
+import { ArrowLeft, ShieldCheck, CreditCard, Sparkles } from "lucide-react";
 import { toast } from "react-toastify";
 import {
   resetPayment,
@@ -72,23 +73,33 @@ function ProposalPaymentForm({ proposalId, clientSecret, onPaymentCompleted }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-      <div className="border rounded-md p-3 bg-white">
-        <CardElement
-          options={{
-            style: {
-              base: {
-                fontSize: "16px",
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <label className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
+          Card details
+        </label>
+        <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-3">
+          <CardElement
+            options={{
+              style: {
+                base: {
+                  fontSize: "16px",
+                  color: "#0f172a",
+                  "::placeholder": {
+                    color: "#9ca3af",
+                  },
+                },
               },
-            },
-          }}
-        />
+            }}
+          />
+        </div>
       </div>
       <button
         type="submit"
         disabled={!stripe || !clientSecret || processing}
-        className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold shadow-sm hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
       >
+        <ShieldCheck className="w-4 h-4" />
         {processing ? "Processing..." : "Pay now"}
       </button>
     </form>
@@ -191,10 +202,12 @@ export default function ProposalPayment() {
   if (!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow p-6">
-          <p className="text-sm text-red-600">
-            Stripe publishable key is not configured on the frontend. Set VITE_STRIPE_PUBLISHABLE_KEY in your
-            frontend .env file.
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-rose-100 p-6 space-y-3">
+          <h2 className="text-lg font-semibold text-gray-900">Stripe not configured</h2>
+          <p className="text-sm text-gray-600">
+            Stripe publishable key is not configured on the frontend. Set
+            <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded ml-1">VITE_STRIPE_PUBLISHABLE_KEY</span>
+            in your frontend <span className="font-mono text-xs">.env</span> file to enable payments.
           </p>
         </div>
       </div>
@@ -216,96 +229,209 @@ export default function ProposalPayment() {
   const { status: paymentStatus, error: paymentError } = paymentState;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-lg mx-auto mb-4">
-        <div className="flex items-center justify-between text-xs font-semibold text-gray-500 uppercase tracking-wide">
-          <div className={`flex-1 flex items-center ${paymentStatus === 'idle' || paymentStatus === 'intent_loading' || paymentStatus === 'ready' ? 'text-indigo-600' : ''}`}>
-            <span className={`w-6 h-6 flex items-center justify-center rounded-full border mr-2 ${paymentStatus === 'idle' || paymentStatus === 'intent_loading' || paymentStatus === 'ready' ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300'}`}>1</span>
-            Review
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-white py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <button
+          type="button"
+          onClick={() => navigate("/brand/proposals")}
+          className="inline-flex items-center gap-2 text-xs font-medium text-slate-500 hover:text-slate-900"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to proposals
+        </button>
+
+        <div className="bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-slate-100 px-5 py-6 sm:px-8 sm:py-8">
+          <div className="flex flex-col gap-4 border-b border-slate-100 pb-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <p className="text-[11px] font-semibold tracking-[0.25em] text-indigo-500 uppercase">Secure payment</p>
+                <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900">Pay for proposal</h1>
+                <p className="text-sm text-slate-600 max-w-xl">
+                  Complete a one-time payment to start working with the influencer and open a dedicated chat room.
+                </p>
+              </div>
+              <div className="hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-indigo-50 text-indigo-600">
+                <CreditCard className="w-6 h-6" />
+              </div>
+            </div>
+
+            {/* Stepper */}
+            <div className="flex items-center gap-3 text-xs font-semibold text-slate-500">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`flex h-7 w-7 items-center justify-center rounded-full border text-[11px] ${
+                    paymentStatus === "idle" ||
+                    paymentStatus === "intent_loading" ||
+                    paymentStatus === "ready"
+                      ? "border-indigo-600 bg-indigo-600 text-white"
+                      : "border-slate-300 text-slate-500"
+                  }`}
+                >
+                  1
+                </div>
+                <span
+                  className={
+                    paymentStatus === "idle" || paymentStatus === "intent_loading" || paymentStatus === "ready"
+                      ? "text-indigo-600"
+                      : "text-slate-500"
+                  }
+                >
+                  Review
+                </span>
+              </div>
+
+              <div className="flex-1 h-px bg-slate-200" />
+
+              <div className="flex items-center gap-2">
+                <div
+                  className={`flex h-7 w-7 items-center justify-center rounded-full border text-[11px] ${
+                    clientSecret ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300 text-slate-500"
+                  }`}
+                >
+                  2
+                </div>
+                <span className={clientSecret ? "text-indigo-600" : "text-slate-500"}>Payment</span>
+              </div>
+
+              <div className="flex-1 h-px bg-slate-200" />
+
+              <div className="flex items-center gap-2">
+                <div
+                  className={`flex h-7 w-7 items-center justify-center rounded-full border text-[11px] ${
+                    paymentStatus === "success"
+                      ? "border-emerald-600 bg-emerald-600 text-white"
+                      : paymentStatus === "failed"
+                      ? "border-rose-600 bg-rose-600 text-white"
+                      : "border-slate-300 text-slate-500"
+                  }`}
+                >
+                  3
+                </div>
+                <span
+                  className={
+                    paymentStatus === "success"
+                      ? "text-emerald-600"
+                      : paymentStatus === "failed"
+                      ? "text-rose-600"
+                      : "text-slate-500"
+                  }
+                >
+                  Status
+                </span>
+              </div>
+            </div>
           </div>
-          <div className={`flex-1 flex items-center justify-center ${clientSecret ? 'text-indigo-600' : ''}`}>
-            <span className={`w-6 h-6 flex items-center justify-center rounded-full border mr-2 ${clientSecret ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300'}`}>2</span>
-            Payment
+
+          {/* Alerts */}
+          <div className="mt-4 space-y-3">
+            {paymentStatus === "processing" && (
+              <div className="flex items-center justify-between rounded-xl border border-indigo-100 bg-indigo-50/80 px-3 py-2 text-[11px] text-indigo-800">
+                <span>Processing your payment securely, please do not close this tab.</span>
+                <span className="inline-flex h-4 w-4 items-center justify-center">
+                  <span className="h-4 w-4 rounded-full border-b-2 border-indigo-600 animate-spin" />
+                </span>
+              </div>
+            )}
+
+            {paymentStatus === "success" && (
+              <div className="rounded-xl border border-emerald-100 bg-emerald-50/80 px-3 py-2 text-[11px] text-emerald-800">
+                Payment successful. Redirecting you to chat with the influencer.
+              </div>
+            )}
+
+            {paymentStatus === "failed" && paymentError && (
+              <div className="rounded-xl border border-rose-100 bg-rose-50/80 px-3 py-2 text-[11px] text-rose-800">
+                {paymentError}
+              </div>
+            )}
           </div>
-          <div className={`flex-1 flex items-center justify-end ${paymentStatus === 'success' ? 'text-green-600' : paymentStatus === 'failed' ? 'text-red-600' : ''}`}>
-            <span className={`w-6 h-6 flex items-center justify-center rounded-full border mr-2 ${paymentStatus === 'success' ? 'bg-green-600 border-green-600 text-white' : paymentStatus === 'failed' ? 'bg-red-600 border-red-600 text-white' : 'border-gray-300'}`}>3</span>
-            Status
+
+          <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
+            {/* Summary */}
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4 sm:p-5 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-medium text-slate-500">Campaign</p>
+                    <p className="text-sm font-semibold text-slate-900 truncate max-w-[220px] sm:max-w-xs">
+                      {proposal.campaignId?.title || "Campaign"}
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-medium text-indigo-700">
+                    <Sparkles className="mr-1.5 h-3 w-3" />
+                    New collaboration
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-medium text-slate-500">Influencer</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {proposal.influencerId?.name || "Influencer"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200 space-y-1 text-sm text-slate-700">
+                  <div className="flex items-center justify-between">
+                    <span>Amount</span>
+                    <span className="font-semibold">${amount?.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <span>Platform fee (10%)</span>
+                    <span>${appFee.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <span>Influencer earnings</span>
+                    <span>${influencerAmount.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 flex items-start gap-3">
+                <ShieldCheck className="h-5 w-5 text-emerald-600 mt-0.5" />
+                <p className="text-[11px] text-emerald-900 leading-relaxed">
+                  Your payment is processed securely via Stripe. Funds are only released to the influencer as per
+                  the campaign terms.
+                </p>
+              </div>
+            </div>
+
+            {/* Payment column */}
+            <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-4 sm:p-5 flex flex-col justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900 mb-3">
+                  {clientSecret ? "Enter your card details" : "Review & continue"}
+                </h3>
+
+                {!clientSecret ? (
+                  <button
+                    type="button"
+                    onClick={handleCreatePaymentIntent}
+                    disabled={creatingIntent}
+                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    {creatingIntent ? "Preparing payment..." : "Continue to payment"}
+                  </button>
+                ) : (
+                  <Elements stripe={stripePromise} options={{ clientSecret }}>
+                    <ProposalPaymentForm
+                      proposalId={proposalId}
+                      clientSecret={clientSecret}
+                      onPaymentCompleted={handlePaymentCompleted}
+                    />
+                  </Elements>
+                )}
+              </div>
+
+              <p className="mt-4 text-[11px] text-center text-slate-400">
+                We never store your full card details. All payments are handled by Stripe using encrypted
+                connections.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="max-w-lg mx-auto bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-2">Pay for Proposal</h1>
-        <p className="text-sm text-gray-600 mb-4">
-          Complete payment to start chat with the influencer.
-        </p>
-
-        {paymentStatus === 'processing' && (
-          <div className="mb-4 rounded-md bg-indigo-50 border border-indigo-100 px-3 py-2 text-xs text-indigo-700 flex items-center justify-between">
-            <span>Processing your payment securely, please do not close this tab.</span>
-            <span className="w-4 h-4 border-b-2 border-indigo-600 rounded-full animate-spin" />
-          </div>
-        )}
-
-        {paymentStatus === 'success' && (
-          <div className="mb-4 rounded-md bg-green-50 border border-green-100 px-3 py-2 text-xs text-green-700">
-            Payment successful. You can now chat with the influencer.
-          </div>
-        )}
-
-        {paymentStatus === 'failed' && paymentError && (
-          <div className="mb-4 rounded-md bg-red-50 border border-red-100 px-3 py-2 text-xs text-red-700">
-            {paymentError}
-          </div>
-        )}
-
-        <div className="space-y-2 text-sm text-gray-700 mb-4">
-          <div className="flex justify-between">
-            <span>Campaign</span>
-            <span className="font-medium">
-              {proposal.campaignId?.title || "Campaign"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Influencer</span>
-            <span className="font-medium">
-              {proposal.influencerId?.name || "Influencer"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span>Amount</span>
-            <span className="font-semibold">
-              ${amount?.toLocaleString()}
-            </span>
-          </div>
-          <div className="flex justify-between text-gray-500 text-xs pt-1">
-            <span>Platform fee (10%)</span>
-            <span>${appFee.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-gray-500 text-xs">
-            <span>Influencer earnings</span>
-            <span>${influencerAmount.toLocaleString()}</span>
-          </div>
-        </div>
-
-        {!clientSecret ? (
-          <button
-            type="button"
-            onClick={handleCreatePaymentIntent}
-            disabled={creatingIntent}
-            className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {creatingIntent ? "Preparing payment..." : "Continue to payment"}
-          </button>
-        ) : (
-          <Elements stripe={stripePromise} options={{ clientSecret }}>
-            <ProposalPaymentForm
-              proposalId={proposalId}
-              clientSecret={clientSecret}
-              onPaymentCompleted={handlePaymentCompleted}
-            />
-          </Elements>
-        )}
       </div>
     </div>
   );

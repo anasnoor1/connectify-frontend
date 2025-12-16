@@ -327,7 +327,7 @@ const Home = () => {
                   <p className="text-gray-500">No hires yet.</p>
                 ) : (
                   <div className="space-y-3">
-                    {stats.topInfluencers.map((inf) => {
+                    {stats.topInfluencers.slice(0, 3).map((inf) => {
                       const slug = makeSlug(inf.name);
                       const target = slug ? `/profile/i/${slug}` : `/profile/influencer/id/${inf._id}`;
                       return (
@@ -372,7 +372,7 @@ const Home = () => {
                   <p className="text-gray-500">No brand hires yet.</p>
                 ) : (
                   <div className="space-y-3">
-                    {stats.topBrands.map((brand) => {
+                    {stats.topBrands.slice(0, 3).map((brand) => {
                       const slug = makeSlug(brand.name);
                       const target = slug ? `/profile/brand/${slug}` : `/profile/brand/id/${brand._id}`;
                       return (

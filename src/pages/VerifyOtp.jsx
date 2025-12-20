@@ -31,7 +31,7 @@ const VerifyOtp = () => {
     : "/api/auth/verify-otp";
   const resendEndpoint = isPasswordReset
     ? "/api/auth/password/forgot"
-    : "/api/auth/resend-otp";
+    : "/api/auth/send-otp";
 
   // UI text based on flow
   const title = isPasswordReset ? "Verify Your Identity" : "Verify Your Email";
@@ -222,6 +222,7 @@ const VerifyOtp = () => {
       const errorMessage = err.response?.data?.message || "Failed to resend OTP";
       console.error("Resend OTP error:", errorMessage);
       toast.error(errorMessage);
+      setError(errorMessage); // Show error below resend button
     } finally {
       setLoading(false);
     }

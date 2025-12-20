@@ -140,6 +140,14 @@ const CampaignDetail = () => {
     return Array.isArray(value) ? value.join(', ') : value;
   };
 
+  const statusValue = campaign.status ? String(campaign.status).toLowerCase() : '';
+  const isClosed = ['completed', 'cancelled', 'disputed'].includes(statusValue);
+  const isFull = !!campaign.isFull;
+  const isEditLocked = isClosed || isFull;
+  const editLockReason = isFull
+    ? 'This campaign can no longer be edited because it has reached the maximum number of influencers'
+    : 'This campaign can no longer be edited because it is closed';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-white py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -150,13 +158,24 @@ const CampaignDetail = () => {
             <p className="text-gray-500 mt-2 max-w-2xl">{campaign.description}</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            {isBrand && !['completed', 'cancelled', 'disputed'].includes(campaign.status) && (
-              <Link
-                to={`/campaigns/${campaign._id}/edit`}
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-gray-800 font-semibold hover:border-indigo-200"
-              >
-                Edit campaign
-              </Link>
+            {isBrand && (
+              isEditLocked ? (
+                <button
+                  type="button"
+                  disabled
+                  title={editLockReason}
+                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-400 font-semibold cursor-not-allowed"
+                >
+                  Edit Locked
+                </button>
+              ) : (
+                <Link
+                  to={`/campaigns/${campaign._id}/edit`}
+                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-gray-800 font-semibold hover:border-indigo-200"
+                >
+                  Edit campaign
+                </Link>
+              )
             )}
             <button
               onClick={handleBack}

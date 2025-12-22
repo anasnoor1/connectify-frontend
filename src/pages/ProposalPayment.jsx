@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import axiosInstance from "../utills/privateIntercept";
-import { ArrowLeft, ShieldCheck, CreditCard, Sparkles } from "lucide-react";
+import { ArrowLeft, ShieldCheck, CreditCard, Sparkles, Smartphone, Wallet, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import {
   resetPayment,
@@ -60,7 +60,7 @@ function ProposalPaymentForm({ proposalId, clientSecret, onPaymentCompleted }) {
       const confirmedProposal = confirmRes.data?.data?.proposal;
       dispatch(paymentSucceeded({ paymentIntentId: paymentIntent.id }));
       if (onPaymentCompleted) {
-        onPaymentCompleted(confirmedProposal);
+        onPaymentCompleted(confirmedProposal, paymentIntent.id);
       }
     } catch (err) {
       const msg = err.response?.data?.msg || err.message || "Payment confirmation failed";
@@ -117,6 +117,14 @@ export default function ProposalPayment() {
   const [loading, setLoading] = useState(true);
   const [clientSecret, setClientSecret] = useState("");
   const [creatingIntent, setCreatingIntent] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState("stripe");
+  const stripeConfigured = !!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  const [pakStage, setPakStage] = useState("idle");
+  const [pakOtp, setPakOtp] = useState("");
+  const [pakResult, setPakResult] = useState(null);
+  const [pakLoading, setPakLoading] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [receiptData, setReceiptData] = useState(null);
 
   useEffect(() => {
     dispatch(resetPayment());
@@ -148,7 +156,7 @@ export default function ProposalPayment() {
     setCreatingIntent(true);
     dispatch(paymentIntentLoading());
     try {
-      const res = await axiosInstance.patch(`/api/proposals/${proposalId}/status`, { status: "accepted" });
+      const res = await axiosInstance.patch(`/api/proposals/${proposalId}/status`, { status: "accepted", paymentMethod: selectedMethod });
       const updatedProposal = res.data?.data?.proposal;
       const stripeInfo = res.data?.data?.stripe;
 
@@ -156,15 +164,20 @@ export default function ProposalPayment() {
         setProposal(updatedProposal);
       }
 
-      if (!stripeInfo || !stripeInfo.clientSecret) {
-        toast.error("Could not initialize payment");
-        setCreatingIntent(false);
-        dispatch(paymentFailed("Could not initialize payment"));
-        return;
+      if (selectedMethod === "stripe") {
+        if (!stripeInfo || !stripeInfo.clientSecret) {
+          toast.error("Could not initialize payment");
+          setCreatingIntent(false);
+          dispatch(paymentFailed("Could not initialize payment"));
+          return;
+        }
+        setClientSecret(stripeInfo.clientSecret);
+        dispatch(paymentIntentReady());
+      } else {
+        setPakStage("redirect");
+        setTimeout(() => setPakStage("otp"), 2000);
+        dispatch(paymentIntentReady());
       }
-
-      setClientSecret(stripeInfo.clientSecret);
-      dispatch(paymentIntentReady());
       setCreatingIntent(false);
     } catch (err) {
       const msg = err.response?.data?.msg || err.message || "Failed to start payment";
@@ -174,8 +187,43 @@ export default function ProposalPayment() {
     }
   };
 
-  const handlePaymentCompleted = async (confirmedProposal) => {
-    const proposalToUse = confirmedProposal || proposal;
+  const handlePakConfirm = async () => {
+    setPakLoading(true);
+    dispatch(paymentStarted());
+    try {
+      const res = await axiosInstance.post("/api/payment/pak-payment", {
+        proposalId,
+        method: selectedMethod,
+      });
+      const data = res.data?.data;
+      setPakResult(data);
+      setPakStage("result");
+      if (res.data?.success) {
+        dispatch(paymentSucceeded({}));
+        setReceiptData({
+          amount: data?.amount ?? proposal?.amount,
+          method: data?.method || selectedMethod,
+          transactionId: data?.transactionId,
+          createdAt: data?.createdAt || new Date().toISOString(),
+          proposal: data?.proposal || proposal,
+        });
+        setShowReceipt(true);
+      } else {
+        const msg = res.data?.message || "Payment failed (sandbox)";
+        toast.error(msg);
+        dispatch(paymentFailed(msg));
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || "Failed to process demo payment";
+      toast.error(msg);
+      dispatch(paymentFailed(msg));
+      setPakStage("result");
+    } finally {
+      setPakLoading(false);
+    }
+  };
+
+  const completeAndNavigate = async (proposalToUse) => {
     const campaignId = proposalToUse?.campaignId?._id || proposalToUse?.campaignId;
     const influencerId = proposalToUse?.influencerId?._id || proposalToUse?.influencerId;
 
@@ -199,20 +247,17 @@ export default function ProposalPayment() {
     }
   };
 
-  if (!import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-rose-100 p-6 space-y-3">
-          <h2 className="text-lg font-semibold text-gray-900">Stripe not configured</h2>
-          <p className="text-sm text-gray-600">
-            Stripe publishable key is not configured on the frontend. Set
-            <span className="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded ml-1">VITE_STRIPE_PUBLISHABLE_KEY</span>
-            in your frontend <span className="font-mono text-xs">.env</span> file to enable payments.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const handlePaymentCompleted = async (confirmedProposal, stripePaymentIntentId) => {
+    const proposalToUse = confirmedProposal || proposal;
+    setReceiptData({
+      amount: proposalToUse?.amount,
+      method: selectedMethod || "stripe",
+      transactionId: stripePaymentIntentId || (pakResult && pakResult.transactionId) || "-",
+      createdAt: new Date().toISOString(),
+      proposal: proposalToUse,
+    });
+    setShowReceipt(true);
+  };
 
   if (loading || !proposal) {
     return (
@@ -250,8 +295,11 @@ export default function ProposalPayment() {
                   Complete a one-time payment to start working with the influencer and open a dedicated chat room.
                 </p>
               </div>
-              <div className="hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-indigo-50 text-indigo-600">
-                <CreditCard className="w-6 h-6" />
+              <div className="hidden sm:flex flex-col items-end gap-2">
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-50 text-indigo-600">
+                  <CreditCard className="w-6 h-6" />
+                </div>
+                <span className="inline-flex items-center rounded-full border border-dashed border-slate-300 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600">Sandbox / Demo</span>
               </div>
             </div>
 
@@ -285,12 +333,12 @@ export default function ProposalPayment() {
               <div className="flex items-center gap-2">
                 <div
                   className={`flex h-7 w-7 items-center justify-center rounded-full border text-[11px] ${
-                    clientSecret ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300 text-slate-500"
+                    (clientSecret || (selectedMethod !== "stripe" && pakStage !== "idle")) ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-300 text-slate-500"
                   }`}
                 >
                   2
                 </div>
-                <span className={clientSecret ? "text-indigo-600" : "text-slate-500"}>Payment</span>
+                <span className={(clientSecret || (selectedMethod !== "stripe" && pakStage !== "idle")) ? "text-indigo-600" : "text-slate-500"}>Payment</span>
               </div>
 
               <div className="flex-1 h-px bg-slate-200" />
@@ -364,11 +412,16 @@ export default function ProposalPayment() {
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-medium text-slate-500">Influencer</p>
-                    <p className="text-sm font-semibold text-slate-900">
-                      {proposal.influencerId?.name || "Influencer"}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-slate-700 font-semibold">
+                      {(proposal.influencerId?.name || "?").slice(0,1).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-500">Influencer</p>
+                      <p className="text-sm font-semibold text-slate-900">
+                        {proposal.influencerId?.name || "Influencer"}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -400,28 +453,162 @@ export default function ProposalPayment() {
             {/* Payment column */}
             <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-4 sm:p-5 flex flex-col justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-slate-900 mb-3">
-                  {clientSecret ? "Enter your card details" : "Review & continue"}
-                </h3>
-
-                {!clientSecret ? (
+                <div className="mb-3 grid grid-cols-3 gap-2">
                   <button
                     type="button"
-                    onClick={handleCreatePaymentIntent}
-                    disabled={creatingIntent}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                    onClick={() => setSelectedMethod("stripe")}
+                    className={`group flex flex-col items-center justify-center gap-1 rounded-xl border px-3 py-3 text-xs font-semibold transition ${
+                      selectedMethod === "stripe" ? "border-indigo-600 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-600/20 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50 hover:shadow-sm"
+                    }`}
                   >
-                    <CreditCard className="w-4 h-4" />
-                    {creatingIntent ? "Preparing payment..." : "Continue to payment"}
+                    <span className={`${selectedMethod === "stripe" ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"} flex items-center justify-center h-8 w-8 rounded-full`}>
+                      <CreditCard className="w-4 h-4" />
+                    </span>
+                    <span>Card</span>
+                    <span className="text-[10px] font-medium text-slate-500">Stripe Test</span>
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMethod("easypaisa")}
+                    className={`group flex flex-col items-center justify-center gap-1 rounded-xl border px-3 py-3 text-xs font-semibold transition ${
+                      selectedMethod === "easypaisa" ? "border-indigo-600 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-600/20 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50 hover:shadow-sm"
+                    }`}
+                  >
+                    <span className={`${selectedMethod === "easypaisa" ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"} flex items-center justify-center h-8 w-8 rounded-full`}>
+                      <Smartphone className="w-4 h-4" />
+                    </span>
+                    <span>EasyPaisa</span>
+                    <span className="text-[10px] font-medium text-slate-500">Sandbox</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMethod("jazzcash")}
+                    className={`group flex flex-col items-center justify-center gap-1 rounded-xl border px-3 py-3 text-xs font-semibold transition ${
+                      selectedMethod === "jazzcash" ? "border-indigo-600 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-600/20 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50 hover:shadow-sm"
+                    }`}
+                  >
+                    <span className={`${selectedMethod === "jazzcash" ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"} flex items-center justify-center h-8 w-8 rounded-full`}>
+                      <Wallet className="w-4 h-4" />
+                    </span>
+                    <span>JazzCash</span>
+                    <span className="text-[10px] font-medium text-slate-500">Sandbox</span>
+                  </button>
+                </div>
+                <h3 className="text-sm font-semibold text-slate-900 mb-3">
+                  {selectedMethod === "stripe" ? (clientSecret ? "Enter your card details" : "Review & continue") : (pakStage === "otp" ? "Confirm sandbox payment" : "Review & continue")}
+                </h3>
+
+                {selectedMethod === "stripe" ? (
+                  !clientSecret ? (
+                    <div className="space-y-2">
+                      {!stripeConfigured && (
+                        <p className="text-[11px] text-rose-600">Stripe key missing. Choose a sandbox method or configure Stripe test key.</p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={handleCreatePaymentIntent}
+                        disabled={creatingIntent || !stripeConfigured}
+                        className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        <CreditCard className="w-4 h-4" />
+                        {creatingIntent ? "Preparing payment..." : "Continue to payment"}
+                      </button>
+                    </div>
+                  ) : (
+                    <Elements stripe={stripePromise} options={{ clientSecret }}>
+                      <ProposalPaymentForm
+                        proposalId={proposalId}
+                        clientSecret={clientSecret}
+                        onPaymentCompleted={handlePaymentCompleted}
+                      />
+                    </Elements>
+                  )
                 ) : (
-                  <Elements stripe={stripePromise} options={{ clientSecret }}>
-                    <ProposalPaymentForm
-                      proposalId={proposalId}
-                      clientSecret={clientSecret}
-                      onPaymentCompleted={handlePaymentCompleted}
-                    />
-                  </Elements>
+                  <div className="space-y-3">
+                    {pakStage === "idle" && (
+                      <button
+                        type="button"
+                        onClick={handleCreatePaymentIntent}
+                        disabled={creatingIntent}
+                        className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {creatingIntent ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Smartphone className="w-4 h-4" />
+                        )}
+                        {creatingIntent ? "Preparing..." : "Continue to sandbox payment"}
+                      </button>
+                    )}
+
+                    {pakStage === "redirect" && (
+                      <div className="flex items-center justify-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50/80 px-3 py-3 text-sm text-indigo-800 shadow-sm">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Redirecting to {selectedMethod === "easypaisa" ? "EasyPaisa" : "JazzCash"}...
+                      </div>
+                    )}
+
+                    {pakStage === "otp" && (
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-slate-600">Enter OTP (sandbox)</label>
+                        <input
+                          type="text"
+                          value={pakOtp}
+                          onChange={(e) => setPakOtp(e.target.value)}
+                          placeholder="123456"
+                          className="w-full rounded-xl border border-slate-200 px-4 py-3 text-base font-mono tracking-[0.6em] text-center placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={handlePakConfirm}
+                          disabled={pakLoading}
+                          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          {pakLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                          {pakLoading ? "Processing..." : "Confirm payment"}
+                        </button>
+                      </div>
+                    )}
+
+                    {pakStage === "result" && (
+                      <div className="space-y-3">
+                        {paymentStatus === "success" ? (
+                          <div className="flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50/80 px-3 py-2 text-[11px] text-emerald-800">
+                            <CheckCircle2 className="w-4 h-4" />
+                            Payment successful (sandbox)
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 rounded-xl border border-rose-100 bg-rose-50/80 px-3 py-2 text-[11px] text-rose-800">
+                            <XCircle className="w-4 h-4" />
+                            Payment failed (sandbox)
+                          </div>
+                        )}
+                        <div className="rounded-2xl border border-slate-100 bg-white p-4 text-xs text-slate-700 divide-y divide-slate-200">
+                          <div className="flex items-center justify-between py-1"><span>Amount</span><span className="font-semibold">${amount?.toLocaleString()}</span></div>
+                          <div className="flex items-center justify-between py-1"><span>Method</span><span className="capitalize">{pakResult?.method || selectedMethod}</span></div>
+                          <div className="flex items-center justify-between py-1"><span>Transaction ID</span><span className="font-mono text-[11px]">{pakResult?.transactionId || '-'}</span></div>
+                          <div className="flex items-center justify-between py-1"><span>Date & time</span><span>{pakResult?.createdAt ? new Date(pakResult.createdAt).toLocaleString() : new Date().toLocaleString()}</span></div>
+                        </div>
+                        {paymentStatus === "success" ? (
+                          <button
+                            type="button"
+                            onClick={() => handlePaymentCompleted(pakResult?.proposal || proposal)}
+                            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+                          >
+                            Continue
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => { setPakStage("otp"); setPakResult(null); dispatch(resetPayment()); }}
+                            className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-900"
+                          >
+                            Try again
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -429,9 +616,43 @@ export default function ProposalPayment() {
                 We never store your full card details. All payments are handled by Stripe using encrypted
                 connections.
               </p>
+              <p className="mt-2 text-[10px] text-center text-slate-400 uppercase tracking-widest">Sandbox / Demo Mode</p>
             </div>
           </div>
         </div>
+      {showReceipt && receiptData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowReceipt(false)} />
+          <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-xl border border-slate-200 p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-base font-semibold text-slate-900">Payment receipt</h4>
+              <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">{receiptData.method === 'stripe' ? 'Stripe Test' : 'Sandbox'}</span>
+            </div>
+            <div className="rounded-2xl border border-slate-100 bg-white p-4 text-xs text-slate-700 divide-y divide-slate-200">
+              <div className="flex items-center justify-between py-1"><span>Amount</span><span className="font-semibold">${receiptData.amount?.toLocaleString()}</span></div>
+              <div className="flex items-center justify-between py-1"><span>Method</span><span className="capitalize">{receiptData.method}</span></div>
+              <div className="flex items-center justify-between py-1"><span>Transaction ID</span><span className="font-mono text-[11px]">{receiptData.transactionId}</span></div>
+              <div className="flex items-center justify-between py-1"><span>Date & time</span><span>{new Date(receiptData.createdAt).toLocaleString()}</span></div>
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setShowReceipt(false)}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowReceipt(false); completeAndNavigate(receiptData.proposal || proposal); }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

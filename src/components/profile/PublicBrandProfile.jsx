@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "../../utills/privateIntercept";
+
+const makeSlug = (value) =>
+  typeof value === "string"
+    ? value
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "")
+    : "";
 
 const PublicBrandProfile = () => {
   const { slug } = useParams();
@@ -208,31 +217,44 @@ const PublicBrandProfile = () => {
             )}
             {!collabLoading && !collabError && collaborations.length > 0 && (
               <div className="mt-2 space-y-3">
-                {collaborations.map((item) => (
-                  <div
-                    key={item.proposal_id}
-                    className="flex items-start justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
-                  >
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">
-                        {item.influencer?.name || "Influencer"}
-                      </p>
-                      {item.influencer?.instagram_username && (
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          Instagram: <span className="font-medium">@{item.influencer.instagram_username.replace(/^@/, "")}</span>
+                {collaborations.map((item) => {
+                  const isAdminApproved = Boolean(item.adminApprovedCompletion);
+                  const label = isAdminApproved ? "Completed" : "Ongoing";
+                  const badgeClasses = isAdminApproved
+                    ? "bg-green-50 text-green-700"
+                    : "bg-amber-50 text-amber-700";
+                  const influencerSlug = makeSlug(item.influencer?.name);
+                  const influencerTarget = influencerSlug
+                    ? `/profile/i/${influencerSlug}`
+                    : `/profile/influencer/id/${item.influencer?.id || item.influencer?._id}`;
+
+                  return (
+                    <Link
+                      key={item.proposal_id}
+                      to={influencerTarget}
+                      className="flex items-start justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 hover:bg-slate-100 transition"
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">
+                          {item.influencer?.name || "Influencer"}
                         </p>
-                      )}
-                      {item.campaign?.title && (
-                        <p className="text-xs text-indigo-600 mt-0.5">
-                          Campaign: {item.campaign.title}
-                        </p>
-                      )}
-                    </div>
-                    <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
-                      {item.status === "accepted" ? "Completed" : item.status || "Active"}
-                    </span>
-                  </div>
-                ))}
+                        {item.influencer?.instagram_username && (
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            Instagram: <span className="font-medium">@{item.influencer.instagram_username.replace(/^@/, "")}</span>
+                          </p>
+                        )}
+                        {item.campaign?.title && (
+                          <p className="text-xs text-indigo-600 mt-0.5">
+                            Campaign: {item.campaign.title}
+                          </p>
+                        )}
+                      </div>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeClasses}`}>
+                        {label}
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </section>

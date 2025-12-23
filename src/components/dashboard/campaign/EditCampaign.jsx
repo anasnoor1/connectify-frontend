@@ -18,6 +18,7 @@ const defaultFormState = {
   requirements: {
     min_followers: '',
     min_engagement: '',
+    max_influencers: '1',
     content_type: '',
     deadline: ''
   },
@@ -59,6 +60,7 @@ const EditCampaign = () => {
           requirements: {
             min_followers: campaign.requirements?.min_followers?.toString() || '',
             min_engagement: campaign.requirements?.min_engagement?.toString() || '',
+            max_influencers: campaign.requirements?.max_influencers?.toString() || '1',
             content_type: Array.isArray(campaign.requirements?.content_type)
               ? campaign.requirements.content_type.join(', ')
               : campaign.requirements?.content_type || '',

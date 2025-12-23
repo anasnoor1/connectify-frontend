@@ -9,6 +9,7 @@ export default function MyProposals() {
   const [proposals, setProposals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reviewTarget, setReviewTarget] = useState(null); // { proposal, campaignId, toUserId }
+  const [disputesByCampaign, setDisputesByCampaign] = useState({});
 
   const navigate = useNavigate();
 
@@ -24,6 +25,31 @@ export default function MyProposals() {
       }
     };
     fetchProposals();
+  }, []);
+
+  useEffect(() => {
+    const fetchDisputes = async () => {
+      try {
+        const res = await axiosInstance.get("/api/disputes");
+        const list = res.data?.data || [];
+        const map = {};
+        list.forEach((d) => {
+          const cid = d.campaignId?._id || d.campaignId;
+          if (!cid) return;
+          if (["pending", "needs_info", "escalated"].includes(d.status)) {
+            // single open dispute per campaign is enforced backend; if multiple, keep latest
+            if (!map[cid] || new Date(d.createdAt) > new Date(map[cid].createdAt || 0)) {
+              map[cid] = d;
+            }
+          }
+        });
+        setDisputesByCampaign(map);
+      } catch (err) {
+        console.error("Error fetching disputes for proposals:", err);
+      }
+    };
+
+    fetchDisputes();
   }, []);
 
   const openReview = (p) => {
@@ -50,6 +76,14 @@ export default function MyProposals() {
         }
       })();
     }
+  };
+
+  const handleOpenDispute = (p) => {
+    const campaignId = p.campaignId?._id || p.campaignId;
+    if (!campaignId) return;
+    const dispute = disputesByCampaign[campaignId];
+    if (!dispute) return;
+    navigate(`/disputes/${dispute._id}`);
   };
 
   const handleBack = () => {
@@ -93,16 +127,31 @@ export default function MyProposals() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {proposals.map((p) => (
             <div key={p._id} className="p-4 bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-lg transition">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-semibold text-lg">{p.campaignId?.title || 'Unknown Campaign'}</h3>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium 
-                  ${p.status === "pending" ? "bg-yellow-100 text-yellow-800" :
-                    p.status === "accepted" ? "bg-emerald-100 text-emerald-800" :
-                      "bg-rose-100 text-rose-800"
-                  }`}>
-                  {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
-                </span>
-              </div>
+              {(() => {
+                const campaignId = p.campaignId?._id || p.campaignId;
+                const dispute = campaignId ? disputesByCampaign[campaignId] : null;
+                const hasOpenDispute = !!dispute;
+                return (
+                  <div className="flex justify-between items-start mb-2 gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg truncate">{p.campaignId?.title || 'Unknown Campaign'}</h3>
+                      {hasOpenDispute && (
+                        <p className="mt-1 text-[11px] inline-flex items-center gap-1 rounded-full bg-rose-50 text-rose-700 px-2 py-0.5 border border-rose-100">
+                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-rose-500" />
+                          Dispute open on this campaign
+                        </p>
+                      )}
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium 
+                      ${p.status === "pending" ? "bg-yellow-100 text-yellow-800" :
+                        p.status === "accepted" ? "bg-emerald-100 text-emerald-800" :
+                          "bg-rose-100 text-rose-800"
+                      }`}>
+                      {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                    </span>
+                  </div>
+                );
+              })()}
               {p.campaignId?.brand_id && (
                 <div className="mb-2 text-sm text-indigo-600">
                   <span className="text-gray-500">By: </span>
@@ -130,6 +179,21 @@ export default function MyProposals() {
                   Open Chat
                 </button>
               )}
+
+              {/* View Dispute Button - when there is an open dispute on this campaign */}
+              {(() => {
+                const campaignId = p.campaignId?._id || p.campaignId;
+                const dispute = campaignId ? disputesByCampaign[campaignId] : null;
+                if (!dispute) return null;
+                return (
+                  <button
+                    onClick={() => handleOpenDispute(p)}
+                    className="mt-2 w-full px-4 py-2 border border-rose-200 text-rose-700 rounded-lg hover:bg-rose-50 transition-colors font-medium text-sm"
+                  >
+                    View dispute conversation
+                  </button>
+                );
+              })()}
 
               {/* Leave Review button: only when campaign completed and reviewEnabled */}
               {p.status === 'accepted' &&

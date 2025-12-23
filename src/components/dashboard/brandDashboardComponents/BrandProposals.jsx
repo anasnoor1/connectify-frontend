@@ -49,6 +49,11 @@ export default function BrandProposals() {
 
     const handleStatusUpdate = async (proposal, status) => {
         try {
+            if (status === 'accepted') {
+                navigate(`/brand/proposals/${proposal._id}/pay`);
+                return;
+            }
+
             await axiosInstance.patch(`/api/proposals/${proposal._id}/status`, { status });
             toast.success(`Proposal ${status} successfully!`);
             fetchProposals();

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
+import DisputeModal from '../../disputes/DisputeModal';
 
 const CampaignDetail = () => {
   const { id } = useParams();
@@ -9,8 +10,15 @@ const CampaignDetail = () => {
   const [campaign, setCampaign] = useState(location.state?.campaign || null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
   const [isBrand, setIsBrand] = useState(false);
-
+  const [isInfluencer, setIsInfluencer] = useState(false);
+  const [disputes, setDisputes] = useState([]);
+  const [disputesLoading, setDisputesLoading] = useState(false);
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const hasOpenDispute = Array.isArray(disputes)
+    ? disputes.some((d) => ['pending', 'needs_info', 'escalated'].includes(d?.status))
+    : false;
   const handleBack = () => {
     if (window.history.length > 1) {
       navigate(-1);
@@ -62,7 +70,9 @@ const CampaignDetail = () => {
       try {
         const res = await axios.get('/api/user/me');
         const u = res.data?.user || res.data || {};
-        setIsBrand(u.role?.toLowerCase() === 'brand');
+        const role = u.role?.toLowerCase();
+        setIsBrand(role === 'brand');
+        setIsInfluencer(role === 'influencer');
       } catch (err) {
         console.error('Failed to determine user role:', err?.response || err);
       }
@@ -70,6 +80,22 @@ const CampaignDetail = () => {
 
     fetchRole();
   }, []);
+
+  useEffect(() => {
+    if (!campaign || !campaign._id) return;
+    const fetchDisputes = async () => {
+      try {
+        setDisputesLoading(true);
+        const res = await axios.get(`/api/disputes?campaignId=${campaign._id}`);
+        setDisputes(res.data?.data || []);
+      } catch (err) {
+        console.error('Failed to fetch disputes:', err?.response || err);
+      } finally {
+        setDisputesLoading(false);
+      }
+    };
+    fetchDisputes();
+  }, [campaign && campaign._id]);
 
   if (loading) {
     return (
@@ -114,6 +140,14 @@ const CampaignDetail = () => {
     return Array.isArray(value) ? value.join(', ') : value;
   };
 
+  const statusValue = campaign.status ? String(campaign.status).toLowerCase() : '';
+  const isClosed = ['completed', 'cancelled', 'disputed'].includes(statusValue);
+  const isFull = !!campaign.isFull;
+  const isEditLocked = isClosed || isFull;
+  const editLockReason = isFull
+    ? 'This campaign can no longer be edited because it has reached the maximum number of influencers'
+    : 'This campaign can no longer be edited because it is closed';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-white py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -125,12 +159,23 @@ const CampaignDetail = () => {
           </div>
           <div className="flex flex-wrap gap-3">
             {isBrand && (
-              <Link
-                to={`/campaigns/${campaign._id}/edit`}
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-gray-800 font-semibold hover:border-indigo-200"
-              >
-                Edit campaign
-              </Link>
+              isEditLocked ? (
+                <button
+                  type="button"
+                  disabled
+                  title={editLockReason}
+                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-400 font-semibold cursor-not-allowed"
+                >
+                  Edit Locked
+                </button>
+              ) : (
+                <Link
+                  to={`/campaigns/${campaign._id}/edit`}
+                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-gray-800 font-semibold hover:border-indigo-200"
+                >
+                  Edit campaign
+                </Link>
+              )
             )}
             <button
               onClick={handleBack}
@@ -234,8 +279,7 @@ const CampaignDetail = () => {
             </div>
             <div>
               <dt className="text-sm">Number of Influencers</dt>
-              <dd className="text-lg font-semibold text-gray-900">{campaign.requirements?.
-max_influencers || 'Not specified'}</dd>
+              <dd className="text-lg font-semibold text-gray-900">{campaign.requirements?.max_influencers || 'Not specified'}</dd>
             </div>
             <div>
               <dt className="text-sm">Content types</dt>
@@ -247,6 +291,59 @@ max_influencers || 'Not specified'}</dd>
             </div>
           </dl>
         </div>
+
+        {(isBrand || isInfluencer) && (
+          <div className="bg-white rounded-2xl shadow p-6 border border-rose-100 space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Disputes</h2>
+                <p className="text-sm text-gray-500">Raise or track any issues for this campaign.</p>
+              </div>
+              <button
+                onClick={() => setDisputeModalOpen(true)}
+                disabled={campaign.status === 'disputed' || hasOpenDispute}
+                className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-rose-600 text-white font-semibold hover:bg-rose-700 disabled:opacity-60"
+              >
+  {campaign.status === 'disputed' || hasOpenDispute ? 'Dispute Open' : 'Raise Dispute'}
+</button>
+            </div>
+
+            {disputesLoading ? (
+              <p className="text-sm text-gray-500">Loading disputes...</p>
+            ) : disputes.length === 0 ? (
+              <p className="text-sm text-gray-500">No disputes raised yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {disputes.map((d) => (
+                  <Link
+                    key={d._id}
+                    to={`/disputes/${d._id}`}
+                    className="block p-4 rounded-xl border border-slate-100 bg-slate-50/80 hover:border-rose-200 hover:bg-rose-50/60 transition-colors"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-gray-900">
+                          Status: <span className="capitalize">{d.status}</span>
+                        </p>
+                        <p className="text-sm text-gray-600">Reason: {d.reason}</p>
+                        <p className="text-xs text-gray-500">
+                          Raised by: {d.raisedBy?.name || 'User'} ({d.roleOfRaiser})
+                        </p>
+                      </div>
+                      <div className="text-xs text-gray-500 text-right">
+                        {d.createdAt ? new Date(d.createdAt).toLocaleString() : ''}
+                        <div className="mt-1 text-[11px] text-rose-500 font-medium">View conversation →</div>
+                      </div>
+                    </div>
+                    {d.description && (
+                      <p className="text-sm text-gray-700 mt-2 line-clamp-2">{d.description}</p>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {campaign.social_media?.length > 0 && (
           <div className="bg-white rounded-2xl shadow p-6 border border-slate-100">
@@ -262,8 +359,27 @@ max_influencers || 'Not specified'}</dd>
           </div>
         )}
       </div>
+
+      {campaign && (
+        <DisputeModal
+          open={disputeModalOpen}
+          onClose={() => setDisputeModalOpen(false)}
+          campaignId={campaign._id}
+          onCreated={(newDispute) => {
+            setDisputes((prev) => [newDispute, ...prev]);
+            setCampaign((prev) => ({ ...prev, status: 'disputed' }));
+          }}
+        />
+      )}
     </div>
   );
 };
 
 export default CampaignDetail;
+
+
+
+
+
+
+

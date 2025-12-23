@@ -22,7 +22,23 @@ function parseDeliveryTimeToDays(deliveryTime) {
 }
 
 export default function ProposalModal({ isOpen, onClose, campaign }) {
-  if (!isOpen) return null;
+  const [serverLockReason, setServerLockReason] = React.useState("");
+
+  if (!isOpen || !campaign) return null;
+
+  const statusValue = campaign?.status ? String(campaign.status).toLowerCase() : "";
+  const isClosed = ["completed", "cancelled", "disputed"].includes(statusValue);
+  const isFull = !!campaign?.isFull;
+  const initialLockReason = isFull
+    ? "This campaign is full and is no longer accepting proposals."
+    : isClosed
+      ? "This campaign is closed and is not accepting proposals."
+      : statusValue && statusValue !== "active"
+        ? "This campaign is not active and is not accepting proposals."
+        : "";
+
+  const lockReason = serverLockReason || initialLockReason;
+  const isLocked = !!lockReason;
 
   const initialValues = {
     amount: "",
@@ -57,18 +73,47 @@ export default function ProposalModal({ isOpen, onClose, campaign }) {
   });
 
   const handleSubmit = async (values, { setSubmitting }) => {
+    if (!campaign?._id) {
+      toast.error("Campaign not found");
+      setSubmitting(false);
+      return;
+    }
+    if (isLocked) {
+      toast.error(lockReason);
+      setSubmitting(false);
+      return;
+    }
+
     try {
-      const res = await axiosInstance.post("/api/proposals", {
+      setServerLockReason("");
+      await axiosInstance.post("/api/proposals", {
         campaignId: campaign._id,
         amount: values.amount,
         message: values.message,
         deliveryTime: values.deliveryTime,
       });
+
       toast.success("Proposal sent successfully!");
       onClose();
     } catch (error) {
       console.error(error);
-      const errorMsg = error.response?.data?.msg || "Failed to send proposal";
+      const rawErrorMsg =
+        error.response?.data?.msg ||
+        error.response?.data?.message ||
+        "Failed to send proposal";
+
+      const normalized =
+        typeof rawErrorMsg === "string" ? rawErrorMsg.toLowerCase() : "";
+
+      let errorMsg = rawErrorMsg;
+      if (normalized.includes("no longer accepting proposals")) {
+        errorMsg = "This campaign is full and is no longer accepting proposals.";
+        setServerLockReason(errorMsg);
+      } else if (normalized.includes("cannot send proposals")) {
+        errorMsg = "This campaign is closed and is not accepting proposals.";
+        setServerLockReason(errorMsg);
+      }
+
       toast.error(errorMsg);
     } finally {
       setSubmitting(false);
@@ -92,6 +137,12 @@ export default function ProposalModal({ isOpen, onClose, campaign }) {
           </p>
         </div>
 
+        {isLocked && (
+          <div className="mt-3 p-3 rounded-lg border border-rose-100 bg-rose-50 text-sm text-rose-700">
+            {lockReason}
+          </div>
+        )}
+
         <Formik
           initialValues={initialValues}
           validationSchema={validationSchema}
@@ -107,8 +158,10 @@ export default function ProposalModal({ isOpen, onClose, campaign }) {
                   type="number"
                   name="amount"
                   placeholder={`Between $${campaign.budgetMin} - $${campaign.budgetMax}`}
+                  disabled={isLocked || isSubmitting}
                   className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
+
                 <ErrorMessage
                   name="amount"
                   component="div"
@@ -124,8 +177,10 @@ export default function ProposalModal({ isOpen, onClose, campaign }) {
                   type="text"
                   name="deliveryTime"
                   placeholder="e.g., 7 days or 2 weeks"
+                  disabled={isLocked || isSubmitting}
                   className="w-full border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
+
                 <ErrorMessage
                   name="deliveryTime"
                   component="div"
@@ -144,8 +199,10 @@ export default function ProposalModal({ isOpen, onClose, campaign }) {
                   as="textarea"
                   name="message"
                   placeholder="Explain why you're the best fit for this campaign..."
+                  disabled={isLocked || isSubmitting}
                   className="w-full border border-gray-300 px-3 py-2 rounded-lg h-24 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
+
                 <ErrorMessage
                   name="message"
                   component="div"
@@ -164,10 +221,16 @@ export default function ProposalModal({ isOpen, onClose, campaign }) {
 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isLocked}
                   className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {isSubmitting ? "Sending..." : "Send Proposal"}
+                  {isSubmitting
+                    ? "Sending..."
+                    : isLocked
+                      ? (typeof lockReason === 'string' && lockReason.toLowerCase().includes('full')
+                        ? "Campaign Full"
+                        : "Campaign Closed")
+                      : "Send Proposal"}
                 </button>
               </div>
 

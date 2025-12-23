@@ -33,6 +33,8 @@ import BrandChats from "./components/dashboard/brandDashboardComponents/chatList
 import BrandProposals from "./components/dashboard/brandDashboardComponents/BrandProposals";
 import Chats from "./components/dashboard/brandDashboardComponents/chatList";
 import ChatLayout from "./pages/chatLayout";
+import ProposalPayment from "./pages/ProposalPayment";
+import DisputeThread from "./pages/DisputeThread";
 
 
 
@@ -82,6 +84,10 @@ export default function App() {
           {/* Brand Routes */}
           <Route path="/brand/chats" element={<PrivateRoute><BrandChats /></PrivateRoute>} />
           <Route path="/brand/proposals" element={<PrivateRoute><BrandProposals /></PrivateRoute>} />
+          <Route path="/brand/proposals/:proposalId/pay" element={<PrivateRoute><ProposalPayment /></PrivateRoute>} />
+
+          {/* Disputes */}
+          <Route path="/disputes/:id" element={<PrivateRoute><DisputeThread /></PrivateRoute>} />
 
           {/* Chat Route */}
           {/* <Route path="/chat/:campaignId" element={<PrivateRoute><ChatPage /></PrivateRoute>} /> */}

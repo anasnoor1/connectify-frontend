@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import axios from "../../utills/privateIntercept";
+
+const makeSlug = (value) =>
+  typeof value === "string"
+    ? value
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "")
+    : "";
 
 const PublicInfluencerProfile = () => {
   const { slug } = useParams();
@@ -188,14 +197,21 @@ const PublicInfluencerProfile = () => {
             {!collabLoading && !collabError && collaborations.length > 0 && (
               <div className="mt-2 space-y-3">
                 {collaborations.map((item) => {
-                  const campaignStatus = item.campaign?.status;
-                  const isCompleted = campaignStatus === "completed";
-                  const label = isCompleted ? "Completed" : "Ongoing";
+                  const isAdminApproved = Boolean(item.adminApprovedCompletion);
+                  const label = isAdminApproved ? "Completed" : "Ongoing";
+                  const badgeClasses = isAdminApproved
+                    ? "bg-green-50 text-green-700"
+                    : "bg-amber-50 text-amber-700";
+                  const brandSlug = makeSlug(item.brand?.company_name || item.brand?.name);
+                  const brandTarget = brandSlug
+                    ? `/profile/brand/${brandSlug}`
+                    : `/profile/brand/id/${item.brand?.id}`;
 
                   return (
-                    <div
+                    <Link
                       key={item.proposal_id}
-                      className="flex items-start justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3"
+                      to={brandTarget}
+                      className="flex items-start justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 hover:bg-slate-100 transition"
                     >
                       <div>
                         <p className="text-sm font-semibold text-gray-900">
@@ -210,10 +226,10 @@ const PublicInfluencerProfile = () => {
                           </p>
                         )}
                       </div>
-                      <span className="inline-flex items-center rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeClasses}`}>
                         {label}
                       </span>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>

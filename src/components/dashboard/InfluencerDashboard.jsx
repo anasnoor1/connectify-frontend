@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { useNavigate, NavLink } from "react-router-dom";
+
+import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import { toast } from 'react-toastify';
 import { Edit2, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import axiosInstance from "../../utills/privateIntercept";
 import Loader from "../../utills/loader";
-import ProposalModal from "./influencerDashboardComponents/proposalModal";
 import ProfileEditor from './ProfileEditor';
 import CampaignCard from "./influencerDashboardComponents/CampaignCard";
+import ProposalModal from "./influencerDashboardComponents/proposalModal";
+import { socket } from "../../socket";
 
 export default function InfluencerDashboard() {
   const [campaigns, setCampaigns] = useState([]);
@@ -22,16 +24,34 @@ export default function InfluencerDashboard() {
   const [limit] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [stripeStatus, setStripeStatus] = useState({ loading: true, connected: false });
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const [showDisconnectModal, setShowDisconnectModal] = useState(false);
+  const [disconnectLoading, setDisconnectLoading] = useState(false);
 
   useEffect(() => {
     fetchInfluencerData();
     fetchInfluencerStats();
+    fetchStripeStatus();
   }, []);
 
   useEffect(() => {
     fetchCampaigns();
+  }, [page, status]);
+
+  useEffect(() => {
+    const handleCampaignsUpdated = () => {
+      fetchCampaigns();
+      fetchInfluencerStats();
+    };
+
+    socket.on("campaigns_updated", handleCampaignsUpdated);
+
+    return () => {
+      socket.off("campaigns_updated", handleCampaignsUpdated);
+    };
   }, [page, status]);
 
   const fetchInfluencerData = async () => {
@@ -48,6 +68,75 @@ export default function InfluencerDashboard() {
       console.error('Error fetching influencer data:', error);
       toast.error('Failed to load influencer data');
     }
+  };
+
+  const fetchStripeStatus = async () => {
+    try {
+      const res = await axiosInstance.get('/api/payment/stripe/status');
+      const data = res.data?.data || {};
+      setStripeStatus({
+        loading: false,
+        connected: !!data.connected,
+      });
+    } catch (error) {
+      console.error('Error fetching Stripe status:', error);
+      setStripeStatus({ loading: false, connected: false });
+    }
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const connect = params.get('connect');
+    if (connect) {
+      if (connect === 'success') {
+        toast.success('Stripe connected successfully');
+      } else if (connect === 'refresh') {
+        toast.info('Please finish Stripe onboarding to receive payouts');
+      }
+      fetchStripeStatus();
+      const cleanPath = location.pathname;
+      window.history.replaceState({}, '', cleanPath);
+    }
+  }, [location.search]);
+
+  const handleConnectStripe = async () => {
+    try {
+      const res = await axiosInstance.post('/api/payment/stripe/connect');
+      const url = res.data?.url;
+      if (!url) {
+        toast.error('Failed to start Stripe onboarding');
+        return;
+      }
+      window.location.href = url;
+    } catch (error) {
+      console.error('Error starting Stripe connect onboarding:', error);
+      const msg = error?.response?.data?.message || error?.message || 'Failed to start Stripe onboarding';
+      toast.error(msg);
+    }
+  };
+
+  const handleDisconnectStripe = () => {
+    setShowDisconnectModal(true);
+  };
+
+  const confirmDisconnect = async () => {
+    try {
+      setDisconnectLoading(true);
+      await axiosInstance.post('/api/payment/stripe/disconnect');
+      toast.success('Stripe disconnected successfully');
+      setStripeStatus({ loading: false, connected: false });
+    } catch (error) {
+      console.error('Error disconnecting Stripe:', error);
+      const msg = error?.response?.data?.message || error?.message || 'Failed to disconnect Stripe';
+      toast.error(msg);
+    } finally {
+      setDisconnectLoading(false);
+      setShowDisconnectModal(false);
+    }
+  };
+
+  const cancelDisconnect = () => {
+    setShowDisconnectModal(false);
   };
 
   const fetchInfluencerStats = async () => {
@@ -140,6 +229,7 @@ export default function InfluencerDashboard() {
       toast.success(msg);
       // Refresh campaigns list so status/flags update in UI
       fetchCampaigns();
+      fetchInfluencerStats();
     } catch (error) {
       console.error('Error marking campaign complete as influencer:', error);
       const msg = error?.response?.data?.message || error?.message || 'Failed to mark campaign as completed';
@@ -238,6 +328,45 @@ export default function InfluencerDashboard() {
                 </div>
               </div>
 
+              <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-700">Payouts</p>
+                    <p className="text-[11px] text-slate-500">Connect Stripe to receive earnings</p>
+                  </div>
+                  {stripeStatus.loading ? (
+                    <span className="text-[11px] text-slate-400">Checking...</span>
+                  ) : stripeStatus.connected ? (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-medium">Connected</span>
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-medium">Not connected</span>
+                  )}
+                </div>
+                {!stripeStatus.loading && !stripeStatus.connected && (
+                  <button
+                    type="button"
+                    onClick={handleConnectStripe}
+                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition"
+                  >
+                    Connect Stripe
+                  </button>
+                )}
+                {!stripeStatus.loading && stripeStatus.connected && (
+                  <div className="space-y-2">
+                    <p className="text-[11px] text-slate-500">
+                      Your payouts will be sent to your connected Stripe account after campaign approval.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleDisconnectStripe}
+                      className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs rounded-lg border border-red-100 text-red-600 hover:bg-red-50 transition"
+                    >
+                      Disconnect Stripe
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Original profile snapshot card below */}
               <div className="bg-white rounded-2xl shadow-sm p-4 border border-gray-100 space-y-4">
                 <div className="flex items-center gap-3">
@@ -303,11 +432,13 @@ export default function InfluencerDashboard() {
             </select>
           </div>
 
-          {campaigns.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {campaigns
-                .filter((c) => !query || c.title?.toLowerCase().includes(query.toLowerCase()))
-                .map((campaign) => (
+          {(() => {
+            const filteredCampaigns = campaigns.filter(
+              (c) => !query || c.title?.toLowerCase().includes(query.toLowerCase())
+            );
+            return filteredCampaigns.length > 0 ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {filteredCampaigns.map((campaign) => (
                   <CampaignCard
                     key={campaign._id}
                     campaign={campaign}
@@ -318,12 +449,13 @@ export default function InfluencerDashboard() {
                     onMarkComplete={() => handleMarkComplete(campaign)}
                   />
                 ))}
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-12 text-center">
-              <p className="text-slate-500">No campaigns found</p>
-            </div>
-          )}
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-12 text-center">
+                <p className="text-slate-500">No campaigns found</p>
+              </div>
+            );
+          })()}
 
           {totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-8">
@@ -375,7 +507,12 @@ export default function InfluencerDashboard() {
           )}
 
           <div className="text-center mt-4 text-sm text-gray-500">
-            Page {page} of {totalPages} • Showing {campaigns.length} of {total} campaigns
+            Page {page} of {totalPages} • Showing {(() => {
+              const filteredCampaigns = campaigns.filter(
+                (c) => !query || c.title?.toLowerCase().includes(query.toLowerCase())
+              );
+              return filteredCampaigns.length;
+            })()} of {total} campaigns
           </div>
         </section>
       </div>
@@ -389,6 +526,32 @@ export default function InfluencerDashboard() {
             setSelectedCampaign(null);
           }}
         />
+      )}
+
+      {showDisconnectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+            <h3 className="text-sm font-semibold text-slate-900">Disconnect Stripe?</h3>
+            <p className="mt-2 text-xs text-slate-600">You will not receive payouts until you connect again.</p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={cancelDisconnect}
+                className="px-3 py-2 text-xs rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDisconnect}
+                disabled={disconnectLoading}
+                className="px-3 py-2 text-xs rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {disconnectLoading ? 'Disconnecting...' : 'Disconnect'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

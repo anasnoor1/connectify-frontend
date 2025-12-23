@@ -1,4 +1,5 @@
 import StatusBadge from "./StatusBadge";
+import { AlertCircle } from "lucide-react";
 
 export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onOpenBrandProfile, onChatNow, onMarkComplete }) {
   const brandName = campaign.brand_id?.name || campaign.brand || "Unknown Brand";
@@ -9,16 +10,47 @@ export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onO
     budgetDisplay = `$ ${campaign.budgetMin.toLocaleString()} - $ ${campaign.budgetMax.toLocaleString()}`;
   }
   const brandInitial = brandName?.charAt(0)?.toUpperCase() || "B";
+  const deadlineText = (() => {
+    const deadline = campaign.requirements?.deadline || campaign.deadline;
+    if (deadline) {
+      const deadlineDate = new Date(deadline);
+
+      if (!Number.isNaN(deadlineDate.getTime())) {
+        const today = new Date();
+        deadlineDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        const diffDays = Math.ceil((deadlineDate - today) / (1000 * 60 * 60 * 24));
+        if (diffDays < 0) return "Deadline passed";
+        if (diffDays === 0) return "Due today";
+        return `${diffDays} day${diffDays === 1 ? "" : "s"} left`;
+      }
+    }
+    return campaign.duration || campaign.timeline || "Not specified";
+  })();
+
+  const statusValue = campaign.status ? String(campaign.status).toLowerCase() : "";
+  const isClosed = ["completed", "cancelled", "disputed"].includes(statusValue);
+  const isFull = !!campaign.isFull;
+  const canSubmitProposal = statusValue === "active" && !isClosed && !isFull;
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer">
       {/* Header with Status Badge */}
       <div className="bg-gradient-to-r from-indigo-50 to-violet-50 px-6 py-4 flex justify-between items-center">
+
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
           <span className="text-sm font-medium text-indigo-900">{campaign.category || 'Campaign'}</span>
         </div>
-        <StatusBadge status={campaign.status} />
+        <div className="flex flex-col items-end gap-1">
+          <StatusBadge status={campaign.status} />
+          {campaign.status?.toLowerCase() === "disputed" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 text-rose-700 text-[11px] px-2 py-0.5 border border-rose-100">
+              <AlertCircle className="w-3 h-3" />
+              Dispute open
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Main Content */}
@@ -81,16 +113,16 @@ export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onO
             <p className="text-base font-bold text-emerald-900">{budgetDisplay}</p>
           </div>
 
-          {/* Duration */}
+          {/* Deadline / Duration */}
           <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
             <div className="flex items-center gap-2 mb-1">
               <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-xs font-medium text-blue-700">Duration</span>
+              <span className="text-xs font-medium text-blue-700">Deadline</span>
             </div>
             <p className="text-base font-bold text-blue-900">
-              {campaign.duration || campaign.timeline || '30 days'}
+              {deadlineText}
             </p>
           </div>
         </div>
@@ -136,18 +168,24 @@ export default function CampaignCard({ campaign, onOpenProposal, onOpenView, onO
               </button>
 
               <button
-                className="flex-1 px-4 py-2.5 border-2 border-indigo-600 text-indigo-600 rounded-xl text-sm font-semibold hover:bg-indigo-600 hover:text-white transition-all duration-200"
+                disabled={!canSubmitProposal}
+                className={`flex-1 px-4 py-2.5 border-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                  canSubmitProposal
+                    ? "border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white"
+                    : "border-slate-200 text-slate-400 bg-slate-50 cursor-not-allowed"
+                }`}
                 onClick={(e) => {
                   e.stopPropagation();
+                  if (!canSubmitProposal) return;
                   onOpenProposal(campaign);
                 }}
               >
-                Submit Proposal
+                {isFull ? "Campaign Full" : isClosed || statusValue !== "active" ? "Campaign Closed" : "Submit Proposal"}
               </button>
             </>
           )}
 
-          {onOpenView && (campaign.status?.toLowerCase() === "active" || campaign.status?.toLowerCase() === "completed") && (
+          {onOpenView && ["active", "completed", "disputed"].includes(campaign.status?.toLowerCase()) && (
             <button
               className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
               onClick={(e) => {

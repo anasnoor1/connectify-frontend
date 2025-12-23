@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../../../utills/privateIntercept';
 import { Plus, Filter, RefreshCcw, Calendar, DollarSign, Trash2, Edit2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { socket } from '../../../socket';
 
 const CampaignList = () => {
   const [campaigns, setCampaigns] = useState([]);
@@ -48,6 +49,20 @@ const CampaignList = () => {
     if (!roleChecked) return;
     fetchCampaigns();
   }, [filters.status, filters.page, roleChecked]);
+
+  useEffect(() => {
+    if (!roleChecked) return;
+
+    const handleCampaignsUpdated = () => {
+      fetchCampaigns();
+    };
+
+    socket.on('campaigns_updated', handleCampaignsUpdated);
+
+    return () => {
+      socket.off('campaigns_updated', handleCampaignsUpdated);
+    };
+  }, [roleChecked, filters.status, filters.page]);
 
   const fetchCampaigns = async () => {
     try {
@@ -266,9 +281,18 @@ const CampaignCard = ({
   onCancelDelete,
   onConfirmDelete,
 }) => {
+  const navigate = useNavigate();
   const brandName = campaign.brand_id?.name || campaign.brand_id?.company_name || "My Brand";
   const brandAvatar = campaign.brand_id?.avatar_url || campaign.brand_avatar_url;
   const brandInitial = brandName?.charAt(0)?.toUpperCase() || "B";
+
+  const statusValue = campaign.status ? String(campaign.status).toLowerCase() : '';
+  const isClosed = ['completed', 'cancelled', 'disputed'].includes(statusValue);
+  const isFull = !!campaign.isFull;
+  const isEditLocked = isClosed || isFull;
+  const editLockReason = isFull
+    ? 'This campaign can no longer be edited because it has reached the maximum number of influencers'
+    : 'This campaign can no longer be edited because it is closed';
 
   const budgetDisplay = campaign.budgetMin && campaign.budgetMax
     ? `$${campaign.budgetMin.toLocaleString()} - $${campaign.budgetMax.toLocaleString()}`
@@ -347,12 +371,22 @@ const CampaignCard = ({
           >
             <Eye className="h-4 w-4" /> View
           </Link>
-          <Link
-            to={`/campaigns/${campaign._id}/edit`}
-            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-gray-700 font-semibold hover:border-indigo-200 text-sm transition-colors"
+          <button
+            type="button"
+            disabled={isEditLocked}
+            title={isEditLocked ? editLockReason : undefined}
+            onClick={() => {
+              if (isEditLocked) return;
+              navigate(`/campaigns/${campaign._id}/edit`);
+            }}
+            className={`flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${
+              isEditLocked
+                ? 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed'
+                : 'bg-white text-gray-700 border-slate-200 hover:border-indigo-200'
+            }`}
           >
-            <Edit2 className="h-4 w-4" /> Edit
-          </Link>
+            <Edit2 className="h-4 w-4" /> {isEditLocked ? 'Edit Locked' : 'Edit'}
+          </button>
           {!isConfirming ? (
             <button
               type="button"

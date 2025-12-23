@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import landingReducer from '../features/home/landingSlice';
+import paymentReducer from '../features/payment/paymentSlice';
 import { persistReducer, persistStore, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 
@@ -14,6 +15,7 @@ const persistedLandingReducer = persistReducer(landingPersistConfig, landingRedu
 export const store = configureStore({
   reducer: {
     landing: persistedLandingReducer,
+    payment: paymentReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

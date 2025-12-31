@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
@@ -24,16 +24,17 @@ function PaymentMethodMark({ method, selected }) {
 
   const iconClass = "w-4 h-4";
   const wrapperClass = `${selected ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"} flex items-center justify-center h-10 w-10 rounded-full overflow-hidden`;
+  const logoWrapperClass = `${selected ? "border-indigo-600 ring-2 ring-indigo-600/20" : "border-slate-200"} flex items-center justify-center h-10 w-14 rounded-xl border bg-white overflow-hidden`;
 
   if (isEasyPaisa || isJazzCash) {
     const src = isEasyPaisa ? "/easypaisa.png" : "/jazzcash.png";
     return (
-      <span className={wrapperClass}>
+      <span className={logoWrapperClass}>
         {imgOk ? (
           <img
             src={src}
             alt={isEasyPaisa ? "EasyPaisa" : "JazzCash"}
-            className="h-7 w-7 object-contain p-0.5"
+            className="h-8 w-full object-contain px-2"
             onError={() => setImgOk(false)}
           />
         ) : isEasyPaisa ? (
@@ -162,6 +163,16 @@ export default function ProposalPayment() {
   const [pakLoading, setPakLoading] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
+  const [pendingRedirect, setPendingRedirect] = useState(null);
+  const redirectingRef = useRef(false);
+
+  useEffect(() => {
+    if (!pendingRedirect || !pendingRedirect.path) return;
+    const t = setTimeout(() => {
+      navigate(pendingRedirect.path);
+    }, pendingRedirect.delayMs || 1500);
+    return () => clearTimeout(t);
+  }, [pendingRedirect, navigate]);
 
   useEffect(() => {
     dispatch(resetPayment());
@@ -244,14 +255,14 @@ export default function ProposalPayment() {
           createdAt: data?.createdAt || new Date().toISOString(),
           proposal: data?.proposal || proposal,
         });
-        setShowReceipt(true);
+        completeAndNavigate(data?.proposal || proposal);
       } else {
-        const msg = res.data?.message || "Payment failed (sandbox)";
+        const msg = res.data?.message || "Payment failed";
         toast.error(msg);
         dispatch(paymentFailed(msg));
       }
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || "Failed to process demo payment";
+      const msg = err.response?.data?.message || err.message || "Failed to process payment";
       toast.error(msg);
       dispatch(paymentFailed(msg));
       setPakStage("result");
@@ -261,26 +272,38 @@ export default function ProposalPayment() {
   };
 
   const completeAndNavigate = async (proposalToUse) => {
+    if (redirectingRef.current) return;
+    redirectingRef.current = true;
     const campaignId = proposalToUse?.campaignId?._id || proposalToUse?.campaignId;
     const influencerId = proposalToUse?.influencerId?._id || proposalToUse?.influencerId;
 
     try {
+      setShowReceipt(false);
       if (campaignId && influencerId) {
         const res = await axiosInstance.post("/api/chat/open", {
           campaignId,
           influencerId,
         });
         if (res.data?.success && res.data.room?._id) {
-          toast.success("Payment successful. Chat opened.");
-          navigate(`/chats/${res.data.room._id}`);
+          setPendingRedirect({
+            path: `/chats/${res.data.room._id}`,
+            label: "Payment successful. Opening chat…",
+            delayMs: 1500,
+          });
           return;
         }
       }
-      toast.success("Payment successful.");
-      navigate("/brand/proposals");
+      setPendingRedirect({
+        path: "/brand/proposals",
+        label: "Payment successful. Redirecting you to proposals…",
+        delayMs: 1500,
+      });
     } catch (err) {
-      toast.success("Payment successful.");
-      navigate("/brand/proposals");
+      setPendingRedirect({
+        path: "/brand/proposals",
+        label: "Payment successful. Redirecting you to proposals…",
+        delayMs: 1500,
+      });
     }
   };
 
@@ -293,7 +316,7 @@ export default function ProposalPayment() {
       createdAt: new Date().toISOString(),
       proposal: proposalToUse,
     });
-    setShowReceipt(true);
+    completeAndNavigate(proposalToUse);
   };
 
   if (loading || !proposal) {
@@ -336,7 +359,6 @@ export default function ProposalPayment() {
                 <div className="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-50 text-indigo-600">
                   <CreditCard className="w-6 h-6" />
                 </div>
-                <span className="inline-flex items-center rounded-full border border-dashed border-slate-300 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-600">Sandbox / Demo</span>
               </div>
             </div>
 
@@ -420,7 +442,7 @@ export default function ProposalPayment() {
 
             {paymentStatus === "success" && (
               <div className="rounded-xl border border-emerald-100 bg-emerald-50/80 px-3 py-2 text-[11px] text-emerald-800">
-                Payment successful. Redirecting you to chat with the influencer.
+                {pendingRedirect?.label || "Payment successful. Redirecting…"}
               </div>
             )}
 
@@ -500,7 +522,6 @@ export default function ProposalPayment() {
                   >
                     <PaymentMethodMark method="stripe" selected={selectedMethod === "stripe"} />
                     <span>Card</span>
-                    <span className="text-[10px] font-medium text-slate-500">Stripe Test</span>
                   </button>
                   <button
                     type="button"
@@ -511,7 +532,6 @@ export default function ProposalPayment() {
                   >
                     <PaymentMethodMark method="easypaisa" selected={selectedMethod === "easypaisa"} />
                     <span>EasyPaisa</span>
-                    <span className="text-[10px] font-medium text-slate-500">Sandbox</span>
                   </button>
                   <button
                     type="button"
@@ -522,18 +542,17 @@ export default function ProposalPayment() {
                   >
                     <PaymentMethodMark method="jazzcash" selected={selectedMethod === "jazzcash"} />
                     <span>JazzCash</span>
-                    <span className="text-[10px] font-medium text-slate-500">Sandbox</span>
                   </button>
                 </div>
                 <h3 className="text-sm font-semibold text-slate-900 mb-3">
-                  {selectedMethod === "stripe" ? (clientSecret ? "Enter your card details" : "Review & continue") : (pakStage === "otp" ? "Confirm sandbox payment" : "Review & continue")}
+                  {selectedMethod === "stripe" ? (clientSecret ? "Enter your card details" : "Review & continue") : (pakStage === "otp" ? "Confirm payment" : "Review & continue")}
                 </h3>
 
                 {selectedMethod === "stripe" ? (
                   !clientSecret ? (
                     <div className="space-y-2">
                       {!stripeConfigured && (
-                        <p className="text-[11px] text-rose-600">Stripe key missing. Choose a sandbox method or configure Stripe test key.</p>
+                        <p className="text-[11px] text-rose-600">Stripe key missing. Please configure Stripe.</p>
                       )}
                       <button
                         type="button"
@@ -568,7 +587,7 @@ export default function ProposalPayment() {
                         ) : (
                           <Smartphone className="w-4 h-4" />
                         )}
-                        {creatingIntent ? "Preparing..." : "Continue to sandbox payment"}
+                        {creatingIntent ? "Preparing..." : "Continue to payment"}
                       </button>
                     )}
 
@@ -582,7 +601,7 @@ export default function ProposalPayment() {
 
                     {pakStage === "otp" && (
                       <div className="space-y-2">
-                        <label className="text-xs font-medium text-slate-600">Enter OTP (sandbox)</label>
+                        <label className="text-xs font-medium text-slate-600">Enter OTP</label>
                         <input
                           type="text"
                           value={pakOtp}
@@ -607,12 +626,12 @@ export default function ProposalPayment() {
                         {paymentStatus === "success" ? (
                           <div className="flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50/80 px-3 py-2 text-[11px] text-emerald-800">
                             <CheckCircle2 className="w-4 h-4" />
-                            Payment successful (sandbox)
+                            Payment successful
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 rounded-xl border border-rose-100 bg-rose-50/80 px-3 py-2 text-[11px] text-rose-800">
                             <XCircle className="w-4 h-4" />
-                            Payment failed (sandbox)
+                            Payment failed
                           </div>
                         )}
                         <div className="rounded-2xl border border-slate-100 bg-white p-4 text-xs text-slate-700 divide-y divide-slate-200">
@@ -648,7 +667,6 @@ export default function ProposalPayment() {
                 We never store your full card details. All payments are handled by Stripe using encrypted
                 connections.
               </p>
-              <p className="mt-2 text-[10px] text-center text-slate-400 uppercase tracking-widest">Sandbox / Demo Mode</p>
             </div>
           </div>
         </div>
@@ -658,7 +676,6 @@ export default function ProposalPayment() {
           <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-xl border border-slate-200 p-5">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-base font-semibold text-slate-900">Payment receipt</h4>
-              <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">{receiptData.method === 'stripe' ? 'Stripe Test' : 'Sandbox'}</span>
             </div>
             <div className="rounded-2xl border border-slate-100 bg-white p-4 text-xs text-slate-700 divide-y divide-slate-200">
               <div className="flex items-center justify-between py-1"><span>Amount</span><span className="font-semibold">${receiptData.amount?.toLocaleString()}</span></div>

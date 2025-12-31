@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "../../utills/privateIntercept";
+import { Star } from "lucide-react";
 
 const makeSlug = (value) =>
   typeof value === "string"
@@ -10,6 +11,40 @@ const makeSlug = (value) =>
         .replace(/\s+/g, "-")
         .replace(/[^a-z0-9-]/g, "")
     : "";
+
+function StarRating({ value, size = 16, className = "" }) {
+  const safe = typeof value === "number" && Number.isFinite(value) ? value : 0;
+  const rounded = Math.round(safe * 2) / 2;
+  const full = Math.floor(rounded);
+  const hasHalf = rounded - full === 0.5;
+
+  return (
+    <div className={`flex items-center gap-0.5 ${className}`.trim()} aria-label={`Rating ${safe} out of 5`}>
+      {Array.from({ length: 5 }).map((_, i) => {
+        const idx = i + 1;
+        if (idx <= full) {
+          return <Star key={idx} size={size} className="text-yellow-500" fill="currentColor" />;
+        }
+
+        if (idx === full + 1 && hasHalf) {
+          return (
+            <span key={idx} className="relative inline-flex" style={{ width: size, height: size }}>
+              <Star size={size} className="text-slate-300" />
+              <Star
+                size={size}
+                className="absolute inset-0 text-yellow-500"
+                fill="currentColor"
+                style={{ clipPath: "inset(0 50% 0 0)" }}
+              />
+            </span>
+          );
+        }
+
+        return <Star key={idx} size={size} className="text-slate-300" />;
+      })}
+    </div>
+  );
+}
 
 const PublicBrandProfile = () => {
   const { slug } = useParams();
@@ -156,12 +191,13 @@ const PublicBrandProfile = () => {
                 <p className="text-sm text-indigo-600 mt-1 capitalize">{industry}</p>
               )}
               {rating !== null && (
-                <p className="text-sm text-yellow-600 mt-1">
-                  ⭐ {rating.toFixed(1)}
+                <div className="mt-1 flex items-center gap-2">
+                  <StarRating value={rating} />
+                  <span className="text-sm font-semibold text-slate-700">{rating.toFixed(1)}</span>
                   {ratingCount > 0 && (
-                    <span className="text-xs text-gray-500 ml-1">({ratingCount} review{ratingCount > 1 ? 's' : ''})</span>
+                    <span className="text-xs text-gray-500">({ratingCount} review{ratingCount > 1 ? 's' : ''})</span>
                   )}
-                </p>
+                </div>
               )}
               {website && (
                 <a

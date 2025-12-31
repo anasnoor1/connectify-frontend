@@ -7,9 +7,9 @@ const WhyChoose = () => {
   return (
     <section
       style={{ backgroundImage: `url(${galaxyBg})` }}
-      className="relative bg-contain bg-center text-white py-20"
+      className="relative bg-contain bg-center text-white py-14 sm:py-20"
     >
-      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-12 items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-3 gap-12 items-center">
         {/* Left - Reasons List */}
         <div>
           <ul className="mt-8 space-y-6">
@@ -18,7 +18,7 @@ const WhyChoose = () => {
               <div>
                 <h5 className="text-lg font-semibold">Proven Track Record</h5>
                 <p className="text-gray-300">
-                  We consistently deliver successful projects that exceed client expectations.
+                  Built for real-world creator campaigns with clear steps from discovery to delivery.
                 </p>
               </div>
             </li>
@@ -27,7 +27,7 @@ const WhyChoose = () => {
               <div>
                 <h5 className="text-lg font-semibold">Industry Connections</h5>
                 <p className="text-gray-300">
-                  Our long-standing partnerships open doors to powerful opportunities.
+                  Connect brands with creators who fit their goals, niche, and audience.
                 </p>
               </div>
             </li>
@@ -36,7 +36,7 @@ const WhyChoose = () => {
               <div>
                 <h5 className="text-lg font-semibold">Personalized Growth</h5>
                 <p className="text-gray-300">
-                  We focus on helping every individual and brand grow sustainably.
+                  Track performance and build credibility through reviews and completed collaborations.
                 </p>
               </div>
             </li>
@@ -49,12 +49,12 @@ const WhyChoose = () => {
             Passionate About Growth and <br /> Committed to Success
           </h2>
 
-          <div className="flex space-x-4 mb-8">
-            <div className="bg-gradient-to-br from-indigo-500 to-blue-400 text-center p-6 rounded-xl w-1/2 shadow-lg">
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <div className="bg-gradient-to-br from-indigo-500 to-blue-400 text-center p-6 rounded-xl w-full sm:w-1/2 shadow-lg">
               <p className="text-4xl font-bold">98%</p>
               <p className="text-sm mt-2 text-gray-100">Satisfaction Rate</p>
             </div>
-            <div className="bg-gradient-to-br from-indigo-500 to-blue-400 text-center p-6 rounded-xl w-1/2 shadow-lg">
+            <div className="bg-gradient-to-br from-indigo-500 to-blue-400 text-center p-6 rounded-xl w-full sm:w-1/2 shadow-lg">
               <p className="text-4xl font-bold">20K+</p>
               <p className="text-sm mt-2 text-gray-100">Creative Talents</p>
             </div>
@@ -70,7 +70,8 @@ const WhyChoose = () => {
         {/* Right - Image with play button */}
         <div className="relative flex flex-col items-center">
           <p className="text-gray-300 mb-4 text-center">
-            Sed ac suscipit tellus, a volutpat erat. Proin sit amet fermentum massa. Cras tincidunt cursus auctor.
+            Collaborate faster with built-in proposals, clear requirements, and transparent approvals—so every campaign
+            runs smoothly for both brands and influencers.
           </p>
           <div className="relative">
             <img

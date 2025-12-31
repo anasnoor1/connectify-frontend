@@ -15,6 +15,43 @@ import {
   paymentFailed,
 } from "../features/payment/paymentSlice";
 
+function PaymentMethodMark({ method, selected }) {
+  const [imgOk, setImgOk] = useState(true);
+
+  const lower = (method || "").toLowerCase();
+  const isEasyPaisa = lower === "easypaisa";
+  const isJazzCash = lower === "jazzcash";
+
+  const iconClass = "w-4 h-4";
+  const wrapperClass = `${selected ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"} flex items-center justify-center h-10 w-10 rounded-full overflow-hidden`;
+
+  if (isEasyPaisa || isJazzCash) {
+    const src = isEasyPaisa ? "/easypaisa.png" : "/jazzcash.png";
+    return (
+      <span className={wrapperClass}>
+        {imgOk ? (
+          <img
+            src={src}
+            alt={isEasyPaisa ? "EasyPaisa" : "JazzCash"}
+            className="h-7 w-7 object-contain p-0.5"
+            onError={() => setImgOk(false)}
+          />
+        ) : isEasyPaisa ? (
+          <Smartphone className={iconClass} />
+        ) : (
+          <Wallet className={iconClass} />
+        )}
+      </span>
+    );
+  }
+
+  return (
+    <span className={wrapperClass}>
+      <CreditCard className={iconClass} />
+    </span>
+  );
+}
+
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
 
 function ProposalPaymentForm({ proposalId, clientSecret, onPaymentCompleted }) {
@@ -461,9 +498,7 @@ export default function ProposalPayment() {
                       selectedMethod === "stripe" ? "border-indigo-600 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-600/20 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50 hover:shadow-sm"
                     }`}
                   >
-                    <span className={`${selectedMethod === "stripe" ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"} flex items-center justify-center h-8 w-8 rounded-full`}>
-                      <CreditCard className="w-4 h-4" />
-                    </span>
+                    <PaymentMethodMark method="stripe" selected={selectedMethod === "stripe"} />
                     <span>Card</span>
                     <span className="text-[10px] font-medium text-slate-500">Stripe Test</span>
                   </button>
@@ -474,9 +509,7 @@ export default function ProposalPayment() {
                       selectedMethod === "easypaisa" ? "border-indigo-600 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-600/20 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50 hover:shadow-sm"
                     }`}
                   >
-                    <span className={`${selectedMethod === "easypaisa" ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"} flex items-center justify-center h-8 w-8 rounded-full`}>
-                      <Smartphone className="w-4 h-4" />
-                    </span>
+                    <PaymentMethodMark method="easypaisa" selected={selectedMethod === "easypaisa"} />
                     <span>EasyPaisa</span>
                     <span className="text-[10px] font-medium text-slate-500">Sandbox</span>
                   </button>
@@ -487,9 +520,7 @@ export default function ProposalPayment() {
                       selectedMethod === "jazzcash" ? "border-indigo-600 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-600/20 shadow-sm" : "border-slate-200 text-slate-700 hover:bg-slate-50 hover:shadow-sm"
                     }`}
                   >
-                    <span className={`${selectedMethod === "jazzcash" ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"} flex items-center justify-center h-8 w-8 rounded-full`}>
-                      <Wallet className="w-4 h-4" />
-                    </span>
+                    <PaymentMethodMark method="jazzcash" selected={selectedMethod === "jazzcash"} />
                     <span>JazzCash</span>
                     <span className="text-[10px] font-medium text-slate-500">Sandbox</span>
                   </button>
@@ -544,6 +575,7 @@ export default function ProposalPayment() {
                     {pakStage === "redirect" && (
                       <div className="flex items-center justify-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50/80 px-3 py-3 text-sm text-indigo-800 shadow-sm">
                         <Loader2 className="w-4 h-4 animate-spin" />
+                        <PaymentMethodMark method={selectedMethod} selected={true} />
                         Redirecting to {selectedMethod === "easypaisa" ? "EasyPaisa" : "JazzCash"}...
                       </div>
                     )}
@@ -630,7 +662,13 @@ export default function ProposalPayment() {
             </div>
             <div className="rounded-2xl border border-slate-100 bg-white p-4 text-xs text-slate-700 divide-y divide-slate-200">
               <div className="flex items-center justify-between py-1"><span>Amount</span><span className="font-semibold">${receiptData.amount?.toLocaleString()}</span></div>
-              <div className="flex items-center justify-between py-1"><span>Method</span><span className="capitalize">{receiptData.method}</span></div>
+              <div className="flex items-center justify-between py-1">
+                <span>Method</span>
+                <span className="inline-flex items-center gap-2">
+                  <PaymentMethodMark method={receiptData.method} selected={true} />
+                  <span className="capitalize">{receiptData.method}</span>
+                </span>
+              </div>
               <div className="flex items-center justify-between py-1"><span>Transaction ID</span><span className="font-mono text-[11px]">{receiptData.transactionId}</span></div>
               <div className="flex items-center justify-between py-1"><span>Date & time</span><span>{new Date(receiptData.createdAt).toLocaleString()}</span></div>
             </div>

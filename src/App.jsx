@@ -35,6 +35,7 @@ import Chats from "./components/dashboard/brandDashboardComponents/chatList";
 import ChatLayout from "./pages/chatLayout";
 import ProposalPayment from "./pages/ProposalPayment";
 import DisputeThread from "./pages/DisputeThread";
+import ScrollToTop from "./utills/ScrollToTop";
 
 
 
@@ -52,6 +53,8 @@ export default function App() {
         theme="dark"
         progressStyle={{ background: "#7c3aed" }}
       />
+
+      <ScrollToTop />
 
       <Routes>
         {/* Public home route with Navbar layout */}

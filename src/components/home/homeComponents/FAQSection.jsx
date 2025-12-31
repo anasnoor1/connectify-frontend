@@ -9,14 +9,14 @@ const FAQSection = () => {
 
   const faqs = [
     {
-      question: "What does your agency do?",
+      question: "What is Connectify?",
       answer:
-        "Far far away, behind the word mountains, far from the countries Vokalia and Consonantia, there live the blind texts. Separated they live in Bookmarksgrove right at the coast.",
+        "Connectify is a collaboration platform where brands create campaigns and influencers submit proposals, deliver work, and get paid after approval.",
     },
     {
-      question: "Who can join your talent roster?",
+      question: "How do brands and influencers work together here?",
       answer:
-        "Anyone passionate about creative collaboration and innovation can apply.",
+        "Brands post campaign requirements and budgets. Influencers apply with proposals. Once accepted, both sides can manage deliverables, approvals, and communication in one place.",
     },
     {
       question: "Do I need a certain number of followers to apply?",
@@ -24,23 +24,23 @@ const FAQSection = () => {
         "No, we value creativity and engagement over numbers. All are welcome!",
     },
     {
-      question: "What type of influencers do you work with?",
+      question: "What kind of campaigns can I find on Connectify?",
       answer:
-        "We collaborate with influencers from all niches—tech, lifestyle, fitness, fashion, and more.",
+        "You can find campaigns across many niches like tech, lifestyle, fitness, fashion, beauty, and more—based on what brands are currently hiring for.",
     },
     {
-      question: "What are your fees and commission rates?",
+      question: "How do payments and approvals work?",
       answer:
-        "Our rates are competitive and vary depending on project type and scope. Contact us for details.",
+        "After an influencer completes the work, the brand reviews and approves completion. Payments are processed according to the agreed proposal terms.",
     },
   ];
 
   return (
-    <section className="bg-[#f6f6fe] py-20 px-6">
+    <section className="bg-[#f6f6fe] py-14 sm:py-20 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10">
         {/* Left Tabs + Accordion */}
         <div className="md:col-span-2">
-          <h2 className="text-4xl font-bold mb-8">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-8">
             Common Questions About
             <br /> Our Agency & Services
           </h2>
@@ -88,10 +88,8 @@ const FAQSection = () => {
           </div>
         </div>
 
-
-
         <div
-          className="relative bg-white rounded-2xl overflow-hidden shadow-md h-130 flex items-end text-white p-6"
+          className="relative bg-white rounded-2xl overflow-hidden shadow-md min-h-[420px] sm:min-h-[520px] flex items-end text-white p-6"
           style={{
             backgroundImage:
               "url('https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=600&q=80')",

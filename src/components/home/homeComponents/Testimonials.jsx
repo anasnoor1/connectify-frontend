@@ -19,8 +19,8 @@ const Testimonials = () => {
             </h2>
           </div>
           <p className="text-gray-500 mt-4 md:mt-0 max-w-sm">
-            Sed ac suscipit tellus, a volutpat erat. Proin sit amet fermentum massa. 
-            Cras tincidunt cursus auctor.
+            Real feedback from brands and creators using Connectify to run campaigns, manage proposals, and collaborate
+            with confidence.
           </p>
         </div>
 
@@ -31,7 +31,7 @@ const Testimonials = () => {
             image={olivia}
             name="Olivia Carter"
             title="Brand Manager at Shine Glow"
-            text="In venenatis elementum quam, et tempor nunc. Curabitur enim dolor, convallis at porta sed quis rutrum eget nibh."
+            text="We launched a campaign in minutes and had quality proposals the same day. The workflow is clean and easy to manage."
             rating={5}
           />
 
@@ -40,7 +40,7 @@ const Testimonials = () => {
             image={sophia}
             name="Sophia Clarke"
             title="Social Media Influencer"
-            text="Suspendisse rhoncus metus tortor, quis augue fringilla eros tristique a. Vestibulum in mollis et neque eget."
+            text="I can apply to campaigns that match my niche and keep everything in one place—from proposals to approvals."
             rating={4}
           />
 
@@ -87,7 +87,7 @@ const Testimonials = () => {
             image={ethan}
             name="Ethan Williams"
             title="Head of Marketing at AETHR"
-            text="Donec dictum diam tellus, ut dictum dolor sit facilisis eu. Pellentesque aliquet tellus a mauris pellentesque laoreet."
+            text="Connectify helped us track deliverables and approvals without the usual back-and-forth. It kept our team aligned."
             rating={5}
           />
 
@@ -96,7 +96,7 @@ const Testimonials = () => {
             image={jackie}
             name="Jackie Stevens"
             title="Lifestyle Influencer"
-            text="Aliquam turpis nisl, gravida laoreet lorem faucibus, malesuada auctor quam. Suspendisse dolor erat."
+            text="The payment and completion flow feels transparent. I always know what’s next and what’s expected from me."
             rating={5}
           />
         </div>

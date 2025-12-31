@@ -107,6 +107,7 @@ const PublicInfluencerProfile = () => {
     engagement_rate,
     bio,
     social_links = [],
+    stats,
   } = profile;
 
   return (
@@ -159,7 +160,7 @@ const PublicInfluencerProfile = () => {
           </section>
         )}
 
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl shadow p-5 border border-slate-100">
             <p className="text-xs uppercase tracking-wide text-gray-400">Followers</p>
             <p className="mt-2 text-xl font-semibold text-gray-900">
@@ -172,6 +173,12 @@ const PublicInfluencerProfile = () => {
             <p className="text-xs uppercase tracking-wide text-gray-400">Engagement rate</p>
             <p className="mt-2 text-xl font-semibold text-gray-900">
               {typeof engagement_rate === "number" ? `${engagement_rate}%` : "N/A"}
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl shadow p-5 border border-slate-100">
+            <p className="text-xs uppercase tracking-wide text-gray-400">Completed campaigns</p>
+            <p className="mt-2 text-xl font-semibold text-gray-900">
+              {typeof stats?.completed_campaigns === "number" ? stats.completed_campaigns.toLocaleString() : "0"}
             </p>
           </div>
           <div className="bg-white rounded-2xl shadow p-5 border border-slate-100">

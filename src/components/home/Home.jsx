@@ -243,31 +243,31 @@ const Home = () => {
             </div>
           </div>
         </section> */}
-        <section className="bg-indigo-50 py-20">
-      <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+        <section className="bg-indigo-50 py-14 sm:py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-10 items-center">
         <div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
             Transforming Talent into{" "}
             <span className="text-indigo-600">Influence</span>
           </h1>
 
           <p className="text-gray-600 mb-6">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ornare
-            nisl aliquam ut consectetur maecenas eros.
+            Connectify brings brands and creators together in one place. Discover campaigns, send proposals, collaborate
+            smoothly, and track results with a simple, modern workflow.
           </p>
 
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             {/* ✅ Replace <a> with Link */}
             <Link
               to="#"
-              className="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700"
+              className="bg-indigo-600 text-white px-5 py-2 rounded-lg text-center transition-colors hover:bg-indigo-700 active:scale-[0.98]"
             >
               Discover More
             </Link>
 
             <Link
               to="#"
-              className="flex items-center space-x-2 text-indigo-600 font-medium hover:underline"
+              className="flex items-center justify-center sm:justify-start space-x-2 text-indigo-600 font-medium transition hover:underline active:opacity-80"
             >
               <span>Meet Our Talent</span>
               <i className="fa-solid fa-arrow-right"></i>
@@ -276,7 +276,7 @@ const Home = () => {
         </div>
 
         <div className="flex justify-center">
-          <img src={hero} alt="Hero" className="rounded-xl shadow-lg" />
+          <img src={hero} alt="Hero" className="rounded-xl shadow-lg w-full max-w-xl h-auto" />
         </div>
       </div>
     </section>
@@ -410,26 +410,26 @@ const Home = () => {
         </section>
 
         {/* About Section */}
-        <section className="py-20 bg-gray-50">
-          <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
-            <img src={hero} alt="About Us" className="rounded-lg shadow-md" />
+        <section className="py-14 sm:py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-12 items-center">
+            <img src={hero} alt="About Us" className="rounded-lg shadow-md w-full h-auto" />
             <div>
               <h2 className="text-3xl font-bold mt-2 mb-6">
                 Pioneering the Future of Talent and Influence Together
               </h2>
               <p className="text-gray-600 mb-6">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Varius magna semper primis ut auctor justo lacus dictum morbi.
+                Connectify is built for real collaborations. Brands can launch campaigns in minutes, review proposals,
+                and manage deliverables. Influencers can find opportunities that match their niche and get paid with
+                confidence once work is approved.
               </p>
               <blockquote className="italic text-gray-700 border-l-4 border-indigo-500 pl-4 mb-6">
-                “Senectus ullamcorper mollis posuere fringilla sit velit.
-                Nisl velit etiam per mus cursus suscipit habitasse viverra.”
+                “Clear expectations, transparent approvals, and a better experience for both brands and influencers.”
               </blockquote>
               <ul className="list-disc list-inside text-gray-700 space-y-2 mb-6">
-                <li>Montes class leo maecena</li>
-                <li>Aenean in varius ante nibh</li>
-                <li>Volutpat porta neque primis</li>
-                <li>Etiam sit amet cursus arcu</li>
+                <li>Create campaigns with budgets, timelines, and requirements</li>
+                <li>Send and manage proposals with clear terms</li>
+                <li>Track collaboration progress from start to completion</li>
+                <li>Build credibility with reviews and public profiles</li>
               </ul>
               {/* <div className="flex space-x-10">
                 <div>
@@ -445,7 +445,7 @@ const Home = () => {
                   <p>Creative Influencers</p>
                 </div>
               </div> */}
-              <div className="flex space-x-10">
+              <div className="flex flex-col sm:flex-row gap-6 sm:gap-10">
                 <div>
                   <p className="text-4xl font-bold text-indigo-600">
                     {stats.totalBrands}+
@@ -465,15 +465,15 @@ const Home = () => {
         </section>
 
         {/* Services Section */}
-        <section className="py-20 bg-indigo-50">
-          <div className="max-w-7xl mx-auto px-6">
+        <section className="py-14 sm:py-20 bg-indigo-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mt-2 mb-4">
                 Tailored Solutions for Talent and Influence
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Sed ac suscipit tellus, a volutpat erat. Proin sit amet
-                fermentum massa.
+                Everything you need to run creator campaigns end-to-end—discovery, proposals, communication, approvals,
+                and performance tracking.
               </p>
             </div>
 
@@ -486,18 +486,18 @@ const Home = () => {
               ].map((service, i) => (
                 <div
                   key={i}
-                  className="bg-white rounded-lg shadow hover:shadow-lg transition p-6"
+                  className="bg-white rounded-lg shadow hover:shadow-lg transition-all duration-200 p-6"
                 >
                   <h3 className="text-xl font-semibold text-indigo-600 mb-3">
                     {service}
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    Sed velit magna, dictum sit amet ante eu, tristique tempor ex.
-                    Phasellus neque enim nunc, ultrices eget bibendum id.
+                    Built-in tools to plan, collaborate, and execute campaigns with clarity—so both brands and creators
+                    can focus on results.
                   </p>
                   <a
                     href="/service_detail"
-                    className="text-indigo-600 font-medium flex items-center gap-2 hover:underline hover:underline-offset-4 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded"
+                    className="group text-indigo-600 font-medium flex items-center gap-2 transition hover:underline hover:underline-offset-4 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded"
                   >
                     <span>Learn More</span>
                     <i className="fa-solid fa-arrow-right transition-transform group-hover:translate-x-0.5"></i>
@@ -511,7 +511,7 @@ const Home = () => {
                     Ready to elevate your brand?
                   </h3>
                   <p className="mb-6">
-                    Let’s make it happen together with our expert team.
+                    Start your next creator campaign today and collaborate with influencers who match your audience.
                   </p>
                 </div>
                 <Link

@@ -6,6 +6,10 @@ const SECRET_KEY = "my_super_secret_key_123";
 export const setToken = (token) => {
   const encrypted = CryptoJS.AES.encrypt(token, SECRET_KEY).toString();
   localStorage.setItem("token", encrypted);
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('auth-token-changed', { detail: { token } }));
+  }
 };
 
 
@@ -31,5 +35,9 @@ export const isLoggedIn = () => {
 // Remove token (logout)
 export const logout = () => {
   localStorage.removeItem("token");
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('auth-token-changed', { detail: { token: null } }));
+  }
 };
 

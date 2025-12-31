@@ -1,7 +1,6 @@
-
 import { useEffect, useState } from "react";
 import axiosInstance from "../utills/privateIntercept";
-import { socket } from "../socket";
+import { connectSocket, socket } from "../socket";
 import ChatWindow from "../components/chat/ChatWindow";
 import { useParams } from "react-router-dom";
 
@@ -73,6 +72,9 @@ export default function ChatPage() {
     useEffect(() => {
         if (!user) return;
 
+        // Ensure socket is authenticated with the latest token (important when switching accounts)
+        connectSocket();
+
         const fetchMessages = async () => {
             try {
                 const res = await axiosInstance.get(`/api/message/${roomId}`);
@@ -102,7 +104,6 @@ export default function ChatPage() {
 
         socket.emit("send_message", {
             roomId,
-            senderId: user._id,
             message: text,
         });
     };

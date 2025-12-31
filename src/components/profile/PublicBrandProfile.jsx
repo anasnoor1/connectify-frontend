@@ -115,6 +115,7 @@ const PublicBrandProfile = () => {
     industry,
     website,
     bio,
+    stats,
   } = profile;
 
   const displayName = company_name || name;
@@ -182,6 +183,27 @@ const PublicBrandProfile = () => {
             <p className="text-sm text-gray-600 whitespace-pre-line">{bio}</p>
           </section>
         )}
+
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-2xl shadow p-5 border border-slate-100">
+            <p className="text-xs uppercase tracking-wide text-gray-400">Campaigns created</p>
+            <p className="mt-2 text-xl font-semibold text-gray-900">
+              {typeof stats?.campaigns_created === "number" ? stats.campaigns_created.toLocaleString() : "0"}
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl shadow p-5 border border-slate-100">
+            <p className="text-xs uppercase tracking-wide text-gray-400">Industry</p>
+            <p className="mt-2 text-xl font-semibold text-gray-900 capitalize">
+              {industry || "Not specified"}
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl shadow p-5 border border-slate-100">
+            <p className="text-xs uppercase tracking-wide text-gray-400">Website</p>
+            <p className="mt-2 text-sm font-semibold text-gray-900 break-all">
+              {website || "Not provided"}
+            </p>
+          </div>
+        </section>
 
         <section className="bg-white rounded-2xl shadow p-6 border border-slate-100">
           <h2 className="text-base font-semibold text-gray-900 mb-3">Brand details</h2>

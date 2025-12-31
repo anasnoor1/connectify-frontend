@@ -29,6 +29,8 @@ const ProfileEditor = ({ userRole, onCancel, onSave, brandInfo: initialBrandInfo
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [errors, setErrors] = useState({});
   const [instaStats, setInstaStats] = useState(null);
+  const [instaLoading, setInstaLoading] = useState(false);
+  const [instaError, setInstaError] = useState('');
 
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const unsignedPreset = import.meta.env.VITE_CLOUDINARY_UNSIGNED_PRESET;
@@ -232,29 +234,71 @@ const ProfileEditor = ({ userRole, onCancel, onSave, brandInfo: initialBrandInfo
     return Object.keys(newErrors).length === 0;
   };
 
-  const fetchInstagramStats = async () => {
+  const fetchInstagramStats = async ({ username: usernameOverride, silent } = {}) => {
     if (userRole !== 'influencer') return;
-    const username = formData.instagram_username?.trim();
-    if (!username) return;
+
+    const username = String(usernameOverride ?? formData.instagram_username ?? '').trim();
+    if (!username) {
+      setInstaStats(null);
+      setInstaError('');
+      return;
+    }
+
+    if (!/^[A-Za-z0-9._]{2,30}$/.test(username)) {
+      setInstaStats(null);
+      setInstaError('Enter a valid Instagram username');
+      return;
+    }
 
     try {
+      setInstaError('');
+      setInstaLoading(true);
+
       const res = await axios.get(`/api/instagram/${encodeURIComponent(username)}`);
       const insta = res.data || {};
+
+      if (insta && insta.ok === false) {
+        const msg = insta.error || 'Failed to fetch Instagram data';
+        setInstaStats(null);
+        setInstaError(msg);
+        if (!silent) toast.error(msg);
+        return;
+      }
+
       setInstaStats(insta);
       setFormData(prev => ({
         ...prev,
         followers_count: insta.followers_count ?? prev.followers_count,
+        engagement_rate: insta.engagement_rate ?? prev.engagement_rate,
         // Always sync main Instagram profile link with current username
         social_links: `https://instagram.com/${username}`,
       }));
-      if (insta.followers_count != null) {
-        toast.success('Instagram followers fetched');
-      }
     } catch (err) {
       console.error('Instagram fetch error:', err);
-      toast.error(err?.response?.data?.message || 'Failed to fetch Instagram data');
+      const msg = err?.response?.data?.error || err?.response?.data?.message || 'Failed to fetch Instagram data';
+      setInstaStats(null);
+      setInstaError(msg);
+      if (!silent) toast.error(msg);
+    } finally {
+      setInstaLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (userRole !== 'influencer') return;
+    const username = String(formData.instagram_username || '').trim();
+    if (!username) {
+      setInstaStats(null);
+      setInstaError('');
+      return;
+    }
+
+    const t = setTimeout(() => {
+      fetchInstagramStats({ username, silent: true });
+    }, 600);
+
+    return () => clearTimeout(t);
+  }, [userRole, formData.instagram_username]);
 
   const handleAvatarUpload = async (file) => {
     if (!file) return;
@@ -610,12 +654,17 @@ const ProfileEditor = ({ userRole, onCancel, onSave, brandInfo: initialBrandInfo
                     name="instagram_username"
                     value={formData.instagram_username}
                     onChange={handleChange}
-                    onBlur={fetchInstagramStats}
                     className={`flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-lg border ${errors.instagram_username ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500`}
                     placeholder="username"
                   />
                 </div>
                 {errors.instagram_username && <p className="mt-1 text-sm text-red-600">{errors.instagram_username}</p>}
+                {instaLoading && (
+                  <p className="mt-1 text-xs text-gray-500">Fetching Instagram stats...</p>
+                )}
+                {!instaLoading && instaError && (
+                  <p className="mt-1 text-xs text-red-600">{instaError}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -639,6 +688,32 @@ const ProfileEditor = ({ userRole, onCancel, onSave, brandInfo: initialBrandInfo
                     <span className="font-semibold">{instaStats.post_count ?? '-'} posts</span>
                   </p>
                 )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Following Count
+                </label>
+                <input
+                  type="number"
+                  value={instaStats ? (instaStats.following_count ?? 0) : ''}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
+                  placeholder="Auto fetched from Instagram"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Total Posts
+                </label>
+                <input
+                  type="number"
+                  value={instaStats ? (instaStats.post_count ?? 0) : ''}
+                  readOnly
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
+                  placeholder="Auto fetched from Instagram"
+                />
               </div>
 
               <div className="space-y-2">

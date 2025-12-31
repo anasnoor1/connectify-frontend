@@ -16,9 +16,14 @@ export default function InstagramProfile() {
     try {
       setLoading(true);
       const res = await axios.get(`/api/instagram/${encodeURIComponent(u)}`);
-      setData(res.data);
+      const payload = res.data || {};
+      if (payload && payload.ok === false) {
+        setError(payload.error || 'Failed to fetch Instagram data');
+        return;
+      }
+      setData(payload);
     } catch (err) {
-      setError(err?.response?.data?.message || 'Failed to fetch Instagram data');
+      setError(err?.response?.data?.error || err?.response?.data?.message || 'Failed to fetch Instagram data');
     } finally {
       setLoading(false);
     }

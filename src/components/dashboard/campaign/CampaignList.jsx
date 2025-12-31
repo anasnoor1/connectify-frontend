@@ -17,7 +17,7 @@ const CampaignList = () => {
   const [filters, setFilters] = useState({
     status: 'all',
     page: 1,
-    limit: 5  // 5 campaigns per page
+    limit: 6  // 6 campaigns per page
   });
 
   const navigate = useNavigate();

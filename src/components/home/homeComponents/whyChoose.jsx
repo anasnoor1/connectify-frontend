@@ -19,7 +19,7 @@ const WhyWorkWithUs = () => {
               <div>
                 <h5 className="text-lg font-semibold">Proven Track Record</h5>
                 <p className="text-gray-300">
-                  We consistently deliver successful projects that exceed client expectations.
+                  Built for real-world creator campaigns with clear steps from discovery to delivery.
                 </p>
               </div>
             </li>
@@ -29,7 +29,7 @@ const WhyWorkWithUs = () => {
               <div>
                 <h5 className="text-lg font-semibold">Industry Connections</h5>
                 <p className="text-gray-300">
-                  Our long-standing partnerships open doors to powerful opportunities.
+                  Connect brands with creators who fit their goals, niche, and audience.
                 </p>
               </div>
             </li>
@@ -39,7 +39,7 @@ const WhyWorkWithUs = () => {
               <div>
                 <h5 className="text-lg font-semibold">Personalized Growth</h5>
                 <p className="text-gray-300">
-                  We focus on helping every individual and brand grow sustainably.
+                  Track performance and build credibility through reviews and completed collaborations.
                 </p>
               </div>
             </li>
@@ -73,8 +73,8 @@ const WhyWorkWithUs = () => {
         {/* Right - Image with play button */}
         <div className="relative flex flex-col items-center">
           <p className="text-gray-300 mb-4 text-center">
-            Sed ac suscipit tellus, a volutpat erat. Proin sit amet fermentum
-            massa. Cras tincidunt cursus auctor.
+            Collaborate faster with built-in proposals, clear requirements, and transparent approvals—so every campaign
+            runs smoothly for both brands and influencers.
           </p>
           <div className="relative">
             <img

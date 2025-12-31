@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { useNavigate, NavLink, useLocation } from "react-router-dom";
 import { toast } from 'react-toastify';
-import { Edit2, User, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Edit2, User, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 import axiosInstance from "../../utills/privateIntercept";
 import Loader from "../../utills/loader";
 import ProfileEditor from './ProfileEditor';
@@ -21,10 +21,11 @@ export default function InfluencerDashboard() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [page, setPage] = useState(1);
-  const [limit] = useState(5);
+  const [limit] = useState(6);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [stripeStatus, setStripeStatus] = useState({ loading: true, connected: false });
+  const [stripeDashboardLoading, setStripeDashboardLoading] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -112,6 +113,25 @@ export default function InfluencerDashboard() {
       console.error('Error starting Stripe connect onboarding:', error);
       const msg = error?.response?.data?.message || error?.message || 'Failed to start Stripe onboarding';
       toast.error(msg);
+    }
+  };
+
+  const handleOpenStripeDashboard = async () => {
+    try {
+      setStripeDashboardLoading(true);
+      const res = await axiosInstance.get('/api/payment/stripe/login-link');
+      const url = res.data?.url;
+      if (!url) {
+        toast.error('Failed to open Stripe dashboard');
+        return;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error('Error creating Stripe login link:', error);
+      const msg = error?.response?.data?.message || error?.message || 'Failed to open Stripe dashboard';
+      toast.error(msg);
+    } finally {
+      setStripeDashboardLoading(false);
     }
   };
 
@@ -356,6 +376,15 @@ export default function InfluencerDashboard() {
                     <p className="text-[11px] text-slate-500">
                       Your payouts will be sent to your connected Stripe account after campaign approval.
                     </p>
+                    <button
+                      type="button"
+                      onClick={handleOpenStripeDashboard}
+                      disabled={stripeDashboardLoading}
+                      className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-xs rounded-lg border border-indigo-100 text-indigo-700 hover:bg-indigo-50 transition disabled:opacity-60"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      {stripeDashboardLoading ? 'Opening...' : 'Open Stripe Dashboard'}
+                    </button>
                     <button
                       type="button"
                       onClick={handleDisconnectStripe}

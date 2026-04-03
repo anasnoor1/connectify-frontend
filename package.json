@@ -21,6 +21,7 @@
     "crypto-js": "^4.2.0",
     "formik": "^2.4.6",
     "fortawesome": "^0.0.1-security",
+    "framer-motion": "^12.38.0",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.548.0",
     "react": "^19.1.1",

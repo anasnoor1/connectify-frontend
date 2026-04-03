@@ -4,6 +4,7 @@ import logo from "../../assets/connectifylogo.png"
 import { getToken, logout as logoutUser } from "../../utills/checkToken";
 import axios from "../../utills/privateIntercept";
 import Footer from "../footer/Footer"
+import { motion, AnimatePresence } from "framer-motion";
 
 function IconProfile() {
   return (
@@ -129,7 +130,7 @@ export default function Navbar() {
     <div className="flex flex-col min-h-screen">
       {/* Navbar - hidden on auth pages */}
       {!isAuthPage && (
-        <header className="bg-white shadow-md sticky top-0 z-50">
+        <header className="glass sticky top-0 z-50">
           <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
             {/* Logo */}
             <Link to="/" className="flex items-center">
@@ -265,7 +266,7 @@ export default function Navbar() {
                       <IconUserCircle />
                     </span>
                   </button>
-                  <div className={`${dropdownOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"} origin-top-right transition transform absolute right-0 mt-2 w-72 bg-white shadow-2xl ring-1 ring-black/5 rounded-xl py-3 z-50`}
+                  <div className={`${dropdownOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"} origin-top-right transition transform absolute right-0 mt-2 w-72 glass-card py-3 z-50`}
                     role="menu">
                     <div className="px-4 pb-3 border-b">
                       <div className="flex items-center gap-3">
@@ -284,7 +285,7 @@ export default function Navbar() {
                           setDropdownOpen(false);
                           navigate("/login");
                         }}
-                        className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                        className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium bg-gradient-to-r from-purple-600 to-indigo-500 text-white rounded-lg hover:opacity-90 shadow-md transition-all transform hover:-translate-y-0.5"
                         role="menuitem"
                       >
                         <i className="fa-solid fa-right-to-bracket"></i>
@@ -295,7 +296,7 @@ export default function Navbar() {
                           setDropdownOpen(false);
                           navigate("/signup");
                         }}
-                        className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                        className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium border border-gray-200 bg-white/50 backdrop-blur-md text-gray-700 rounded-lg hover:bg-gray-50 transition-all transform hover:-translate-y-0.5"
                         role="menuitem"
                       >
                         <i className="fa-regular fa-id-card"></i>
@@ -323,7 +324,7 @@ export default function Navbar() {
                     </span>
                   </button>
                   <div
-                    className={`${dropdownOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"} origin-top-right transition transform absolute right-0 mt-2 w-64 bg-white shadow-2xl ring-1 ring-black/5 rounded-xl py-2 z-50`}
+                    className={`${dropdownOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"} origin-top-right transition transform absolute right-0 mt-2 w-64 glass-card py-2 z-50`}
                     role="menu"
                   >
                     <div className="px-4 pb-3 border-b">

@@ -5,7 +5,7 @@ import Signup from "./components/auth/Signup";
 import Login from "./components/auth/Login";
 import ForgotPassword from "./components/auth/ForgotPassword";
 import VerifyOtp from "./pages/VerifyOtp";
-import ResetPassword from "./components/auth/resetPassword";
+import ResetPassword from "./components/auth/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Navbar from "./components/navbar/Navbar";
 import Home from "./components/home/Home";

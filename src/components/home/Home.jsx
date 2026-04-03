@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { fetchLandingCounts, fetchHomeHighlights } from "../../features/home/landingSlice";
+import { motion } from "framer-motion";
+import AnimatedPage from "../AnimatedPage";
 
 import hero from "../../assets/hero-1.webp";
 import WhyChoose from './whyChoose'
@@ -207,7 +209,7 @@ const Home = () => {
   ];
 
   return (
-    <div className="font-sans text-gray-800">
+    <AnimatedPage className="font-sans text-gray-800">
       <main>
         {/* Hero Section */}
         {/* <section className="bg-indigo-50 py-20">
@@ -243,63 +245,101 @@ const Home = () => {
             </div>
           </div>
         </section> */}
-        <section className="bg-indigo-50 py-14 sm:py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-10 items-center">
-        <div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
-            Transforming Talent into{" "}
-            <span className="text-indigo-600">Influence</span>
-          </h1>
-
-          <p className="text-gray-600 mb-6">
-            Connectify brings brands and creators together in one place. Discover campaigns, send proposals, collaborate
-            smoothly, and track results with a simple, modern workflow.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            {/* ✅ Replace <a> with Link */}
-            <Link
-              to="#"
-              className="bg-indigo-600 text-white px-5 py-2 rounded-lg text-center transition-colors hover:bg-indigo-700 active:scale-[0.98]"
+            <section className="relative overflow-hidden bg-gradient-to-b from-indigo-50 to-white py-20 sm:py-32">
+          {/* Animated Background Elements */}
+          <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+          <div className="absolute top-0 -right-4 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+          
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 grid md:grid-cols-2 gap-12 items-center">
+            <motion.div 
+               initial={{ opacity: 0, x: -50 }}
+               animate={{ opacity: 1, x: 0 }}
+               transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              Discover More
-            </Link>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 tracking-tight text-gray-900">
+                Transforming Talent into{" "}
+                <span className="text-gradient">Influence</span>
+              </h1>
 
-            <Link
-              to="#"
-              className="flex items-center justify-center sm:justify-start space-x-2 text-indigo-600 font-medium transition hover:underline active:opacity-80"
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-lg">
+                Connectify brings brands and creators together in one place. Discover campaigns, send proposals, collaborate smoothly, and track results with a modern, dynamic workflow.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  to="#"
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-full text-center font-medium shadow-lg hover:shadow-indigo-500/30 transition-all hover:-translate-y-1 active:scale-[0.98]"
+                >
+                  Discover More
+                </Link>
+
+                <Link
+                  to="#"
+                  className="flex items-center justify-center sm:justify-start px-8 py-3 space-x-2 text-indigo-600 font-medium transition hover:text-indigo-400 group"
+                >
+                  <span>Meet Our Talent</span>
+                  <i className="fa-solid fa-arrow-right transform transition-transform group-hover:translate-x-2"></i>
+                </Link>
+              </div>
+            </motion.div>
+
+            <motion.div 
+               initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+               animate={{ opacity: 1, scale: 1, rotate: 0 }}
+               transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+               className="flex justify-center relative"
             >
-              <span>Meet Our Talent</span>
-              <i className="fa-solid fa-arrow-right"></i>
-            </Link>
+               <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl transform rotate-3 scale-105 opacity-20 blur-lg"></div>
+               <img src={hero} alt="Hero" className="rounded-2xl shadow-2xl w-full max-w-xl h-auto relative z-10 border border-white/50" />
+            </motion.div>
           </div>
-        </div>
-
-        <div className="flex justify-center">
-          <img src={hero} alt="Hero" className="rounded-xl shadow-lg w-full max-w-xl h-auto" />
-        </div>
-      </div>
-    </section>
+        </section>
 
         {/* Partner Section */}
-        <section className="py-16 bg-white">
+        <section className="py-16 bg-white overflow-hidden">
           <div className="max-w-6xl mx-auto text-center px-6">
-            <h3 className="text-2xl font-semibold mb-10">
+            <motion.h3 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              className="text-2xl font-semibold mb-10"
+            >
               Our Partners in Success — The Brands Behind{" "}
-              <span className="text-indigo-600">the Stars</span>
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 items-center">
+              <span className="text-gradient">the Stars</span>
+            </motion.h3>
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-50px" }}
+              variants={{
+                hidden: {},
+                visible: {
+                  transition: {
+                    staggerChildren: 0.1
+                  }
+                }
+              }}
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 items-center"
+            >
               {partners.map((Logo, i) => (
-                <Link
-                  to="/brandpartnership"
+                <motion.div
                   key={i}
-                  aria-label="Explore Brand Partnership"
-                  className="flex items-center justify-center p-5 opacity-80 hover:opacity-100 transition-all duration-200 hover:-translate-y-1 hover:shadow rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer"
+                  variants={{
+                    hidden: { opacity: 0, y: 20 },
+                    visible: { opacity: 1, y: 0 }
+                  }}
                 >
-                  <Logo />
-                </Link>
+                  <Link
+                    to="/brandpartnership"
+                    aria-label="Explore Brand Partnership"
+                    className="flex items-center justify-center p-5 opacity-70 hover:opacity-100 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl rounded-xl bg-gray-50/50 border border-transparent hover:border-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 cursor-pointer"
+                  >
+                    <Logo />
+                  </Link>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -465,9 +505,14 @@ const Home = () => {
         </section>
 
         {/* Services Section */}
-        <section className="py-14 sm:py-20 bg-indigo-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="text-center mb-12">
+        <section className="py-14 sm:py-20 bg-gradient-to-b from-indigo-50 to-white relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
               <h2 className="text-3xl font-bold mt-2 mb-4">
                 Tailored Solutions for Talent and Influence
               </h2>
@@ -475,54 +520,77 @@ const Home = () => {
                 Everything you need to run creator campaigns end-to-end—discovery, proposals, communication, approvals,
                 and performance tracking.
               </p>
-            </div>
+            </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <motion.div 
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.1 } }
+              }}
+              className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
               {[
                 "Talent Management",
                 "Influencer Marketing",
                 "Brand Partnership",
                 "Content Strategy",
               ].map((service, i) => (
-                <div
+                <motion.div
                   key={i}
-                  className="bg-white rounded-lg shadow hover:shadow-lg transition-all duration-200 p-6"
+                  variants={{
+                    hidden: { opacity: 0, y: 30 },
+                    visible: { opacity: 1, y: 0 }
+                  }}
+                  className="glass-card p-6 group transition-all duration-300 hover:-translate-y-2 hover:shadow-indigo-200/50 hover:shadow-2xl relative overflow-hidden"
                 >
-                  <h3 className="text-xl font-semibold text-indigo-600 mb-3">
-                    {service}
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    Built-in tools to plan, collaborate, and execute campaigns with clarity—so both brands and creators
-                    can focus on results.
-                  </p>
-                  <a
-                    href="/service_detail"
-                    className="group text-indigo-600 font-medium flex items-center gap-2 transition hover:underline hover:underline-offset-4 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded"
-                  >
-                    <span>Learn More</span>
-                    <i className="fa-solid fa-arrow-right transition-transform group-hover:translate-x-0.5"></i>
-                  </a>
-                </div>
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"></div>
+                  <div className="relative z-10">
+                    <h3 className="text-xl font-semibold text-indigo-600 mb-3 group-hover:text-purple-700 transition-colors">
+                      {service}
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      Built-in tools to plan, collaborate, and execute campaigns with clarity—so both brands and creators
+                      can focus on results.
+                    </p>
+                    <a
+                      href="/service_detail"
+                      className="group/link text-indigo-600 font-medium flex items-center gap-2 transition hover:text-purple-600 focus:outline-none rounded"
+                    >
+                      <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[2px] after:bg-purple-600 after:transition-all after:duration-300 group-hover/link:after:w-full">Learn More</span>
+                      <i className="fa-solid fa-arrow-right transition-transform group-hover/link:translate-x-1"></i>
+                    </a>
+                  </div>
+                </motion.div>
               ))}
 
-              <div className="bg-indigo-600 text-white p-6 rounded-lg flex flex-col justify-between">
-                <div>
-                  <h3 className="text-2xl font-semibold mb-3">
+              <motion.div 
+                variants={{
+                  hidden: { opacity: 0, scale: 0.95 },
+                  visible: { opacity: 1, scale: 1 }
+                }}
+                className="bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-8 rounded-2xl flex flex-col justify-between shadow-2xl relative overflow-hidden group"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl transform translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform duration-700"></div>
+                <div className="relative z-10">
+                  <h3 className="text-2xl font-bold mb-3">
                     Ready to elevate your brand?
                   </h3>
-                  <p className="mb-6">
+                  <p className="mb-8 text-indigo-100">
                     Start your next creator campaign today and collaborate with influencers who match your audience.
                   </p>
                 </div>
                 <Link
                   to="/contact"
-                  className="inline-flex items-center space-x-2 bg-white text-indigo-600 px-4 py-2 rounded-md font-medium hover:bg-gray-100 transition"
+                  className="inline-flex items-center justify-center space-x-2 bg-white text-indigo-600 px-6 py-3 rounded-full font-bold hover:bg-gray-50 transition transform hover:scale-105 shadow-lg relative z-10 w-max"
                 >
                   <span>Get Started</span>
                   <i className="fa-solid fa-arrow-right"></i>
                 </Link>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
       </main>
@@ -530,7 +598,7 @@ const Home = () => {
       <Testimonials />
       <HeroSection />
       <FAQSection />
-    </div>
+    </AnimatedPage>
   );
 };
 

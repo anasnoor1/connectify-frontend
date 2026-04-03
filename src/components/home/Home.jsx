@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import AnimatedPage from "../AnimatedPage";
 
 import hero from "../../assets/hero-1.webp";
-import WhyChoose from './whyChoose'
+import WhyChoose from './WhyChoose'
 import Testimonials from '../home/homeComponents/Testimonials'
 import HeroSection from './homeComponents/HeroSection';
 import FAQSection from './homeComponents/FAQSection';
